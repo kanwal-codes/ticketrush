@@ -36,6 +36,10 @@ class SecurityConfig {
 				.authorizeHttpRequests(a -> a
 						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
 						.requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+						// Browsing events and seat maps is public. Changing the catalog is for organizers only.
+						.requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
+						.requestMatchers("/api/venues/**").hasRole("ORGANIZER")
+						.requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(rolesFromClaim())));
 		return http.build();
