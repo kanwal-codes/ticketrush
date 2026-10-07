@@ -77,7 +77,8 @@ class EventController {
 		NewEvent cmd = new NewEvent(r.title(), r.artist(), r.description(), r.venueId(), r.startsAt(), r.doorsAt(),
 				r.dropOpensAt(), r.onSaleAt(),
 				new Poster(r.poster().style(), r.poster().inkOne(), r.poster().inkTwo(), r.poster().paperColor()),
-				r.prices().stream().map(p -> new PriceSpec(p.sectionId(), p.priceCents())).toList());
+				r.prices().stream().map(p -> new PriceSpec(p.sectionId(), p.priceCents())).toList(),
+				Boolean.TRUE.equals(r.waitingRoom()));
 		return events.create(organizerId(jwt), cmd);
 	}
 
@@ -105,7 +106,9 @@ class EventController {
 			@NotNull Instant dropOpensAt,
 			@NotNull Instant onSaleAt,
 			@NotNull @Valid PosterRequest poster,
-			@NotEmpty @Size(max = 20) List<@Valid PriceRequest> prices) {
+			@NotEmpty @Size(max = 20) List<@Valid PriceRequest> prices,
+			/** Send guests through a waiting room before they can hold seats. Optional, off by default. */
+			Boolean waitingRoom) {
 	}
 
 	record PosterRequest(
