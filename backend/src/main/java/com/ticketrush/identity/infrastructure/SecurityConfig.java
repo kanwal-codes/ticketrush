@@ -36,6 +36,9 @@ class SecurityConfig {
 				.authorizeHttpRequests(a -> a
 						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
 						.requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+						// Holding seats needs a sign-in but not the organizer role. These come before the broader rules below.
+						.requestMatchers(HttpMethod.POST, "/api/events/*/holds").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/events/*/holds/me").authenticated()
 						// Browsing events and seat maps is public. Changing the catalog is for organizers only.
 						.requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
 						.requestMatchers("/api/venues/**").hasRole("ORGANIZER")
