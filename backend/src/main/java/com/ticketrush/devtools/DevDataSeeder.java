@@ -82,20 +82,20 @@ class DevDataSeeder implements ApplicationRunner {
 
 		// Prices are face value in cents. Guests see face plus the 7.5% fee.
 		publish(organizer, halden, "Afterlight Tour", "Mira Okafor", PosterStyle.ORBIT, "#2B2FD9", "#FF5A36",
-				"#FFD9C4", Duration.ofHours(22), Duration.ofDays(38), 12800, 9600, 6400);
+				"#FFD9C4", Duration.ofHours(22), Duration.ofDays(38), true, 12800, 9600, 6400);
 		publish(organizer, laurier, "Tomas Aguilar: Live", "Tomas Aguilar", PosterStyle.SUN, "#121212", "#E5322D",
-				"#FFC20E", Duration.ofDays(-2), Duration.ofDays(16), 5800, 4200);
+				"#FFC20E", Duration.ofDays(-2), Duration.ofDays(16), false, 5800, 4200);
 		publish(organizer, laurier, "The Winter's Tale", "Théâtre du Marais", PosterStyle.CURTAIN, "#0E4D3A",
-				"#F08FA8", "#F4CFD8", Duration.ofDays(-5), Duration.ofDays(11), 7200, 4700);
+				"#F08FA8", "#F4CFD8", Duration.ofDays(-5), Duration.ofDays(11), false, 7200, 4700);
 		publish(organizer, cartier, "Northern Lights Orchestra", "Northern Lights Orchestra", PosterStyle.AURORA,
-				"#5CF2B0", "#3F6BFF", "#101B3A", Duration.ofDays(3), Duration.ofDays(26), 7800, 5500);
+				"#5CF2B0", "#3F6BFF", "#101B3A", Duration.ofDays(3), Duration.ofDays(26), false, 7800, 5500);
 		publish(organizer, stade, "Harbour FC vs Rivière United", "Harbour FC", PosterStyle.PITCH, "#E4002B",
-				"#121212", "#F2F2EE", Duration.ofDays(-1), Duration.ofDays(10), 5200, 3800);
+				"#121212", "#F2F2EE", Duration.ofDays(-1), Duration.ofDays(10), true, 5200, 3800);
 		log.info("Demo data created. Sign in as {} with the password from DEMO_ORGANIZER_PASSWORD", organizerEmail);
 	}
 
 	private void publish(long organizer, VenueView venue, String title, String artist, PosterStyle style,
-			String inkOne, String inkTwo, String paper, Duration onSaleIn, Duration startsIn, int... sectionPrices) {
+			String inkOne, String inkTwo, String paper, Duration onSaleIn, Duration startsIn, boolean waitingRoom, int... sectionPrices) {
 		Instant now = clock.instant().truncatedTo(ChronoUnit.MINUTES);
 		Instant onSale = now.plus(onSaleIn);
 		Instant starts = now.plus(startsIn).truncatedTo(ChronoUnit.HOURS);
@@ -105,7 +105,7 @@ class DevDataSeeder implements ApplicationRunner {
 		}
 		EventRef event = events.create(organizer, new NewEvent(title, artist, "Demo event.", venue.id(), starts,
 				starts.minus(1, ChronoUnit.HOURS), onSale.minus(10, ChronoUnit.MINUTES), onSale,
-				new Poster(style, inkOne, inkTwo, paper), prices));
+				new Poster(style, inkOne, inkTwo, paper), prices, waitingRoom));
 		events.publish(organizer, event.id());
 	}
 
