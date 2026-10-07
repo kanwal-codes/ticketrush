@@ -1,0 +1,22 @@
+# Secrets
+.env
+*.pem
+
+# Java / Maven
+target/
+*.class
+*.log
+hs_err_pid*
+
+# Node
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
