@@ -41,6 +41,8 @@ class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/events/*/holds/me").authenticated()
 						// The waiting room is for signed-in guests only.
 						.requestMatchers("/api/events/*/queue", "/api/events/*/queue/**").authenticated()
+						// Accepting tickets at the door is for organizers; reading your own is for any signed-in guest.
+						.requestMatchers(HttpMethod.POST, "/api/tickets/scan").hasRole("ORGANIZER")
 						// Browsing events and seat maps is public. Changing the catalog is for organizers only.
 						.requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
 						.requestMatchers("/api/venues/**").hasRole("ORGANIZER")
