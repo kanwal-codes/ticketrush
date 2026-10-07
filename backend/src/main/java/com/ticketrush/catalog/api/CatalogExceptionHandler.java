@@ -3,6 +3,7 @@ package com.ticketrush.catalog.api;
 import com.ticketrush.catalog.application.NotFoundException;
 import com.ticketrush.catalog.application.NotOwnerException;
 import com.ticketrush.catalog.application.RuleViolationException;
+import com.ticketrush.catalog.application.SeatsUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,6 +25,13 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(NotOwnerException.class)
 	ProblemDetail notOwner(NotOwnerException e) {
 		return problem(HttpStatus.FORBIDDEN, "Not allowed", e.getMessage());
+	}
+
+	@ExceptionHandler(SeatsUnavailableException.class)
+	ProblemDetail seatsUnavailable(SeatsUnavailableException e) {
+		ProblemDetail problem = problem(HttpStatus.CONFLICT, "Seats unavailable", e.getMessage());
+		problem.setProperty("unavailableSeatIds", e.getSeatIds());
+		return problem;
 	}
 
 	private static ProblemDetail problem(HttpStatus status, String title, String detail) {
