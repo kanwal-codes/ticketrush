@@ -1,7 +1,10 @@
 package com.ticketrush.catalog.api;
 
 import com.ticketrush.catalog.application.AdmissionRequiredException;
+import com.ticketrush.catalog.application.HoldNotLiveException;
+import com.ticketrush.catalog.application.IdempotencyKeyReusedException;
 import com.ticketrush.catalog.application.NotFoundException;
+import com.ticketrush.catalog.application.PaymentInProgressException;
 import com.ticketrush.catalog.application.NotOwnerException;
 import com.ticketrush.catalog.application.RuleViolationException;
 import com.ticketrush.catalog.application.SeatsUnavailableException;
@@ -33,6 +36,21 @@ class CatalogExceptionHandler {
 		ProblemDetail problem = problem(HttpStatus.FORBIDDEN, "Waiting room", e.getMessage());
 		problem.setProperty("code", "ADMISSION_REQUIRED");
 		return problem;
+	}
+
+	@ExceptionHandler(HoldNotLiveException.class)
+	ProblemDetail holdNotLive(HoldNotLiveException e) {
+		return problem(HttpStatus.CONFLICT, "Hold unavailable", e.getMessage());
+	}
+
+	@ExceptionHandler(IdempotencyKeyReusedException.class)
+	ProblemDetail keyReused(IdempotencyKeyReusedException e) {
+		return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Idempotency key reused", e.getMessage());
+	}
+
+	@ExceptionHandler(PaymentInProgressException.class)
+	ProblemDetail paymentInProgress(PaymentInProgressException e) {
+		return problem(HttpStatus.CONFLICT, "Payment in progress", e.getMessage());
 	}
 
 	@ExceptionHandler(SeatsUnavailableException.class)
