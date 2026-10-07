@@ -5,6 +5,8 @@ import com.ticketrush.catalog.domain.OutboxEvent;
 import com.ticketrush.catalog.domain.OutboxEventRepository;
 import com.ticketrush.catalog.domain.TicketOrder;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -31,14 +33,18 @@ public class OutboxRelay {
 	private final ApplicationEventPublisher publisher;
 	private final TransactionTemplate tx;
 	private final Clock clock;
+	private final MeterRegistry meters;
 
 	public OutboxRelay(OutboxEventRepository outbox, TicketOrderRepository orders, ApplicationEventPublisher publisher,
-			TransactionTemplate tx, Clock clock) {
+			TransactionTemplate tx, Clock clock, MeterRegistry meters) {
 		this.outbox = outbox;
 		this.orders = orders;
 		this.publisher = publisher;
 		this.tx = tx;
 		this.clock = clock;
+		this.meters = meters;
+		Gauge.builder("ticketrush.outbox.pending", outbox, OutboxEventRepository::countByPublishedAtIsNull)
+				.description("Outbox rows not yet delivered").register(meters);
 	}
 
 	/** Delivers up to one batch. Returns how many rows were delivered by this call. */
@@ -49,9 +55,11 @@ public class OutboxRelay {
 			try {
 				if (Boolean.TRUE.equals(tx.execute(status -> deliver(id)))) {
 					delivered++;
+					meters.counter("ticketrush.outbox.delivered").increment();
 				}
 			}
 			catch (RuntimeException e) {
+				meters.counter("ticketrush.outbox.failed").increment();
 				log.warn("Outbox event {} was not delivered: {}", id, e.toString());
 				tx.executeWithoutResult(status -> outbox.findById(id).ifPresent(row -> row.markFailed(e.toString())));
 			}

@@ -35,7 +35,8 @@ class SecurityConfig {
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(a -> a
 						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-						.requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+						// Actuator lives on the management port (see application.properties), which is not published.
+						.requestMatchers("/actuator/health/**", "/actuator/prometheus", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						// Holding seats needs a sign-in but not the organizer role. These come before the broader rules below.
 						.requestMatchers(HttpMethod.POST, "/api/events/*/holds").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/events/*/holds/me").authenticated()

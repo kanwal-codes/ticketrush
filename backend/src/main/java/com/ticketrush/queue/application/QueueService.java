@@ -8,6 +8,7 @@ import com.ticketrush.queue.domain.QueueStatus;
 import com.ticketrush.queue.domain.RateLimiter;
 import com.ticketrush.queue.domain.SalePhase;
 import com.ticketrush.queue.domain.WaitingLine;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +32,13 @@ public class QueueService {
 	private final int maxInside;
 	private final Duration admissionTtl;
 	private final Duration tickInterval;
+	private final MeterRegistry meters;
 
 	public QueueService(WaitingLine line, EventFacts events, RateLimiter limiter, AdmissionTokens tokens, Clock clock,
 			@Value("${ticketrush.queue.admit-per-second}") int admitPerSecond,
 			@Value("${ticketrush.queue.max-admitted}") int maxInside,
 			@Value("${ticketrush.queue.admission-ttl}") Duration admissionTtl,
-			@Value("${ticketrush.queue.tick-interval}") Duration tickInterval) {
+			@Value("${ticketrush.queue.tick-interval}") Duration tickInterval, MeterRegistry meters) {
 		this.line = line;
 		this.events = events;
 		this.limiter = limiter;
@@ -46,6 +48,7 @@ public class QueueService {
 		this.maxInside = maxInside;
 		this.admissionTtl = admissionTtl;
 		this.tickInterval = tickInterval;
+		this.meters = meters;
 	}
 
 	/**
@@ -72,6 +75,7 @@ public class QueueService {
 			throw new WaitingRoomClosedException("This event has already started");
 		}
 		line.join(eventId, userId, now);
+		meters.counter("ticketrush.queue.joins").increment();
 		return view(userId, eventId, facts, now);
 	}
 
@@ -106,7 +110,9 @@ public class QueueService {
 			if (facts.phase() != SalePhase.ON_SALE || !line.claimTick(eventId, tickInterval)) {
 				continue;
 			}
-			total += line.admit(eventId, perTick(), maxInside, now, now.plus(admissionTtl)).size();
+			int admitted = line.admit(eventId, perTick(), maxInside, now, now.plus(admissionTtl)).size();
+			meters.counter("ticketrush.queue.admitted").increment(admitted);
+			total += admitted;
 			line.forgetIfEmpty(eventId);
 		}
 		return total;
