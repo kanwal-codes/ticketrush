@@ -39,17 +39,19 @@ public class HoldService {
 	private final SeatHoldRepository holds;
 	private final EventPriceRepository prices;
 	private final SeatStore seats;
+	private final AdmissionCheck admission;
 	private final Clock clock;
 	private final Duration ttl;
 	private final int maxSeats;
 
 	public HoldService(EventRepository events, SeatHoldRepository holds, EventPriceRepository prices,
-			SeatStore seats, Clock clock, @Value("${ticketrush.holds.ttl}") Duration ttl,
+			SeatStore seats, AdmissionCheck admission, Clock clock, @Value("${ticketrush.holds.ttl}") Duration ttl,
 			@Value("${ticketrush.holds.max-seats}") int maxSeats) {
 		this.events = events;
 		this.holds = holds;
 		this.prices = prices;
 		this.seats = seats;
+		this.admission = admission;
 		this.clock = clock;
 		this.ttl = ttl;
 		this.maxSeats = maxSeats;
@@ -68,12 +70,16 @@ public class HoldService {
 	 * seat is not free, nothing changes, and the guest keeps their previous hold.
 	 */
 	@Transactional
-	public HoldView hold(long userId, long eventId, List<Long> seatIds) {
+	public HoldView hold(long userId, long eventId, List<Long> seatIds, String admissionToken) {
 		validate(seatIds);
 		Instant now = clock.instant();
 		Event event = events.findById(eventId).filter(e -> e.getStatus() == EventStatus.PUBLISHED)
 				.orElseThrow(() -> new NotFoundException("Event " + eventId + " not found"));
 		requireOnSale(event, now);
+		if (event.isQueueEnabled()) {
+			// Checked before touching any seat, so a guest who skipped the line costs the database nothing.
+			admission.require(userId, eventId, admissionToken);
+		}
 
 		// One guest's requests for one event run one after the other, so a retry cannot fight itself.
 		seats.lockUserEvent(userId, eventId);
