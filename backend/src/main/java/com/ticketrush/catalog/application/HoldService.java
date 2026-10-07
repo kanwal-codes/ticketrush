@@ -12,7 +12,9 @@ import com.ticketrush.catalog.domain.SeatHold;
 import com.ticketrush.catalog.domain.SeatHoldRepository;
 import com.ticketrush.catalog.domain.SeatStore;
 import com.ticketrush.catalog.domain.SeatStore.ExpiryResult;
+import com.ticketrush.catalog.domain.OrderStatus;
 import com.ticketrush.catalog.domain.SeatStore.HeldSeat;
+import com.ticketrush.catalog.domain.TicketOrderRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,7 @@ public class HoldService {
 
 	private final EventRepository events;
 	private final SeatHoldRepository holds;
+	private final TicketOrderRepository orders;
 	private final EventPriceRepository prices;
 	private final SeatStore seats;
 	private final AdmissionCheck admission;
@@ -44,11 +48,17 @@ public class HoldService {
 	private final Duration ttl;
 	private final int maxSeats;
 
-	public HoldService(EventRepository events, SeatHoldRepository holds, EventPriceRepository prices,
+	/** Orders in these states are using the hold's seats, so the hold must not be replaced or released. */
+	private static final Set<OrderStatus> USING_THE_HOLD = EnumSet.of(OrderStatus.PENDING_PAYMENT, OrderStatus.PAID,
+			OrderStatus.REFUNDING);
+
+	public HoldService(EventRepository events, SeatHoldRepository holds, TicketOrderRepository orders,
+			EventPriceRepository prices,
 			SeatStore seats, AdmissionCheck admission, Clock clock, @Value("${ticketrush.holds.ttl}") Duration ttl,
 			@Value("${ticketrush.holds.max-seats}") int maxSeats) {
 		this.events = events;
 		this.holds = holds;
+		this.orders = orders;
 		this.prices = prices;
 		this.seats = seats;
 		this.admission = admission;
@@ -84,6 +94,7 @@ public class HoldService {
 		// One guest's requests for one event run one after the other, so a retry cannot fight itself.
 		seats.lockUserEvent(userId, eventId);
 		holds.findByEventIdAndUserIdAndStatus(eventId, userId, HoldStatus.ACTIVE).ifPresent(old -> {
+			requireNotBeingPaidFor(old);
 			seats.releaseHold(old.getId());
 			old.markReleased();
 			// Written before the new hold is inserted, or the one-active-hold index would reject the insert.
@@ -116,6 +127,7 @@ public class HoldService {
 			throw new NotOwnerException("This hold belongs to another guest");
 		}
 		if (hold.getStatus() == HoldStatus.ACTIVE) {
+			requireNotBeingPaidFor(hold);
 			seats.releaseHold(holdId);
 			hold.markReleased();
 		}
@@ -125,6 +137,12 @@ public class HoldService {
 	@Transactional
 	public ExpiryResult expireDue() {
 		return seats.expireDue(clock.instant());
+	}
+
+	private void requireNotBeingPaidFor(SeatHold hold) {
+		if (orders.existsByHoldIdAndStatusIn(hold.getId(), USING_THE_HOLD)) {
+			throw new PaymentInProgressException();
+		}
 	}
 
 	private void validate(List<Long> seatIds) {

@@ -38,6 +38,15 @@ public interface SeatStore {
 	/** Seat ids from the list that exist in this event. Used to explain a failed claim. */
 	List<Long> seatsInEvent(long eventId, List<Long> seatIds);
 
+	/** Moves the hold time of the hold's seats out to at least this moment. Returns how many seats. */
+	int extendHold(long holdId, Instant until);
+
+	/** The seats still held under this hold, locked until the transaction ends. */
+	List<Long> lockHeldSeats(long holdId);
+
+	/** Marks the hold's held seats as sold. Returns how many. */
+	int sellHeldSeats(long holdId);
+
 	/** Frees the seats still held under this hold. Returns how many. */
 	int releaseHold(long holdId);
 
