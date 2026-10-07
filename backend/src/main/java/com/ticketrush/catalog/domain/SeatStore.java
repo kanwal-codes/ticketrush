@@ -1,10 +1,14 @@
 package com.ticketrush.catalog.domain;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
  * Port for the seat-level data, which is too big to load as entities (thousands of rows per event).
  * The SQL lives in infrastructure.
+ *
+ * A seat whose hold has run out counts as available everywhere here, so nothing depends on the
+ * background sweeper having run.
  */
 public interface SeatStore {
 
@@ -16,10 +20,31 @@ public interface SeatStore {
 
 	List<SectionSize> sectionSizes(long venueId);
 
-	List<SectionAvailability> availabilityBySection(long eventId);
+	List<SectionAvailability> availabilityBySection(long eventId, Instant now);
 
 	/** Seats in section, row, number order. Pass null to include every section. */
-	List<SeatView> seatMap(long eventId, Long sectionId);
+	List<SeatView> seatMap(long eventId, Long sectionId, Instant now);
+
+	/** Serializes one guest's hold requests for one event until the transaction ends. */
+	void lockUserEvent(long userId, long eventId);
+
+	/**
+	 * Tries to hold all the given seats at once. Never waits for a seat another request is working on: it
+	 * skips it. Returns the ids actually claimed, so fewer than requested means some seats were not free and
+	 * the caller must roll back.
+	 */
+	List<Long> claim(long eventId, long holdId, List<Long> seatIds, Instant now, Instant until);
+
+	/** Seat ids from the list that exist in this event. Used to explain a failed claim. */
+	List<Long> seatsInEvent(long eventId, List<Long> seatIds);
+
+	/** Frees the seats still held under this hold. Returns how many. */
+	int releaseHold(long holdId);
+
+	List<HeldSeat> heldSeats(long holdId);
+
+	/** Housekeeping: frees seats whose hold ran out and marks those holds EXPIRED. */
+	ExpiryResult expireDue(Instant now);
 
 	record SectionSize(long sectionId, String name, int seats) {
 	}
@@ -28,6 +53,12 @@ public interface SeatStore {
 	}
 
 	record SeatView(long seatId, long sectionId, String sectionName, String row, int number, String status) {
+	}
+
+	record HeldSeat(long seatId, long sectionId, String sectionName, String row, int number) {
+	}
+
+	record ExpiryResult(int seatsFreed, int holdsExpired) {
 	}
 
 }
