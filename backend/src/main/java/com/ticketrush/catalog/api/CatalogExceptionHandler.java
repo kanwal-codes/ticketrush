@@ -1,5 +1,6 @@
 package com.ticketrush.catalog.api;
 
+import com.ticketrush.catalog.application.AdmissionRequiredException;
 import com.ticketrush.catalog.application.NotFoundException;
 import com.ticketrush.catalog.application.NotOwnerException;
 import com.ticketrush.catalog.application.RuleViolationException;
@@ -25,6 +26,13 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(NotOwnerException.class)
 	ProblemDetail notOwner(NotOwnerException e) {
 		return problem(HttpStatus.FORBIDDEN, "Not allowed", e.getMessage());
+	}
+
+	@ExceptionHandler(AdmissionRequiredException.class)
+	ProblemDetail admissionRequired(AdmissionRequiredException e) {
+		ProblemDetail problem = problem(HttpStatus.FORBIDDEN, "Waiting room", e.getMessage());
+		problem.setProperty("code", "ADMISSION_REQUIRED");
+		return problem;
 	}
 
 	@ExceptionHandler(SeatsUnavailableException.class)
