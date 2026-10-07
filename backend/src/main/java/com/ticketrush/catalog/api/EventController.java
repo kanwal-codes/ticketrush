@@ -1,5 +1,10 @@
 package com.ticketrush.catalog.api;
 
+import com.ticketrush.catalog.application.EventQueryService;
+import com.ticketrush.catalog.application.EventQueryService.EventDetail;
+import com.ticketrush.catalog.application.EventQueryService.EventSummary;
+import com.ticketrush.catalog.application.EventQueryService.PageView;
+import com.ticketrush.catalog.application.EventQueryService.SeatMap;
 import com.ticketrush.catalog.application.EventService;
 import com.ticketrush.catalog.application.EventService.EventRef;
 import com.ticketrush.catalog.application.EventService.NewEvent;
@@ -14,16 +19,21 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -33,10 +43,32 @@ class EventController {
 
 	private static final String HEX = "^#[0-9A-Fa-f]{6}$";
 
-	private final EventService events;
+	// Short on purpose: guests need fresh availability and sale state while a drop is running.
+	private static final CacheControl PUBLIC_BRIEFLY = CacheControl.maxAge(Duration.ofSeconds(5)).cachePublic();
 
-	EventController(EventService events) {
+	private final EventService events;
+	private final EventQueryService queries;
+
+	EventController(EventService events, EventQueryService queries) {
 		this.events = events;
+		this.queries = queries;
+	}
+
+	@GetMapping
+	ResponseEntity<PageView<EventSummary>> list(@RequestParam(required = false) String city,
+			@RequestParam(required = false) String q, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "12") int size) {
+		return ResponseEntity.ok().cacheControl(PUBLIC_BRIEFLY).body(queries.list(city, q, page, size));
+	}
+
+	@GetMapping("/{id}")
+	ResponseEntity<EventDetail> detail(@PathVariable long id) {
+		return ResponseEntity.ok().cacheControl(PUBLIC_BRIEFLY).body(queries.detail(id));
+	}
+
+	@GetMapping("/{id}/seats")
+	ResponseEntity<SeatMap> seats(@PathVariable long id, @RequestParam(required = false) Long section) {
+		return ResponseEntity.ok().cacheControl(PUBLIC_BRIEFLY).body(queries.seatMap(id, section));
 	}
 
 	@PostMapping
