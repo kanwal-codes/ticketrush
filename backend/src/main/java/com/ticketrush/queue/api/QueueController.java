@@ -3,6 +3,7 @@ package com.ticketrush.queue.api;
 import com.ticketrush.queue.application.QueueService;
 import com.ticketrush.queue.application.QueueService.QueueView;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /** Any signed-in guest (see SecurityConfig). */
 @RestController
@@ -19,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 class QueueController {
 
 	private final QueueService queue;
+	private final QueueStreamer streamer;
 
-	QueueController(QueueService queue) {
+	QueueController(QueueService queue, QueueStreamer streamer) {
 		this.queue = queue;
+		this.streamer = streamer;
 	}
 
 	@PostMapping
@@ -32,6 +36,12 @@ class QueueController {
 	@GetMapping
 	QueueView status(@AuthenticationPrincipal Jwt jwt, @PathVariable long eventId) {
 		return queue.status(userId(jwt), eventId);
+	}
+
+	/** Live updates. Use a fetch-based client, since the browser's EventSource cannot send an Authorization header. */
+	@GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	SseEmitter stream(@AuthenticationPrincipal Jwt jwt, @PathVariable long eventId) {
+		return streamer.open(userId(jwt), eventId);
 	}
 
 	@DeleteMapping
