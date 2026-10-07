@@ -23,6 +23,8 @@ import com.ticketrush.catalog.domain.TicketCodes;
 import com.ticketrush.catalog.domain.TicketOrder;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
 import com.ticketrush.catalog.domain.TicketRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -66,11 +68,13 @@ public class OrderService {
 	private final TransactionTemplate tx;
 	private final Clock clock;
 	private final Duration checkoutWindow;
+	private final MeterRegistry meters;
+	private final Timer chargeTimer;
 
 	public OrderService(TicketOrderRepository orders, IdempotencyRecordRepository idempotency,
 			SeatHoldRepository holds, TicketRepository tickets, OutboxEventRepository outbox,
 			EventPriceRepository prices, SeatStore seats, PaymentGateway gateway, OrderQueryService views,
-			TransactionTemplate tx, Clock clock, @Value("${ticketrush.payments.checkout-window}") Duration checkoutWindow) {
+			TransactionTemplate tx, Clock clock, @Value("${ticketrush.payments.checkout-window}") Duration checkoutWindow, MeterRegistry meters) {
 		this.orders = orders;
 		this.idempotency = idempotency;
 		this.holds = holds;
@@ -83,6 +87,9 @@ public class OrderService {
 		this.tx = tx;
 		this.clock = clock;
 		this.checkoutWindow = checkoutWindow;
+		this.meters = meters;
+		this.chargeTimer = Timer.builder("ticketrush.charge").description("Time spent waiting for the payment provider")
+				.publishPercentileHistogram().register(meters);
 	}
 
 	/** What the guest gets back, and whether this answer repeats an earlier request with the same key. */
@@ -111,11 +118,14 @@ public class OrderService {
 		long orderId = reserved.orderId();
 		TicketOrder order = tx.execute(status -> orders.findById(orderId).orElseThrow());
 		if (order.isPending()) {
-			ChargeResult result = gateway.charge(new ChargeRequest(order.providerKey(), order.getTotalCents(),
-					order.getCurrency(), paymentToken, "TicketRush order " + order.getPublicRef()));
+			ChargeResult result = chargeTimer.record(() -> gateway.charge(new ChargeRequest(order.providerKey(),
+					order.getTotalCents(), order.getCurrency(), paymentToken, "TicketRush order " + order.getPublicRef())));
 			applyResult(orderId, result);
 		}
 		OrderView view = tx.execute(status -> views.view(orders.findById(orderId).orElseThrow()));
+		if (!reserved.replay()) {
+			meters.counter("ticketrush.orders", "outcome", view.status().name().toLowerCase()).increment();
+		}
 		return new Checkout(view, reserved.replay());
 	}
 

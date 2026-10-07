@@ -15,6 +15,7 @@ import com.ticketrush.catalog.domain.SeatStore.ExpiryResult;
 import com.ticketrush.catalog.domain.OrderStatus;
 import com.ticketrush.catalog.domain.SeatStore.HeldSeat;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +48,7 @@ public class HoldService {
 	private final Clock clock;
 	private final Duration ttl;
 	private final int maxSeats;
+	private final MeterRegistry meters;
 
 	/** Orders in these states are using the hold's seats, so the hold must not be replaced or released. */
 	private static final Set<OrderStatus> USING_THE_HOLD = EnumSet.of(OrderStatus.PENDING_PAYMENT, OrderStatus.PAID,
@@ -55,7 +57,7 @@ public class HoldService {
 	public HoldService(EventRepository events, SeatHoldRepository holds, TicketOrderRepository orders,
 			EventPriceRepository prices,
 			SeatStore seats, AdmissionCheck admission, Clock clock, @Value("${ticketrush.holds.ttl}") Duration ttl,
-			@Value("${ticketrush.holds.max-seats}") int maxSeats) {
+			@Value("${ticketrush.holds.max-seats}") int maxSeats, MeterRegistry meters) {
 		this.events = events;
 		this.holds = holds;
 		this.orders = orders;
@@ -65,6 +67,7 @@ public class HoldService {
 		this.clock = clock;
 		this.ttl = ttl;
 		this.maxSeats = maxSeats;
+		this.meters = meters;
 	}
 
 	public record HoldSeatView(long seatId, String section, String row, int number, long faceCents) {
@@ -81,6 +84,22 @@ public class HoldService {
 	 */
 	@Transactional
 	public HoldView hold(long userId, long eventId, List<Long> seatIds, String admissionToken) {
+		try {
+			HoldView view = tryHold(userId, eventId, seatIds, admissionToken);
+			meters.counter("ticketrush.holds", "result", "held").increment();
+			return view;
+		}
+		catch (SeatsUnavailableException e) {
+			meters.counter("ticketrush.holds", "result", "seats_taken").increment();
+			throw e;
+		}
+		catch (RuntimeException e) {
+			meters.counter("ticketrush.holds", "result", "rejected").increment();
+			throw e;
+		}
+	}
+
+	private HoldView tryHold(long userId, long eventId, List<Long> seatIds, String admissionToken) {
 		validate(seatIds);
 		Instant now = clock.instant();
 		Event event = events.findById(eventId).filter(e -> e.getStatus() == EventStatus.PUBLISHED)

@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> {
 
+	long countByPublishedAtIsNull();
+
 	/** Rows that failed this many times stay in the table for a person to look at and are no longer retried. */
 	int MAX_ATTEMPTS = 20;
 
