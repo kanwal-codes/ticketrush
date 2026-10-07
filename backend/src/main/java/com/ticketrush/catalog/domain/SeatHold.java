@@ -58,6 +58,17 @@ public class SeatHold {
 		return status == HoldStatus.ACTIVE && expiresAt.isAfter(now);
 	}
 
+	/** Pushes the expiry out, never in. Used when checkout starts so the seats stay safe while paying. */
+	public void extendTo(Instant until) {
+		if (until.isAfter(expiresAt)) {
+			this.expiresAt = until;
+		}
+	}
+
+	public void markConverted() {
+		this.status = HoldStatus.CONVERTED;
+	}
+
 	public void markReleased() {
 		this.status = HoldStatus.RELEASED;
 	}

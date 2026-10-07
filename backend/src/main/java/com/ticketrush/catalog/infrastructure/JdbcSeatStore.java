@@ -119,6 +119,31 @@ class JdbcSeatStore implements SeatStore {
 	}
 
 	@Override
+	public int extendHold(long holdId, Instant until) {
+		return jdbc.sql("update event_seat set held_until = greatest(held_until, :until) "
+				+ "where hold_id = :hold and status = 'HELD'")
+				.param("until", ts(until))
+				.param("hold", holdId)
+				.update();
+	}
+
+	@Override
+	public List<Long> lockHeldSeats(long holdId) {
+		return jdbc.sql("select seat_id from event_seat where hold_id = :hold and status = 'HELD' "
+				+ "order by seat_id for update")
+				.param("hold", holdId)
+				.query(Long.class)
+				.list();
+	}
+
+	@Override
+	public int sellHeldSeats(long holdId) {
+		return jdbc.sql("update event_seat set status = 'SOLD' where hold_id = :hold and status = 'HELD'")
+				.param("hold", holdId)
+				.update();
+	}
+
+	@Override
 	public int releaseHold(long holdId) {
 		return jdbc.sql("update event_seat set status = 'AVAILABLE', hold_id = null, held_until = null "
 				+ "where hold_id = :hold and status = 'HELD'")
