@@ -39,6 +39,8 @@ class SecurityConfig {
 						// Holding seats needs a sign-in but not the organizer role. These come before the broader rules below.
 						.requestMatchers(HttpMethod.POST, "/api/events/*/holds").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/events/*/holds/me").authenticated()
+						// The waiting room is for signed-in guests only.
+						.requestMatchers("/api/events/*/queue", "/api/events/*/queue/**").authenticated()
 						// Browsing events and seat maps is public. Changing the catalog is for organizers only.
 						.requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
 						.requestMatchers("/api/venues/**").hasRole("ORGANIZER")
