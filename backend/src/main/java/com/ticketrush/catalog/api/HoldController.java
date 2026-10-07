@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,8 +34,9 @@ class HoldController {
 
 	@PostMapping("/events/{eventId}/holds")
 	@ResponseStatus(HttpStatus.CREATED)
-	HoldView hold(@AuthenticationPrincipal Jwt jwt, @PathVariable long eventId, @Valid @RequestBody HoldRequest r) {
-		return holds.hold(userId(jwt), eventId, r.seatIds());
+	HoldView hold(@AuthenticationPrincipal Jwt jwt, @PathVariable long eventId, @Valid @RequestBody HoldRequest r,
+			@RequestHeader(value = "X-Admission-Token", required = false) String admissionToken) {
+		return holds.hold(userId(jwt), eventId, r.seatIds(), admissionToken);
 	}
 
 	@GetMapping("/events/{eventId}/holds/me")

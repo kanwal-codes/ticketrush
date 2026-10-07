@@ -48,7 +48,8 @@ public class EventService {
 	}
 
 	public record NewEvent(String title, String artist, String description, long venueId, Instant startsAt,
-			Instant doorsAt, Instant dropOpensAt, Instant onSaleAt, Poster poster, List<PriceSpec> prices) {
+			Instant doorsAt, Instant dropOpensAt, Instant onSaleAt, Poster poster, List<PriceSpec> prices,
+			boolean waitingRoom) {
 	}
 
 	public record EventRef(long id, EventStatus status) {
@@ -88,7 +89,7 @@ public class EventService {
 		Event event = events.save(new Event(organizerId, venue, cmd.title().strip(), cmd.artist().strip(),
 				cmd.description() == null ? "" : cmd.description().strip(), cmd.startsAt(), cmd.doorsAt(),
 				cmd.dropOpensAt(), cmd.onSaleAt(), poster.style(), poster.inkOne(), poster.inkTwo(),
-				poster.paperColor()));
+				poster.paperColor(), cmd.waitingRoom()));
 		prices.saveAll(cmd.prices().stream()
 				.map(p -> new EventPrice(event.getId(), p.sectionId(), p.priceCents())).toList());
 		return new EventRef(event.getId(), event.getStatus());
