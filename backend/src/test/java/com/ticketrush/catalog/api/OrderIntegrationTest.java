@@ -1,21 +1,13 @@
 package com.ticketrush.catalog.api;
 
 import com.jayway.jsonpath.JsonPath;
-import com.ticketrush.AbstractIntegrationTest;
-import com.ticketrush.catalog.infrastructure.MockPaymentGateway;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,76 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class OrderIntegrationTest extends AbstractIntegrationTest {
-
-	@Autowired
-	private MockPaymentGateway gateway;
-
-	private CatalogFixtures fx;
-	private int eventId;
-	private List<Long> seats;
-
-	@AfterEach
-	void clearGatewayHooks() {
-		gateway.clearHooks();
-	}
-
-	/** A fresh on-sale event: 2 rows of 5 seats at $96 each, so two seats cost $192 plus $14.40 in fees. */
-	private void setUpEvent() throws Exception {
-		fx = new CatalogFixtures(mvc, organizerToken());
-		eventId = fx.createOnSaleEvent("City-" + UUID.randomUUID(), 2, 5);
-		seats = CatalogFixtures.seatIds(jdbc, eventId);
-	}
-
-	private ResultActions hold(String token, long... seatIds) throws Exception {
-		StringBuilder ids = new StringBuilder();
-		for (long id : seatIds) {
-			ids.append(ids.isEmpty() ? "" : ",").append(id);
-		}
-		return mvc.perform(post("/api/events/" + eventId + "/holds").contentType(MediaType.APPLICATION_JSON)
-				.content("{\"seatIds\":[" + ids + "]}").header("Authorization", bearer(token)));
-	}
-
-	private long holdTwo(Guest guest, int from) throws Exception {
-		String body = hold(guest.token(), seats.get(from), seats.get(from + 1)).andExpect(status().isCreated())
-				.andReturn().getResponse().getContentAsString();
-		return ((Number) JsonPath.read(body, "$.id")).longValue();
-	}
-
-	private ResultActions pay(String token, String key, long holdId, String paymentToken) throws Exception {
-		var request = post("/api/orders").contentType(MediaType.APPLICATION_JSON)
-				.content("{\"holdId\":%d,\"paymentToken\":\"%s\"}".formatted(holdId, paymentToken))
-				.header("Authorization", bearer(token));
-		if (key != null) {
-			request.header("Idempotency-Key", key);
-		}
-		return mvc.perform(request);
-	}
-
-	private static String newKey() {
-		return "key-" + UUID.randomUUID();
-	}
-
-	private long orderId(ResultActions result) throws Exception {
-		return ((Number) JsonPath.read(result.andReturn().getResponse().getContentAsString(), "$.id")).longValue();
-	}
-
-	private int chargesFor(long orderId) {
-		return gateway.successfulCharges().containsKey("order-" + orderId) ? 1 : 0;
-	}
-
-	private String seatStatus(long seatId) {
-		return jdbc.sql("select status from event_seat where event_id = :e and seat_id = :s")
-				.param("e", eventId).param("s", seatId).query(String.class).single();
-	}
-
-	private int count(String sql, Object... params) {
-		var spec = jdbc.sql(sql);
-		for (int i = 0; i < params.length; i++) {
-			spec = spec.param("p" + i, params[i]);
-		}
-		return spec.query(Integer.class).single();
-	}
+class OrderIntegrationTest extends OrderTestSupport {
 
 	@Test
 	void payingForAHoldSellsTheSeatsAndIssuesTickets() throws Exception {
@@ -266,6 +189,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
 				.query(Long.class).single();
 		assertThat(chargesFor(orderId)).isEqualTo(1);
 		assertThat(count("select count(*) from ticket where order_id = :p0", orderId)).isEqualTo(2);
+		assertMoneyAndSeatsAddUp();
 	}
 
 	@Test
@@ -287,6 +211,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
 						.param("h", holdId).param("k", k).query(Integer.class).single() == 1)
 				.count();
 		assertThat(charged).isEqualTo(1);
+		assertMoneyAndSeatsAddUp();
 	}
 
 	@Test
@@ -303,6 +228,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
 		assertThat(statuses).containsOnly(201);
 		assertThat(count("select count(*) from event_seat where event_id = :p0 and status = 'SOLD'", eventId)).isEqualTo(10);
 		assertThat(count("select count(*) from ticket where event_id = :p0", eventId)).isEqualTo(10);
+		assertMoneyAndSeatsAddUp();
 	}
 
 	@Test
@@ -334,34 +260,7 @@ class OrderIntegrationTest extends AbstractIntegrationTest {
 		assertThat(count("select count(*) from event_seat where hold_id = :p0 and status = 'HELD'",
 				jdbc.sql("select id from seat_hold where user_id = :u and event_id = :e").param("u", guests.get(1).id())
 						.param("e", eventId).query(Long.class).single())).isEqualTo(2);
-	}
-
-	/** Runs n calls at the same instant on virtual threads and returns each HTTP status. */
-	private List<Integer> race(int n, Call call) throws Exception {
-		CountDownLatch ready = new CountDownLatch(n);
-		CountDownLatch go = new CountDownLatch(1);
-		try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
-			List<Future<Integer>> futures = new ArrayList<>();
-			for (int i = 0; i < n; i++) {
-				int index = i;
-				futures.add(pool.submit(() -> {
-					ready.countDown();
-					go.await();
-					return call.run(index).andReturn().getResponse().getStatus();
-				}));
-			}
-			ready.await();
-			go.countDown();
-			List<Integer> statuses = new ArrayList<>();
-			for (Future<Integer> f : futures) {
-				statuses.add(f.get());
-			}
-			return statuses;
-		}
-	}
-
-	private interface Call {
-		ResultActions run(int index) throws Exception;
+		assertMoneyAndSeatsAddUp();
 	}
 
 }
