@@ -2,7 +2,7 @@
 
 Flash-sale ticketing that stays correct under a traffic spike: a waiting room, live seat maps, timed seat holds, and zero oversold seats, backed by a published load test.
 
-> Work in progress. Done: sign-in, the event and seat catalog, and seat holds. Next: the waiting room, then checkout.
+> Work in progress. Done: sign-in, the event and seat catalog, seat holds, and the waiting room. Next: checkout and tickets.
 
 ## Stack
 
@@ -52,6 +52,9 @@ Integration tests start real Postgres and Redis containers with Testcontainers, 
 | Seat holds | `POST /api/events/{id}/holds` holds 1 to 6 seats for 10 minutes, all or nothing, with an itemised price (face, fees, total). `GET .../holds/me` shows your hold and `DELETE /api/holds/{id}` releases it. A new hold replaces your old one, and a failed one leaves the old one alone |
 | No double holds | One conditional `SKIP LOCKED` claim in Postgres, see [the decision record](docs/adr/0001-seat-claims.md). Tests release 300 guests at one seat (exactly one wins) and 500 guests at overlapping pairs from 40 seats, then check the database: no seat in two holds, every hold holds what it says |
 | Expiry | An expired hold frees its seats at once, with or without the background sweeper. Tested by moving the clock |
+| Waiting room | Events can have a waiting room. Guests join with `POST /api/events/{id}/queue`, get an exact place (`GET .../queue`, or live over SSE at `.../queue/stream`), and are let in first come, first served at a steady rate with a cap on how many are inside. Refreshing or reconnecting keeps your place. See [the decision record](docs/adr/0002-waiting-room.md) |
+| Admission | Admitted guests get a signed token. On a waiting-room event the hold endpoint refuses anyone without a valid one for that guest and that event, without touching Redis. Tests cover another guest's token, another event's, expired, tampered and a sign-in token |
+| Queue under load | 200 guests joining at once get places 1 to 200 with no gaps or repeats. 8 admission rounds at the same instant admit exactly the cap and exactly the first guests in line. Several app instances share one round per second |
 | Roles | Browsing is public. Creating venues and events is organizer only, and an organizer can only change their own events |
 | Errors | RFC 7807 problem responses, with each invalid field listed |
 | Architecture | ArchUnit tests enforce `api -> application -> domain` layering and no cycles between modules |

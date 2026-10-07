@@ -67,6 +67,9 @@ public class Event {
 	@Column(name = "paper_color", nullable = false)
 	private String paperColor;
 
+	@Column(name = "queue_enabled", nullable = false)
+	private boolean queueEnabled;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt = Instant.now();
 
@@ -75,7 +78,7 @@ public class Event {
 
 	public Event(Long organizerId, Venue venue, String title, String artist, String description, Instant startsAt,
 			Instant doorsAt, Instant dropOpensAt, Instant onSaleAt, PosterStyle posterStyle, String inkOne,
-			String inkTwo, String paperColor) {
+			String inkTwo, String paperColor, boolean queueEnabled) {
 		this.organizerId = organizerId;
 		this.venue = venue;
 		this.title = title;
@@ -89,6 +92,7 @@ public class Event {
 		this.inkOne = inkOne;
 		this.inkTwo = inkTwo;
 		this.paperColor = paperColor;
+		this.queueEnabled = queueEnabled;
 	}
 
 	public boolean isOwnedBy(long organizerId) {
@@ -161,6 +165,11 @@ public class Event {
 
 	public String getPaperColor() {
 		return paperColor;
+	}
+
+	/** True when guests must pass through the waiting room before they can hold seats. */
+	public boolean isQueueEnabled() {
+		return queueEnabled;
 	}
 
 	public SaleState saleState(Instant now) {

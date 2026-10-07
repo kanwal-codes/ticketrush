@@ -73,7 +73,7 @@ public class EventQueryService {
 	public record EventDetail(long id, String title, String artist, String description, Instant startsAt,
 			Instant doorsAt, Instant dropOpensAt, Instant onSaleAt, SaleState saleState, Instant serverTime,
 			String venueName, String city, PosterView poster, List<TierView> tiers, int totalSeats,
-			int availableSeats) {
+			int availableSeats, boolean waitingRoom) {
 	}
 
 	public record SeatCell(long id, int number, String status) {
@@ -126,7 +126,7 @@ public class EventQueryService {
 				event.getStartsAt(), event.getDoorsAt(), event.getDropOpensAt(), event.getOnSaleAt(),
 				event.saleState(now), now, event.getVenue().getName(), event.getVenue().getCity(), poster(event),
 				tiers, tiers.stream().mapToInt(TierView::totalSeats).sum(),
-				tiers.stream().mapToInt(TierView::availableSeats).sum());
+				tiers.stream().mapToInt(TierView::availableSeats).sum(), event.isQueueEnabled());
 	}
 
 	/** Cached for a couple of seconds: the map is the hot read while a drop is running. */
