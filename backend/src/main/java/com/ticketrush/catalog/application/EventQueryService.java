@@ -108,7 +108,7 @@ public class EventQueryService {
 	public EventDetail detail(long id) {
 		Instant now = clock.instant();
 		Event event = published(id);
-		Map<Long, SectionAvailability> availability = seats.availabilityBySection(id).stream()
+		Map<Long, SectionAvailability> availability = seats.availabilityBySection(id, now).stream()
 				.collect(Collectors.toMap(SectionAvailability::sectionId, Function.identity()));
 		Map<Long, VenueSection> byId = sections.findByVenueIdOrderBySortOrder(event.getVenue().getId()).stream()
 				.collect(Collectors.toMap(VenueSection::getId, Function.identity()));
@@ -135,7 +135,7 @@ public class EventQueryService {
 		published(eventId);
 		Map<Long, SectionMap> bySection = new LinkedHashMap<>();
 		Map<String, List<SeatCell>> rowSeats = new LinkedHashMap<>();
-		for (SeatView seat : seats.seatMap(eventId, sectionId)) {
+		for (SeatView seat : seats.seatMap(eventId, sectionId, clock.instant())) {
 			bySection.computeIfAbsent(seat.sectionId(), k -> new SectionMap(k, seat.sectionName(), new ArrayList<>()));
 			String rowKey = seat.sectionId() + "/" + seat.row();
 			List<SeatCell> row = rowSeats.get(rowKey);

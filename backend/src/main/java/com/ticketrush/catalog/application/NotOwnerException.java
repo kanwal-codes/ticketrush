@@ -1,10 +1,14 @@
 package com.ticketrush.catalog.application;
 
-/** An organizer tried to change an event that belongs to someone else. */
+/** Someone tried to change something that belongs to another user. */
 public class NotOwnerException extends RuntimeException {
 
 	public NotOwnerException() {
-		super("This event belongs to another organizer");
+		this("This event belongs to another organizer");
+	}
+
+	public NotOwnerException(String message) {
+		super(message);
 	}
 
 }

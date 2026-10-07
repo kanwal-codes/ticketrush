@@ -67,6 +67,30 @@ final class CatalogFixtures {
 		return id;
 	}
 
+	/** A venue with one section of rows x seatsPerRow, and a published event that is on sale now. */
+	int createOnSaleEvent(String city, int rows, int seatsPerRow) throws Exception {
+		String body = send("/api/venues", """
+				{"name":"Big Hall","city":"%s","sections":[{"name":"Main","rows":%d,"seatsPerRow":%d}]}"""
+				.formatted(city, rows, seatsPerRow)).andExpect(status().isCreated())
+				.andReturn().getResponse().getContentAsString();
+		Venue venue = new Venue(JsonPath.read(body, "$.id"), JsonPath.read(body, "$.sections[0].id"), -1);
+		String prices = """
+				[{"sectionId":%d,"priceCents":9600}]""".formatted(venue.floorId());
+		Instant now = Instant.now();
+		String eventBody = send("/api/events", eventJson(venue, "Big Show", "Artist", prices,
+				now.minus(1, ChronoUnit.HOURS), now.plus(30, ChronoUnit.DAYS))).andExpect(status().isCreated())
+				.andReturn().getResponse().getContentAsString();
+		int id = JsonPath.read(eventBody, "$.id");
+		send("/api/events/" + id + "/publish", null).andExpect(status().isOk());
+		return id;
+	}
+
+	/** Seat ids of an event, lowest first. For the standard venue the first 10 are Floor and the last 5 Balcony. */
+	static java.util.List<Long> seatIds(org.springframework.jdbc.core.simple.JdbcClient jdbc, int eventId) {
+		return jdbc.sql("select seat_id from event_seat where event_id = :e order by seat_id")
+				.param("e", eventId).query(Long.class).list();
+	}
+
 	ResultActions send(String url, String json) throws Exception {
 		return send(token, url, json);
 	}
