@@ -1,15 +1,11 @@
 package com.ticketrush;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
-class TicketrushBackendApplicationTests {
+class TicketrushBackendApplicationTests extends AbstractIntegrationTest {
 
 	@Test
-	void contextLoads() {
+	void contextLoadsAndMigrationsRun() {
 	}
 
 }
