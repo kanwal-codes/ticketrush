@@ -35,7 +35,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HexFormat;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -260,10 +259,6 @@ public class OrderService {
 		catch (NoSuchAlgorithmException e) {
 			throw new IllegalStateException(e);
 		}
-	}
-
-	List<TicketOrder> pendingOlderThan(Instant before) {
-		return orders.findByStatusAndCreatedAtBefore(OrderStatus.PENDING_PAYMENT, before);
 	}
 
 }
