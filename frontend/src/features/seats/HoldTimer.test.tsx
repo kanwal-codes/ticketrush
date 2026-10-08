@@ -33,7 +33,7 @@ describe('HoldTimer', () => {
     setActiveHold({ holdId: 55, eventId: 7, expiresAt: '2026-10-08T10:08:41Z' })
     show()
     expect(screen.getByRole('timer')).toHaveTextContent('08:41')
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/checkout/55')
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/events/7/checkout')
     act(() => void vi.advanceTimersByTime(2000))
     expect(screen.getByRole('timer')).toHaveTextContent('08:39')
   })

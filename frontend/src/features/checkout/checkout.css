@@ -1,0 +1,142 @@
+.checkout__lead {
+  margin-top: var(--space-3);
+  color: var(--muted);
+}
+
+.checkout__actions {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+}
+
+.checkout__reference {
+  margin-top: var(--space-5);
+}
+
+.checkout__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--space-7);
+  margin-top: var(--space-5);
+  align-items: start;
+}
+
+.checkout__form {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.checkout__email {
+  color: var(--muted);
+}
+
+.checkout__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.checkout__test {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.testcards {
+  font-size: 0.9rem;
+}
+
+.testcards summary {
+  cursor: pointer;
+  width: max-content;
+}
+
+.testcards ul {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.testcards li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.testcards__use {
+  border: 0;
+  background: none;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.checkout__pay {
+  width: 100%;
+  min-height: 54px;
+  font-size: 1.05rem;
+}
+
+.checkout__assure {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.checkout__summary {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--ev-paper);
+  color: var(--on-ev-paper);
+  border: 1px solid var(--ink);
+}
+
+.checkout__summary h2 {
+  font-size: 1.3rem;
+}
+
+.checkout__seats {
+  font-weight: 600;
+}
+
+.checkout__totals {
+  margin: 0;
+}
+
+.checkout__totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid currentColor;
+}
+
+.checkout__totals dd {
+  margin: 0;
+}
+
+.checkout__total {
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+@media (max-width: 860px) {
+  .checkout__layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  /* The summary comes first on a phone, so the guest sees what they are paying for before the card form. */
+  .checkout__summary {
+    position: static;
+    order: -1;
+  }
+}

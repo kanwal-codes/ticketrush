@@ -1,4 +1,4 @@
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
 import { syncServerTime } from '../lib/time'
 import { api, unwrap } from './client'
 
@@ -25,14 +25,21 @@ export function useEvents(q: string) {
  * One event. While the sale has not started it is refetched often so the page flips to "on sale" by itself, and
  * every answer teaches the page how far this machine's clock is from the server's.
  */
+async function fetchEvent(id: number) {
+  const event = await unwrap(api.GET('/api/events/{id}', { params: { path: { id } } }))
+  syncServerTime(event.serverTime)
+  return event
+}
+
 export function useEvent(id: number) {
   return useQuery({
     queryKey: keys.event(id),
-    queryFn: async () => {
-      const event = await unwrap(api.GET('/api/events/{id}', { params: { path: { id } } }))
-      syncServerTime(event.serverTime)
-      return event
-    },
+    queryFn: () => fetchEvent(id),
     refetchInterval: (query) => (query.state.data?.saleState === 'ON_SALE' ? 15_000 : 5_000),
   })
+}
+
+/** Several events at once, for a page that shows tickets from different events. */
+export function useEventsById(ids: number[]) {
+  return useQueries({ queries: ids.map((id) => ({ queryKey: keys.event(id), queryFn: () => fetchEvent(id), staleTime: 60_000 })) })
 }

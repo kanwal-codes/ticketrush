@@ -21,7 +21,7 @@ export function HoldTimer() {
 
   if (!hold || remaining <= 0) return null
   return (
-    <Link to={`/checkout/${hold.holdId}`} className="hold-timer">
+    <Link to={`/events/${hold.eventId}/checkout`} className="hold-timer">
       <span className="label">Held for</span> <time className="num" role="timer" aria-label={`Seats held for ${formatMinutes(remaining)}`}>{formatMinutes(remaining)}</time>
     </Link>
   )

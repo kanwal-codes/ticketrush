@@ -82,13 +82,13 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
   }
 
   async function onContinue() {
-    if (isHeld && hold) return void navigate(`/checkout/${hold.id}`)
+    if (isHeld && hold) return void navigate(`/events/${event.id}/checkout`)
     setBusy(true)
     setMessage('')
     try {
       const next = await holdSeats(event.id, effective, getAdmission(event.id))
       queryClient.setQueryData(seatKeys.hold(event.id), next)
-      void navigate(`/checkout/${next.id}`)
+      void navigate(`/events/${event.id}/checkout`)
     } catch (e) {
       setBusy(false)
       if (!(e instanceof ApiError)) return setMessage('Something went wrong. Try again.')
