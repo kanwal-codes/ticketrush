@@ -76,6 +76,39 @@ public class EventService {
 	/** Creates a draft. Nothing is visible to guests and no seats exist until it is published. */
 	@Transactional
 	public EventRef create(long organizerId, NewEvent cmd) {
+		Venue venue = checkRules(cmd);
+		Poster poster = cmd.poster();
+		Event event = events.save(new Event(organizerId, venue, cmd.title().strip(), cmd.artist().strip(),
+				cmd.description() == null ? "" : cmd.description().strip(), cmd.startsAt(), cmd.doorsAt(),
+				cmd.dropOpensAt(), cmd.onSaleAt(), poster.style(), poster.inkOne(), poster.inkTwo(),
+				poster.paperColor(), cmd.waitingRoom()));
+		savePrices(event.getId(), cmd);
+		return new EventRef(event.getId(), event.getStatus());
+	}
+
+	/**
+	 * Replaces a draft with a new version of itself, under the same rules as creating one. Only a draft can be
+	 * changed: once it is published guests have seen it and may hold seats, so it is cancelled and remade instead.
+	 */
+	@Transactional
+	public EventRef update(long organizerId, long eventId, NewEvent cmd) {
+		Event event = lockOwned(organizerId, eventId);
+		if (event.getStatus() != EventStatus.DRAFT) {
+			throw new NotEditableException("Only a draft can be edited. Cancel this event and create a new one instead.");
+		}
+		Venue venue = checkRules(cmd);
+		Poster poster = cmd.poster();
+		event.revise(venue, cmd.title().strip(), cmd.artist().strip(),
+				cmd.description() == null ? "" : cmd.description().strip(), cmd.startsAt(), cmd.doorsAt(),
+				cmd.dropOpensAt(), cmd.onSaleAt(), poster.style(), poster.inkOne(), poster.inkTwo(),
+				poster.paperColor(), cmd.waitingRoom());
+		prices.deleteByEventId(eventId);
+		savePrices(eventId, cmd);
+		return ref(event);
+	}
+
+	/** The rules for an event's times, venue and prices, shared by create and update so they cannot drift apart. */
+	private Venue checkRules(NewEvent cmd) {
 		if (cmd.dropOpensAt().isAfter(cmd.onSaleAt())) {
 			throw new RuleViolationException("The waiting room cannot open after tickets go on sale");
 		}
@@ -102,15 +135,11 @@ public class EventService {
 				throw new RuleViolationException("Section " + price.sectionId() + " is priced twice");
 			}
 		}
+		return venue;
+	}
 
-		Poster poster = cmd.poster();
-		Event event = events.save(new Event(organizerId, venue, cmd.title().strip(), cmd.artist().strip(),
-				cmd.description() == null ? "" : cmd.description().strip(), cmd.startsAt(), cmd.doorsAt(),
-				cmd.dropOpensAt(), cmd.onSaleAt(), poster.style(), poster.inkOne(), poster.inkTwo(),
-				poster.paperColor(), cmd.waitingRoom()));
-		prices.saveAll(cmd.prices().stream()
-				.map(p -> new EventPrice(event.getId(), p.sectionId(), p.priceCents())).toList());
-		return new EventRef(event.getId(), event.getStatus());
+	private void savePrices(long eventId, NewEvent cmd) {
+		prices.saveAll(cmd.prices().stream().map(p -> new EventPrice(eventId, p.sectionId(), p.priceCents())).toList());
 	}
 
 	/**

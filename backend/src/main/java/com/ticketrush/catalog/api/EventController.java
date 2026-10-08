@@ -27,6 +27,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -74,12 +75,21 @@ class EventController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	EventRef create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateEventRequest r) {
-		NewEvent cmd = new NewEvent(r.title(), r.artist(), r.description(), r.venueId(), r.startsAt(), r.doorsAt(),
+		return events.create(organizerId(jwt), command(r));
+	}
+
+	/** Replaces a draft. Only drafts can be edited. */
+	@PutMapping("/{id}")
+	EventRef update(@AuthenticationPrincipal Jwt jwt, @PathVariable long id, @Valid @RequestBody CreateEventRequest r) {
+		return events.update(organizerId(jwt), id, command(r));
+	}
+
+	private static NewEvent command(CreateEventRequest r) {
+		return new NewEvent(r.title(), r.artist(), r.description(), r.venueId(), r.startsAt(), r.doorsAt(),
 				r.dropOpensAt(), r.onSaleAt(),
 				new Poster(r.poster().style(), r.poster().inkOne(), r.poster().inkTwo(), r.poster().paperColor()),
 				r.prices().stream().map(p -> new PriceSpec(p.sectionId(), p.priceCents())).toList(),
 				Boolean.TRUE.equals(r.waitingRoom()));
-		return events.create(organizerId(jwt), cmd);
 	}
 
 	@PostMapping("/{id}/publish")
