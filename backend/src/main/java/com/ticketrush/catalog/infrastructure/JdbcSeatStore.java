@@ -119,6 +119,22 @@ class JdbcSeatStore implements SeatStore {
 	}
 
 	@Override
+	public List<Long> unavailable(long eventId, List<Long> seatIds, Instant now, long userId) {
+		return jdbc.sql("select es.seat_id from event_seat es where es.event_id = :event and es.seat_id in (:seats) "
+				+ "and not " + CLAIMABLE + " "
+				// The guest's own live hold is about to be replaced, so its seats are theirs to take again.
+				+ "and not (es.status = 'HELD' and es.hold_id in "
+				+ "(select h.id from seat_hold h where h.user_id = :user and h.status = 'ACTIVE')) "
+				+ "order by es.seat_id")
+				.param("user", userId)
+				.param("event", eventId)
+				.param("seats", seatIds)
+				.param("now", ts(now))
+				.query(Long.class)
+				.list();
+	}
+
+	@Override
 	public int extendHold(long holdId, Instant until) {
 		return jdbc.sql("update event_seat set held_until = greatest(held_until, :until) "
 				+ "where hold_id = :hold and status = 'HELD'")

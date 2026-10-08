@@ -1,14 +1,16 @@
 # TicketRush
 
+[![CI](https://github.com/kanwal-codes/ticketrush/actions/workflows/ci.yml/badge.svg)](https://github.com/kanwal-codes/ticketrush/actions/workflows/ci.yml)
+
 Flash-sale ticketing that stays correct under a traffic spike: a waiting room, live seat maps, timed seat holds, and zero oversold seats, backed by a published load test.
 
-> Work in progress. Done: sign-in, the event and seat catalog, seat holds, and the waiting room. Next: checkout and tickets.
+> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, and a load test with published results. Next: the web frontend.
 
 ## Stack
 
 - **Backend:** Java 21 (virtual threads), Spring Boot 4, Spring Security with JWT, PostgreSQL 16, Redis 7, Flyway
 - **Frontend:** React, TypeScript, Vite (not started)
-- **Quality:** JUnit 5, Testcontainers, ArchUnit, k6 (planned), GitHub Actions (planned)
+- **Quality:** JUnit 5, Testcontainers, ArchUnit, JaCoCo (95% of lines, gated), k6, Prometheus and Grafana, GitHub Actions
 
 ## Run locally
 
@@ -27,7 +29,13 @@ The `dev` profile creates demo data on first start: an organizer (`organizer@tic
 - API docs: http://localhost:8080/swagger-ui/index.html
 - Try it: `curl "localhost:8080/api/events?city=montreal"`
 
-Postgres uses port 5433 so it does not clash with one already running on 5432.
+Postgres uses port 5433 so it does not clash with one already running on 5432. Health and Prometheus metrics are on a separate management port: `localhost:8081/actuator/health`.
+
+To run the whole stack in containers instead (the app capped at 2 CPUs and 1 GB, with Prometheus and a Grafana dashboard):
+
+```bash
+docker compose --profile app --profile monitoring up -d --build     # Grafana: localhost:3000, dashboard "TicketRush"
+```
 
 ## Tests
 
@@ -35,7 +43,23 @@ Postgres uses port 5433 so it does not clash with one already running on 5432.
 cd backend && ./mvnw verify
 ```
 
-Integration tests start real Postgres and Redis containers with Testcontainers, so Docker must be running.
+Integration tests start real Postgres and Redis containers with Testcontainers, so Docker must be running. The build also writes a JaCoCo coverage report and fails if line coverage drops below 93% or branch coverage below 82%.
+
+## Proof
+
+A 1,500-guest drop for 1,000 seats, through the waiting room, seat holds and payment, then the database is checked for broken invariants:
+
+```bash
+loadtest/run.sh drop     # k6 in Docker; ends with "0 invariant violations" or fails
+```
+
+- Exactly one of 1,000 guests wins a seat they all grab at the same instant, every time.
+- No seat sold twice, no tickets without a paid order, and the payment provider's charges match the orders exactly, including abandoned holds, declined cards, provider errors and double-clicked payments.
+- Guests are let in in the order they joined. The default drop runs in about 60 seconds with hold p95 of 3 ms on one laptop-sized container (2 CPUs, 1 GB), and 2,000 open place-in-line streams each get an update about every 1.2 seconds (configured: every second).
+
+![Guests are let in in the order they joined](docs/img/drop.svg)
+
+The conditions, the tables with ranges, what went wrong along the way and what is not covered are in [docs/performance.md](docs/performance.md); the method is in [the decision record](docs/adr/0004-load-testing.md). CI runs the smoke scenario and the same database check on every push.
 
 ## What exists so far
 
@@ -64,3 +88,6 @@ Integration tests start real Postgres and Redis containers with Testcontainers, 
 | Errors | RFC 7807 problem responses, with each invalid field listed |
 | Architecture | ArchUnit tests enforce `api -> application -> domain` layering and no cycles between modules |
 | Schema | Flyway migrations only. Hibernate runs in `validate` mode |
+| Observability | Prometheus metrics on a separate port, and a provisioned Grafana dashboard: request rate and latency by endpoint, database pool pressure, JVM, holds by result, queue, orders by outcome, outbox backlog |
+| Load tests | k6 scenarios for the whole drop, one hot seat, browsing and open live streams, each followed by a database check that must find 0 broken invariants. Results and conditions in [docs/performance.md](docs/performance.md) |
+| CI | GitHub Actions builds, runs every test, reports coverage, and runs the smoke load test against a real app and database |

@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  # The app container from docker compose (profile "app").
+  - job_name: ticketrush-container
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["app:8081"]
+  # To watch the app run with ./mvnw spring-boot:run instead, change the target to host.docker.internal:8081
+  # (and stop the app container, or every number is counted twice).

@@ -35,7 +35,8 @@ class SecurityConfig {
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(a -> a
 						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-						.requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+						// Actuator lives on the management port (see application.properties), which is not published.
+						.requestMatchers("/actuator/health/**", "/actuator/prometheus", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						// Holding seats needs a sign-in but not the organizer role. These come before the broader rules below.
 						.requestMatchers(HttpMethod.POST, "/api/events/*/holds").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/events/*/holds/me").authenticated()
@@ -46,6 +47,8 @@ class SecurityConfig {
 						// Browsing events and seat maps is public. Changing the catalog is for organizers only.
 						.requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
 						.requestMatchers("/api/venues/**").hasRole("ORGANIZER")
+						// Only exists with the "loadtest" profile; organizers only even then.
+						.requestMatchers("/dev/**").hasRole("ORGANIZER")
 						.requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(rolesFromClaim())));

@@ -1,0 +1,98 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 529B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 813B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/eclipse-temurin:21-jdk
+#3 DONE 0.4s
+
+#4 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre
+#4 DONE 0.5s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 60B done
+#5 DONE 0.0s
+
+#6 [stage-1 1/5] FROM docker.io/library/eclipse-temurin:21-jre@sha256:cff19e6215689161eb6162c11b86b0c60ddf802164f2eaf48d570f8fb79a36c5
+#6 resolve docker.io/library/eclipse-temurin:21-jre@sha256:cff19e6215689161eb6162c11b86b0c60ddf802164f2eaf48d570f8fb79a36c5 done
+#6 DONE 0.0s
+
+#7 [build 1/7] FROM docker.io/library/eclipse-temurin:21-jdk@sha256:3e3c176ffed168beb42c607be9bc1639b466cf00261a0fb04425562c9d0c5c2b
+#7 resolve docker.io/library/eclipse-temurin:21-jdk@sha256:3e3c176ffed168beb42c607be9bc1639b466cf00261a0fb04425562c9d0c5c2b done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 14.89kB done
+#8 DONE 0.0s
+
+#9 [build 2/7] WORKDIR /build
+#9 CACHED
+
+#10 [build 6/7] COPY src src
+#10 CACHED
+
+#11 [stage-1 4/5] COPY --from=build /build/out/lib ./lib
+#11 CACHED
+
+#12 [stage-1 3/5] WORKDIR /app
+#12 CACHED
+
+#13 [stage-1 2/5] RUN useradd --system --uid 10001 ticketrush
+#13 CACHED
+
+#14 [build 7/7] RUN ./mvnw -q -B package -DskipTests  && java -Djarmode=tools -jar target/*.jar extract --destination /build/out
+#14 CACHED
+
+#15 [build 4/7] COPY mvnw pom.xml ./
+#15 CACHED
+
+#16 [build 5/7] RUN ./mvnw -q -B dependency:go-offline
+#16 CACHED
+
+#17 [build 3/7] COPY .mvn .mvn
+#17 CACHED
+
+#18 [stage-1 5/5] COPY --from=build /build/out/*.jar ./app.jar
+#18 CACHED
+
+#19 exporting to image
+#19 exporting layers done
+#19 exporting manifest sha256:45c750fe3338730a3b79741e4901f4b852dee50a581ca5fc3be3f651b61fc8f3 done
+#19 exporting config sha256:c1add7c25a5e9668614acd94b88355e61c49b51da619dbfd90da787fa8836cb4 done
+#19 exporting attestation manifest sha256:89921512d1e0427aa6e97f656fadbc8b8e69d80237087664c6c00aedadea4dec done
+#19 exporting manifest list sha256:c483393620e19a7d3d2bcf4bb33a810c5fb8f88526c9661cfbf2355676e2ebdc done
+#19 naming to docker.io/library/ticketrush-app:latest done
+#19 unpacking to docker.io/library/ticketrush-app:latest done
+#19 DONE 0.0s
+
+#20 resolving provenance for metadata file
+#20 DONE 0.0s
+ ticketrush-app  Built
+ Container ticketrush-redis-1  Running
+ Container ticketrush-postgres-1  Running
+ Container ticketrush-prometheus-1  Running
+ Container ticketrush-grafana-1  Running
+ Container ticketrush-app-1  Recreate
+ Container ticketrush-app-1  Recreated
+ Container ticketrush-redis-1  Waiting
+ Container ticketrush-postgres-1  Waiting
+ Container ticketrush-redis-1  Healthy
+ Container ticketrush-postgres-1  Healthy
+ Container ticketrush-app-1  Starting
+ Container ticketrush-app-1  Started
+Waiting for the app..
+prepared guests: HTTP 200
+2000 guests in loadtest/results/guests.json
+Event 51 has a waiting room that is not open for sale yet. Joining with 2000 guests...
+
+Streams asked for       2000
+Opened                  2000 (failed 0)
+Time to first update    p50 719 ms, p95 1131 ms, max 1913 ms
+Gap between updates     p50 1490 ms, p95 1570 ms, p99 1758 ms, max 2713 ms (sent every 1000 ms)
+Updates per stream      median 24 over about 30 s
+App while streams open  threads=31  heap=346 MB  cpu=19% of the container  db connections in use=0
+
+PASS

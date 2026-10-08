@@ -1,4 +1,7 @@
-# Local dev infrastructure. Backend, frontend, prometheus and grafana are added in later phases.
+# Local infrastructure. Postgres and Redis always start. The rest are opt-in profiles:
+#   app         the backend in a container, capped at 2 CPUs and 1 GB so load-test numbers mean something
+#   monitoring  Prometheus (9090) and Grafana (3000, dashboard "TicketRush")
+#   load        the k6 load-test runner, used by loadtest/run.sh
 services:
   postgres:
     image: postgres:16-alpine
@@ -8,6 +11,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
+    cpus: 2
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -25,6 +29,71 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  app:
+    profiles: [app]
+    build: ./backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev,loadtest
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-ticketrush}
+      DB_USER: ${POSTGRES_USER:-ticketrush}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      DEMO_ORGANIZER_PASSWORD: ${DEMO_ORGANIZER_PASSWORD:?set DEMO_ORGANIZER_PASSWORD in .env}
+      # Settings the load tests rely on. Everything else is the application default.
+      TICKETRUSH_QUEUE_ADMIT_PER_SECOND: ${LOAD_ADMIT_PER_SECOND:-50}
+      TICKETRUSH_QUEUE_MAX_ADMITTED: ${LOAD_MAX_ADMITTED:-300}
+      JAVA_TOOL_OPTIONS: ${LOAD_JAVA_OPTS:--XX:MaxRAMPercentage=70}
+      DB_POOL_SIZE: ${LOAD_POOL_SIZE:-20}
+      TICKETRUSH_QUEUE_ADMISSION_TTL: ${LOAD_ADMISSION_TTL:-PT2M}
+      TICKETRUSH_HOLDS_TTL: ${LOAD_HOLD_TTL:-PT60S}
+      TICKETRUSH_PAYMENTS_MOCK_LATENCY: ${LOAD_MOCK_LATENCY:-PT0.1S}
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    cpus: 2
+    mem_limit: 1g
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  prometheus:
+    profiles: [monitoring]
+    image: prom/prometheus:v3.5.0
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "127.0.0.1:9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    profiles: [monitoring]
+    image: grafana/grafana:12.2.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+
+  k6:
+    profiles: [load]
+    image: grafana/k6:1.3.0
+    entrypoint: ["k6"]
+    environment:
+      BASE_URL: http://app:8080
+      ORGANIZER_PASSWORD: ${DEMO_ORGANIZER_PASSWORD:-}
+    volumes:
+      - ./loadtest:/loadtest
 
 volumes:
   pgdata:

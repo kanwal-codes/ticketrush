@@ -2,6 +2,7 @@ package com.ticketrush.catalog.infrastructure;
 
 import com.ticketrush.catalog.domain.PaymentGateway;
 import com.ticketrush.catalog.domain.TicketCodes;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,7 @@ public class MockPaymentGateway implements PaymentGateway {
 
 	private final Duration timeout;
 	private final Duration slowDelay;
+	private final Duration latency;
 	private final Map<String, CompletableFuture<ChargeResult>> charges = new ConcurrentHashMap<>();
 	private final Map<String, Long> successfulCharges = new ConcurrentHashMap<>();
 	private final Set<String> refundedKeys = ConcurrentHashMap.newKeySet();
@@ -43,10 +45,17 @@ public class MockPaymentGateway implements PaymentGateway {
 	private final AtomicInteger refundFailures = new AtomicInteger();
 	private volatile Runnable duringCharge;
 
+	@Autowired
 	public MockPaymentGateway(@Value("${ticketrush.payments.timeout}") Duration timeout,
-			@Value("${ticketrush.payments.mock-slow-delay}") Duration slowDelay) {
+			@Value("${ticketrush.payments.mock-slow-delay}") Duration slowDelay,
+			@Value("${ticketrush.payments.mock-latency:PT0S}") Duration latency) {
 		this.timeout = timeout;
 		this.slowDelay = slowDelay;
+		this.latency = latency;
+	}
+
+	public MockPaymentGateway(Duration timeout, Duration slowDelay) {
+		this(timeout, slowDelay, Duration.ZERO);
 	}
 
 	@Override
@@ -88,6 +97,9 @@ public class MockPaymentGateway implements PaymentGateway {
 	}
 
 	private ChargeResult process(ChargeRequest request) {
+		if (!latency.isZero()) {
+			sleep(latency);
+		}
 		switch (request.paymentToken()) {
 			case "tok_visa":
 				return succeed(request);
