@@ -18,7 +18,14 @@ const make = (id: number, saleState: EventSummary['saleState']): EventSummary =>
 
 describe('pickFeatured', () => {
   it('prefers an event whose sale has not started', () => {
-    expect(pickFeatured([make(1, 'ON_SALE'), make(2, 'UPCOMING'), make(3, 'QUEUE_OPEN')])?.id).toBe(2)
+    expect(pickFeatured([make(1, 'ON_SALE'), make(2, 'UPCOMING')])?.id).toBe(2)
+  })
+
+  it('picks the sale that opens soonest, not the event that happens first', () => {
+    const later = { ...make(2, 'UPCOMING'), onSaleAt: '2026-10-12T14:00:00Z' }
+    const sooner = { ...make(3, 'QUEUE_OPEN'), onSaleAt: '2026-10-09T14:00:00Z' }
+    // Event 2 is listed first (it happens first) but its sale opens later.
+    expect(pickFeatured([later, sooner])?.id).toBe(3)
   })
 
   it('falls back to the first event on sale', () => {
