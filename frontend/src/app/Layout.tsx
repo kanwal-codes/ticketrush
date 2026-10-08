@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router'
 import { clearToken, useToken } from '../auth/session'
 import { useMe } from '../features/auth/api'
 import { HoldTimer } from '../features/seats/HoldTimer'
+import { RouteEffects } from './RouteEffects'
 import './layout.css'
 
 export function Layout() {
@@ -22,15 +23,15 @@ export function Layout() {
       </a>
       <header className="site-header">
         <div className="site-header__inner">
-          <Link to="/" className="brand" aria-label="TicketRush, home">
+          <Link to="/" className="brand" aria-label="TicketRush, home" viewTransition>
             TicketRush
           </Link>
           <nav aria-label="Main" className="site-nav">
-            <NavLink to="/" end>
+            <NavLink to="/" end viewTransition>
               Events
             </NavLink>
             <HoldTimer />
-            <NavLink to="/tickets">My tickets</NavLink>
+            <NavLink to="/tickets" viewTransition>My tickets</NavLink>
             {token ? (
               <>
                 {me && <span className="site-nav__who">{me.displayName}</span>}
@@ -39,12 +40,13 @@ export function Layout() {
                 </button>
               </>
             ) : (
-              <NavLink to="/signin">Sign in</NavLink>
+              <NavLink to="/signin" viewTransition>Sign in</NavLink>
             )}
           </nav>
         </div>
       </header>
-      <main id="main">
+      <RouteEffects />
+      <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
       <footer className="site-footer">

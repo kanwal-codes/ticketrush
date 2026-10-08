@@ -1,10 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import type { Page } from '@playwright/test'
 import { createEvent } from './support/backend'
-import { chooseAndHold, expect, payWith, signInAsNewGuest, test } from './support/fixtures'
+import { chooseAndHold, expect, payWith, settle, signInAsNewGuest, test } from './support/fixtures'
 
 /** Serious and critical problems fail the test; each is listed with where it is, so it can be fixed. */
 async function expectAccessible(page: Page, where: string) {
+  await settle(page)
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
   const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
   expect(

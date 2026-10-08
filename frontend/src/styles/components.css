@@ -1,5 +1,12 @@
 /* Shared pieces: buttons, the date chip, skeleton placeholders, form fields. Square corners, hairline rules. */
 .btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    color var(--dur-fast) var(--ease-in-out),
+    border-color var(--dur-fast) var(--ease-in-out),
+    transform var(--dur-fast) var(--ease-out);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -16,9 +23,28 @@
   cursor: pointer;
 }
 
+/* On hover a layer of paper sweeps in from the left, and the label takes the ink colour as it passes. */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
 .btn:hover:not([aria-disabled='true']):not(:disabled) {
-  background: transparent;
   color: var(--ev);
+}
+
+.btn:hover:not([aria-disabled='true']):not(:disabled)::before {
+  transform: scaleX(1);
+}
+
+.btn:active:not([aria-disabled='true']):not(:disabled) {
+  transform: scale(0.98);
 }
 
 .btn--quiet {
@@ -27,8 +53,11 @@
   border-color: var(--ink);
 }
 
-.btn--quiet:hover:not([aria-disabled='true']):not(:disabled) {
+.btn--quiet::before {
   background: var(--ink);
+}
+
+.btn--quiet:hover:not([aria-disabled='true']):not(:disabled) {
   color: var(--paper);
 }
 
@@ -63,17 +92,23 @@
 }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--rule) 0%, #ecece7 50%, var(--rule) 100%);
-  background-size: 200% 100%;
-  animation: skeleton 1.4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+  background: var(--rule);
 }
 
-@keyframes skeleton {
-  from {
-    background-position: 200% 0;
-  }
-  to {
-    background-position: -200% 0;
+/* The shimmer is a highlight that slides across; it moves with transform, which costs the page nothing. */
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
   }
 }
 

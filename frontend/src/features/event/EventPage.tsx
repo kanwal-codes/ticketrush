@@ -4,6 +4,7 @@ import { keys, useEvent } from '../../api/queries'
 import type { EventDetail, TierView } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
 import { Countdown } from '../../components/Countdown'
+import { EventSkeleton } from '../../components/PageSkeletons'
 import { Poster } from '../../components/Poster'
 import { HOLD_MINUTES } from '../../lib/constants'
 import { eventTheme } from '../../lib/eventTheme'
@@ -33,12 +34,12 @@ function EventDetails({ event }: { event: EventDetail }) {
   return (
     <div className="page event" style={eventTheme(event.poster)}>
       <p>
-        <Link to="/" className="event__back">
+        <Link to="/" className="event__back" viewTransition>
           ← All events
         </Link>
       </p>
       <div className="event__layout">
-        <div className="event__poster">
+        <div className="event__poster" style={{ viewTransitionName: `poster-${event.id}` }}>
           <Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} />
         </div>
 
@@ -78,7 +79,7 @@ function EventDetails({ event }: { event: EventDetail }) {
             )}
             {sale.note && <p className="sale__note">{sale.note}</p>}
             {sale.cta.kind === 'link' && (
-              <Link to={sale.cta.to} className="btn">
+              <Link to={sale.cta.to} className="btn" viewTransition>
                 {sale.cta.label}
               </Link>
             )}
@@ -125,19 +126,5 @@ function Tier({ tier }: { tier: TierView }) {
         <span className="num">{formatMoney(tier.allInCents)}</span> <span className="label">with fees</span>
       </p>
     </li>
-  )
-}
-
-function EventSkeleton() {
-  return (
-    <div className="page" aria-busy="true" aria-label="Loading event">
-      <div className="event__layout">
-        <div className="event__poster skeleton" />
-        <div className="event__main">
-          <div className="skeleton" style={{ height: 56, width: '80%' }} />
-          <div className="skeleton" style={{ height: 120 }} />
-        </div>
-      </div>
-    </div>
   )
 }

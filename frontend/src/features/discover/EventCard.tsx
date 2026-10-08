@@ -4,12 +4,20 @@ import { Poster } from '../../components/Poster'
 import { formatMoney } from '../../lib/money'
 import { formatChip } from '../../lib/time'
 
-export function EventCard({ event }: { event: EventSummary }) {
+interface Props {
+  event: EventSummary
+  /** Position in the grid, for the staggered entrance. */
+  index?: number
+  /** Gives the poster the name that lets it glide to the event page. Only one element on a page may have a name. */
+  sharedPoster?: boolean
+}
+
+export function EventCard({ event, index = 0, sharedPoster = true }: Props) {
   const chip = formatChip(event.startsAt)
   return (
-    <li className="card">
-      <Link to={`/events/${event.id}`} className="card__link">
-        <div className="card__poster">
+    <li className="card enter" style={{ '--i': Math.min(index, 8) } as React.CSSProperties}>
+      <Link to={`/events/${event.id}`} className="card__link" viewTransition>
+        <div className="card__poster" style={sharedPoster ? { viewTransitionName: `poster-${event.id}` } : undefined}>
           <Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} />
         </div>
         <div className="card__body">

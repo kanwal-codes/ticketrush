@@ -13,6 +13,8 @@
 }
 
 .site-header {
+  /* A name of its own, so it stays still while the rest of the page changes (see motion.css). */
+  view-transition-name: site-header;
   border-bottom: 1px solid var(--rule);
   background: var(--paper);
   position: sticky;
@@ -52,6 +54,7 @@
   border: 0;
   background: none;
   border-bottom: 2px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-in-out);
 }
 
 .site-nav__who {

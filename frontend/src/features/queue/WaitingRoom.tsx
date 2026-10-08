@@ -5,6 +5,7 @@ import { keys, useEvent } from '../../api/queries'
 import type { EventDetail } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
 import { Countdown } from '../../components/Countdown'
+import { QueueSkeleton } from '../../components/PageSkeletons'
 import { eventTheme } from '../../lib/eventTheme'
 import { formatTime } from '../../lib/time'
 import { useTitle } from '../../lib/useTitle'
@@ -22,7 +23,7 @@ function Room({ id }: { id: number }) {
   // Joining again after leaving remounts the room, which joins afresh.
   const [attempt, setAttempt] = useState(0)
   if (error && !event) throw error
-  if (!event) return <div className="page queue" aria-busy="true" aria-label="Loading" />
+  if (!event) return <QueueSkeleton />
   return <RoomBody key={attempt} event={event} onRejoin={() => setAttempt((a) => a + 1)} />
 }
 
@@ -36,7 +37,7 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
   const room = useWaitingRoom(event.id, open)
 
   useEffect(() => {
-    if (room.phase === 'admitted') void navigate(`/events/${event.id}/seats`, { replace: true })
+    if (room.phase === 'admitted') void navigate(`/events/${event.id}/seats`, { replace: true, viewTransition: true })
   }, [room.phase, event.id, navigate])
 
   if (!event.waitingRoom) return <Navigate to={`/events/${event.id}/seats`} replace />
@@ -149,7 +150,7 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
       <p className="visually-hidden">{aheadText(view.aheadOfYou)}</p>
 
       <div className="queue__bar" role="progressbar" aria-label="Your progress to the front of the line" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
-        <div className="queue__fill" style={{ width: `${progress * 100}%` }} />
+        <div className="queue__fill" style={{ '--progress': progress } as React.CSSProperties} />
       </div>
       <div className="queue__ends label" aria-hidden="true">
         <span>Back of the line</span>
@@ -191,7 +192,7 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
             <button
               type="button"
               className="btn btn--quiet"
-              onClick={() => void room.leave().then(() => navigate(`/events/${event.id}`))}
+              onClick={() => void room.leave().then(() => navigate(`/events/${event.id}`, { viewTransition: true }))}
             >
               Yes, leave the queue
             </button>

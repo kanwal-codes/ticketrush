@@ -1,4 +1,4 @@
-import { createEvent, providerCharges, scanTicket, seatStatuses } from './support/backend'
+import { createEvent, ordersOf, providerCharges, scanTicket, seatStatuses } from './support/backend'
 import { chooseAndHold, expect, payWith, signInAsNewGuest, test } from './support/fixtures'
 
 test('a guest signs up, waits in the queue, picks seats, pays and gets tickets with QR codes @mobile', async ({ page }) => {
@@ -57,10 +57,9 @@ test('a declined card keeps the seats, and the next card pays', async ({ page })
 })
 
 test('an unknown outcome says not to pay again, and nobody is charged', async ({ page }) => {
-  await signInAsNewGuest(page)
+  const guest = await signInAsNewGuest(page)
   const event = await createEvent()
   await chooseAndHold(page, event.id, [1])
-  const before = (await providerCharges()).charges
 
   await payWith(page, '4000 0000 0000 0119') // the provider answers with an error: no one knows if it went through
   await expect(page.getByRole('heading', { name: 'Confirming your payment' })).toBeVisible()
@@ -68,7 +67,10 @@ test('an unknown outcome says not to pay again, and nobody is charged', async ({
   await page.getByRole('button', { name: 'Check now' }).click()
   await expect(page.getByRole('heading', { name: 'Confirming your payment' })).toBeVisible()
 
-  expect((await providerCharges()).charges).toBe(before)
+  // Judged on this guest's own order: other tests pay at the same time, so the provider's total is not ours to read.
+  const [order] = await ordersOf(guest.token)
+  expect(order?.status).toBe('PENDING_PAYMENT')
+  expect((await providerCharges()).chargedKeys).not.toContain(`order-${order!.id}`)
 })
 
 test('refreshing keeps the guest\'s place in the queue and their hold', async ({ page }) => {

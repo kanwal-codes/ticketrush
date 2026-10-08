@@ -46,8 +46,12 @@
 
 .queue__fill {
   height: 100%;
+  width: 100%;
   background: var(--ev-text);
-  transition: width 0.6s ease;
+  /* The bar grows by scaling, which is smooth and costs no layout. */
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left;
+  transition: transform 0.7s var(--ease-out);
 }
 
 .queue__ends {

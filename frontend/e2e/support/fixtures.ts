@@ -24,3 +24,21 @@ export async function payWith(page: Page, cardNumber: string) {
   await page.getByLabel('Security code').fill('123')
   await page.getByRole('button', { name: /^(Pay|Check and try again)/ }).click()
 }
+
+/**
+ * Waits for the page's one-off animations to finish. Anything that measures how the page looks (contrast, layout)
+ * should do it standing still: mid fade-in, text is partly see-through and measures as low contrast. Endless
+ * animations, like a loading shimmer, are left alone.
+ */
+export async function settle(page: Page) {
+  await page.evaluate(async () => {
+    for (let i = 0; i < 20; i++) {
+      const running = document.getAnimations().filter((a) => {
+        const t = a.effect?.getComputedTiming()
+        return a.playState === 'running' && Number.isFinite(t?.endTime) && Number(t?.endTime) > 20
+      })
+      if (running.length === 0) return
+      await Promise.allSettled(running.map((a) => a.finished))
+    }
+  })
+}
