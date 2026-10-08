@@ -16,6 +16,8 @@ export const routes: RouteObject[] = [
         element: <RequireAuth />,
         children: [
           { path: 'events/:id/seats', lazy: async () => ({ Component: (await import('../features/seats/SeatsPage')).SeatsPage }) },
+          { path: 'events/:id/checkout', lazy: async () => ({ Component: (await import('../features/checkout/CheckoutPage')).CheckoutPage }) },
+          { path: 'tickets', lazy: async () => ({ Component: (await import('../features/tickets/TicketsPage')).TicketsPage }) },
           { path: 'events/:id/queue', lazy: async () => ({ Component: (await import('../features/queue/WaitingRoom')).WaitingRoom }) },
         ],
       },

@@ -1,0 +1,165 @@
+.confirmation {
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.confirmation h1:focus {
+  outline: none;
+}
+
+.confirmation p {
+  margin-top: var(--space-3);
+}
+
+.tickets__event {
+  margin-top: var(--space-7);
+}
+
+.tickets__title {
+  color: var(--ev-text);
+  margin-bottom: var(--space-4);
+}
+
+.tickets__skeleton {
+  height: 220px;
+  margin-top: var(--space-5);
+}
+
+.tickets__empty {
+  margin-top: var(--space-6);
+  color: var(--muted);
+}
+
+.stubs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+/* A ticket: the event's ink on the left, a white stub with the QR on the right, notches where it tears. */
+.stub {
+  --notch: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  background: var(--ev);
+  color: var(--on-ev);
+  position: relative;
+  border: 1px solid var(--ev);
+}
+
+.stub__main {
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+  min-width: 0;
+}
+
+.stub__label {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.stub__seat {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900;
+}
+
+.stub__event {
+  font-weight: 700;
+}
+
+.stub__when {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.stub__status {
+  color: inherit;
+  border: 1px solid currentColor;
+  width: max-content;
+  padding: 2px var(--space-2);
+}
+
+.stub__side {
+  position: relative;
+  width: 200px;
+  padding: var(--space-4);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-3);
+  background: var(--white);
+  color: var(--ink);
+  border-left: 2px dashed var(--ev);
+}
+
+.stub__qr {
+  width: 168px;
+  height: 168px;
+}
+
+.stub__noqr {
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.stub__code {
+  font-size: 0.8rem;
+  text-align: center;
+  word-break: break-word;
+}
+
+.stub__side::before,
+.stub__side::after {
+  content: '';
+  position: absolute;
+  width: calc(2 * var(--notch));
+  height: calc(2 * var(--notch));
+  border-radius: 50%;
+  background: var(--paper);
+}
+
+/* Beside a vertical tear, centred on it at the top and bottom edges. */
+.stub__side::before {
+  left: calc(-1 * var(--notch));
+  top: calc(-1 * var(--notch));
+}
+
+.stub__side::after {
+  left: calc(-1 * var(--notch));
+  bottom: calc(-1 * var(--notch));
+}
+
+.stub--used {
+  opacity: 0.55;
+}
+
+@media (max-width: 640px) {
+  .stub {
+    grid-template-columns: 1fr;
+  }
+
+  .stub__side {
+    width: auto;
+    border-left: 0;
+    border-top: 2px dashed var(--ev);
+  }
+
+  /* The tear is horizontal on a phone, so the notches sit at its left and right ends. */
+  .stub__side::before {
+    left: calc(-1 * var(--notch));
+    top: calc(-1 * var(--notch));
+  }
+
+  .stub__side::after {
+    left: auto;
+    right: calc(-1 * var(--notch));
+    top: calc(-1 * var(--notch));
+    bottom: auto;
+  }
+}

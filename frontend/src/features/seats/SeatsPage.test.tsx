@@ -72,11 +72,15 @@ describe('SeatsPage', () => {
   })
 
   it('holds the seats with the admission token and goes to checkout', async () => {
+    let held = false
     const { calls } = mockApi({
       'GET /api/events/7': () => json(eventDetail()),
       'GET /api/events/7/seats': () => json(seatMapOf()),
-      'GET /api/events/7/holds/me': noHold,
-      'POST /api/events/7/holds': () => json(holdView(), 201),
+      'GET /api/events/7/holds/me': () => (held ? json(holdView()) : noHold()),
+      'POST /api/events/7/holds': () => {
+        held = true
+        return json(holdView(), 201)
+      },
     })
     const { router } = renderRoute('/events/7/seats')
     await screen.findByRole('heading', { name: 'Floor' })
@@ -84,7 +88,7 @@ describe('SeatsPage', () => {
     await userEvent.click(seat(2))
     await userEvent.click(screen.getByRole('button', { name: 'Hold these 2 seats' }))
 
-    await waitFor(() => expect(router.state.location.pathname).toBe('/checkout/55'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/events/7/checkout'))
     const post = calls.find((c) => c.method === 'POST' && c.url.endsWith('/holds'))
     expect(post?.headers.get('X-Admission-Token')).toBe('admit-token')
     expect(await post?.json()).toEqual({ seatIds: [100, 101] })
@@ -144,7 +148,7 @@ describe('SeatsPage', () => {
     expect(screen.getByText('$206.40')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Continue to payment' }))
 
-    await waitFor(() => expect(router.state.location.pathname).toBe('/checkout/55'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/events/7/checkout'))
     expect(calls.some((c) => c.method === 'POST')).toBe(false)
   })
 
