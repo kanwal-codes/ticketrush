@@ -31,8 +31,16 @@ if [ "$SCENARIO" = "stream" ]; then
   exit $?
 fi
 
+case "$SCENARIO" in
+  smoke) GUESTS_NEEDED=20 ;;
+  contention) GUESTS_NEEDED="${GUESTS:-1000}" ;;
+  drop) GUESTS_NEEDED="${GUESTS:-1500}" ;;
+  *) GUESTS_NEEDED= ;;
+esac
+if [ -n "$GUESTS_NEEDED" ]; then loadtest/prepare.sh "$GUESTS_NEEDED" || exit 2; fi
+
 echo "Running $SCENARIO. Watch it at http://localhost:3000 (dashboard TicketRush)."
-docker compose --profile load run --rm k6 run --quiet "/loadtest/$SCENARIO.js"
+docker compose --profile load run --rm -e GUESTS="${GUESTS:-}" k6 run --quiet "/loadtest/$SCENARIO.js"
 K6=$?
 echo
 echo "Checking the database"

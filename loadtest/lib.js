@@ -1,6 +1,7 @@
 // Shared helpers for the k6 scenarios. Everything goes through the real HTTP API, as a browser would.
 import http from 'k6/http';
 import { Counter } from 'k6/metrics';
+import { SharedArray } from 'k6/data';
 
 export const BASE = __ENV.BASE_URL || 'http://localhost:8080';
 export const serverErrors = new Counter('server_errors');
@@ -28,11 +29,12 @@ export function organizerLogin() {
   return res.json('accessToken');
 }
 
-/** A new guest with a ready token. Needs the loadtest profile. */
-export function createGuest(organizerToken) {
-  const res = call('POST', '/dev/load/guests?count=1', { token: organizerToken, name: 'setup' });
-  if (res.status !== 200) throw new Error('Could not create a guest (' + res.status + ')');
-  return res.json()[0];
+/**
+ * The guests prepared by loadtest/prepare.sh (ids and tokens). Call this once, at the top level of a script,
+ * not inside a function. All virtual users share one copy.
+ */
+export function sharedGuests() {
+  return new SharedArray('guests', () => JSON.parse(open('./results/guests.json')));
 }
 
 /**

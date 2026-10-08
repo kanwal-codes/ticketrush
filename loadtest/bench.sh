@@ -8,7 +8,7 @@ LABEL="${1:?label, e.g. baseline}"
 RUNS="${2:-3}"
 OUT="loadtest/results/$LABEL.tsv"
 export LOAD_ADMIT_PER_SECOND="${LOAD_ADMIT_PER_SECOND:-500}" LOAD_MAX_ADMITTED="${LOAD_MAX_ADMITTED:-1500}"
-printf 'run\thold_p95_ms\tpay_p95_ms\tjoin_p95_ms\tplace_p95_ms\tseats_p95_ms\torders_paid\tconflicts\tseconds\tpool_waiting_max\tacquire_max_s\tcpu_peak\tviolations\n' > "$OUT"
+printf 'run\thold_p95_ms\tpay_p95_ms\tjoin_p95_ms\tplace_p95_ms\tseats_p95_ms\torders_paid\tconflicts\tseconds\tpool_waiting_max\tcpu_peak\tconn_seconds\tcpu_seconds\tgc_pause_s\tviolations\n' > "$OUT"
 
 prom() { curl -s --max-time 5 --get localhost:9090/api/v1/query --data-urlencode "query=$1" \
   | python3 -c 'import sys,json;r=json.load(sys.stdin)["data"]["result"];print(round(float(r[0]["value"][1]),3) if r else 0)'; }
@@ -29,7 +29,9 @@ print("\t".join(str(x) for x in [p95("hold"), p95("pay"), p95("join"), p95("plac
       round(m["iteration_duration"]["values"]["max"] / 1000, 1)]))
 PY
 )
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$i" "$ROW" "$(prom "max_over_time(hikaricp_connections_pending[${W}s])")" \
-    "$(prom "max_over_time(hikaricp_connections_acquire_seconds_max[${W}s])")" "$(prom "max_over_time(process_cpu_usage[${W}s])")" "$VIOL" >> "$OUT"
+  # Work done, not just waiting: connection-seconds used, CPU-seconds burned and GC pause time during the run.
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$i" "$ROW" "$(prom "max_over_time(hikaricp_connections_pending[${W}s])")" \
+    "$(prom "max_over_time(process_cpu_usage[${W}s])")" "$(prom "sum(increase(hikaricp_connections_usage_seconds_sum[${W}s]))")" \
+    "$(prom "increase(process_cpu_time_ns_total[${W}s]) / 1e9")" "$(prom "sum(increase(jvm_gc_pause_seconds_sum[${W}s]))")" "$VIOL" >> "$OUT"
 done
 column -t -s$'\t' "$OUT"

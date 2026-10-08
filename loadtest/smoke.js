@@ -1,8 +1,11 @@
-// 20 guests, 30 seconds, strict thresholds. Fast enough to run on every push.
+// 20 guests, 30 seconds, strict thresholds. Fast enough to run on every push. Each virtual user is one guest
+// who buys again and again.
 import { check, sleep } from 'k6';
 import { Counter } from 'k6/metrics';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.4/index.js';
-import { call, createEvent, createGuest, idempotencyKey, organizerLogin, pickSeats, serverErrors, summaryFiles } from './lib.js';
+import { call, createEvent, idempotencyKey, organizerLogin, pickSeats, serverErrors, sharedGuests, summaryFiles } from './lib.js';
+
+const guests = sharedGuests();
 
 const paid = new Counter('orders_paid');
 
@@ -26,7 +29,7 @@ export function setup() {
 }
 
 export default function (data) {
-  const guest = createGuest(data.token);
+  const guest = guests[(__VU - 1) % guests.length];
   for (let attempt = 0; attempt < 5; attempt++) {
     const map = call('GET', '/api/events/' + data.eventId + '/seats', { name: 'seats' }).json();
     const seats = pickSeats(map);
