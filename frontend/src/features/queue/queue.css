@@ -1,0 +1,109 @@
+.queue {
+  max-width: 620px;
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.queue__event {
+  color: var(--ev-text);
+}
+
+.queue__lead {
+  color: var(--muted);
+}
+
+.queue__clock {
+  font-size: clamp(2.25rem, 8vw, 3.5rem);
+  font-weight: 500;
+}
+
+.queue__ahead {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+}
+
+.queue__count {
+  font-size: clamp(4rem, 18vw, 7rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ev-text);
+}
+
+.queue__next {
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ev-text);
+}
+
+.queue__bar {
+  width: 100%;
+  height: 10px;
+  background: var(--rule);
+}
+
+.queue__fill {
+  height: 100%;
+  width: 100%;
+  background: var(--ev-text);
+  /* The bar grows by scaling, which is smooth and costs no layout. */
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left;
+  transition: transform 0.7s var(--ease-out);
+}
+
+.queue__ends {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.queue__stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-3) 0 0;
+  padding-block: var(--space-4);
+  border-block: 1px solid var(--rule);
+}
+
+.queue__stats dd {
+  margin: var(--space-1) 0 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.queue__stats .num {
+  font-weight: 500;
+}
+
+.queue__note,
+.queue__saved {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.queue__connection {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--ink);
+  background: var(--white);
+  font-size: 0.95rem;
+}
+
+.queue__actions {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .queue__stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}

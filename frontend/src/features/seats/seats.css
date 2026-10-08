@@ -1,0 +1,237 @@
+.seats__title {
+  margin-top: var(--space-2);
+  color: var(--ev-text);
+}
+
+.seats__where {
+  color: var(--muted);
+  margin-top: var(--space-2);
+}
+
+.seats__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-6);
+  margin-top: var(--space-5);
+  align-items: start;
+}
+
+.seats__mapwrap {
+  min-width: 0;
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-5);
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.seatmap {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+/* Without this a grid item is as wide as its longest row, which would widen the whole page. Rows scroll inside. */
+.seatmap__section,
+.seats__layout > * {
+  min-width: 0;
+}
+
+.seatmap__stage {
+  text-align: center;
+  padding: var(--space-2);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.seatmap__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.seatmap__rows {
+  display: grid;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.seatmap__row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  width: max-content;
+}
+
+.seatmap__rowlabel {
+  width: 24px;
+  flex: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  position: sticky;
+  left: 0;
+  background: var(--paper);
+}
+
+.seat {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  display: inline-grid;
+  place-items: center;
+}
+
+span.seat {
+  width: 18px;
+  height: 18px;
+}
+
+.seat--available:hover {
+  background: var(--ev-paper);
+  color: var(--on-ev-paper);
+}
+
+.seat--selected {
+  background: var(--ev);
+  border-color: var(--ev);
+  color: var(--on-ev);
+  font-weight: 700;
+}
+
+.seat--taken {
+  border-color: var(--rule);
+  color: var(--muted);
+  background: repeating-linear-gradient(135deg, var(--paper) 0 3px, var(--rule) 3px 5px);
+  cursor: not-allowed;
+}
+
+.panel {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--white);
+  border: 1px solid var(--ink);
+}
+
+.panel h2 {
+  font-size: 1.2rem;
+}
+
+.panel__message {
+  min-height: 1.5em;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.panel__empty,
+.panel__note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.panel__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.panel__lines li,
+.panel__totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--rule);
+}
+
+.panel__totals {
+  margin: 0;
+}
+
+.panel__totals dd {
+  margin: 0;
+}
+
+.panel__total {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.panel__continue,
+.panel__release {
+  width: 100%;
+}
+
+.panel__actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@media (max-width: 880px) {
+  .seats {
+    /* Room at the bottom so the summary bar never hides the last row. */
+    padding-bottom: 140px;
+  }
+
+  .seats__layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* On a phone the summary is a compact bar along the bottom: the total and the way forward, nothing else.
+     The chosen seats are ticked on the map, so the list would only cover it. */
+  .panel {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 4;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--gutter);
+    border-width: 1px 0 0;
+  }
+
+  .panel h2,
+  .panel__lines,
+  .panel__empty,
+  .panel__note,
+  .panel__totals div:not(.panel__total) {
+    display: none;
+  }
+
+  .panel__message {
+    min-height: 0;
+  }
+
+  .panel__totals div {
+    border: 0;
+    padding: 0;
+  }
+
+  .panel__actions {
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
+}

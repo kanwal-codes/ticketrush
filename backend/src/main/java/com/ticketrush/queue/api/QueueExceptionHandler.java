@@ -1,6 +1,7 @@
 package com.ticketrush.queue.api;
 
 import com.ticketrush.queue.application.EventNotFoundException;
+import com.ticketrush.queue.application.NotYourEventException;
 import com.ticketrush.queue.application.TooManyRequestsException;
 import com.ticketrush.queue.application.WaitingRoomClosedException;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +17,11 @@ class QueueExceptionHandler {
 	@ExceptionHandler(EventNotFoundException.class)
 	ProblemDetail notFound(EventNotFoundException e) {
 		return problem(HttpStatus.NOT_FOUND, "Not found", e.getMessage());
+	}
+
+	@ExceptionHandler(NotYourEventException.class)
+	ProblemDetail notYours(NotYourEventException e) {
+		return problem(HttpStatus.FORBIDDEN, "Not yours", e.getMessage());
 	}
 
 	@ExceptionHandler(WaitingRoomClosedException.class)

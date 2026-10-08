@@ -1,0 +1,162 @@
+/* Shared pieces: buttons, the date chip, skeleton placeholders, form fields. Square corners, hairline rules. */
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    color var(--dur-fast) var(--ease-in-out),
+    border-color var(--dur-fast) var(--ease-in-out),
+    transform var(--dur-fast) var(--ease-out);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-5);
+  border: 2px solid var(--ev);
+  background: var(--ev);
+  color: var(--on-ev);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* On hover a layer of paper sweeps in from the left, and the label takes the ink colour as it passes. */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.btn:hover:not([aria-disabled='true']):not(:disabled) {
+  color: var(--ev);
+}
+
+.btn:hover:not([aria-disabled='true']):not(:disabled)::before {
+  transform: scaleX(1);
+}
+
+.btn:active:not([aria-disabled='true']):not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn--quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.btn--quiet::before {
+  background: var(--ink);
+}
+
+.btn--quiet:hover:not([aria-disabled='true']):not(:disabled) {
+  color: var(--paper);
+}
+
+.btn[aria-disabled='true'],
+.btn:disabled {
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--ink);
+  font-family: var(--font-mono);
+  line-height: 1.1;
+}
+
+.chip__month {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.chip__day {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--rule);
+}
+
+/* The shimmer is a highlight that slides across; it moves with transform, which costs the page nothing. */
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.field {
+  min-width: 0;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--ink);
+  background: var(--white);
+  border-radius: 0;
+}
+
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'],
+.field textarea[aria-invalid='true'] {
+  border-color: var(--danger);
+  border-width: 2px;
+}
+
+.field textarea {
+  min-height: 96px;
+  padding: var(--space-3);
+  font: inherit;
+  resize: vertical;
+}
+
+.field select {
+  font: inherit;
+}
+
+.field__error {
+  color: var(--danger);
+  font-size: 0.875rem;
+}
