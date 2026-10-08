@@ -29,11 +29,12 @@ import java.util.List;
 
 /**
  * Demo data for local development: one organizer, four venues and five published events that match the
- * posters in the design. Runs only with the "dev" profile, only if an organizer password is configured,
- * and only once (it skips when the organizer already exists).
+ * posters in the design. Runs only with the "dev" or "demo" profile (the live demo uses "demo"), only if an organizer password
+ * is configured, and only once (it skips when the organizer already owns venues). Payments are the mock provider's,
+ * so this is demo data, not a shop.
  */
 @Component
-@Profile("dev")
+@Profile({ "dev", "demo" })
 class DevDataSeeder implements ApplicationRunner {
 
 	private static final Logger log = LoggerFactory.getLogger(DevDataSeeder.class);
@@ -64,12 +65,13 @@ class DevDataSeeder implements ApplicationRunner {
 			log.warn("Demo data skipped: set DEMO_ORGANIZER_PASSWORD to create the demo organizer and events");
 			return;
 		}
-		if (users.findByEmailIgnoreCase(organizerEmail).isPresent()) {
+		long organizer = users.findByEmailIgnoreCase(organizerEmail).map(User::getId).orElseGet(() -> users
+				.saveAndFlush(new User(organizerEmail, encoder.encode(organizerPassword), "Demo Organizer", Role.ORGANIZER))
+				.getId());
+		if (!venues.ownedBy(organizer).isEmpty()) {
 			log.info("Demo data already present");
 			return;
 		}
-		long organizer = users.saveAndFlush(
-				new User(organizerEmail, encoder.encode(organizerPassword), "Demo Organizer", Role.ORGANIZER)).getId();
 
 		VenueView halden = venues.create(organizer, "Halden Hall", "Montreal", List.of(new SectionSpec("Floor", 10, 40),
 				new SectionSpec("Stalls", 20, 50), new SectionSpec("Balcony", 10, 60)));
