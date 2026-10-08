@@ -85,6 +85,18 @@
   .site-nav__who {
     display: none;
   }
+
+  /* With a hold running there are more items than fit in one row, so the nav wraps under the brand. */
+  .site-header__inner {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+    padding-block: var(--space-2);
+  }
+
+  .site-nav {
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
 }
 
 @media (max-width: 480px) {

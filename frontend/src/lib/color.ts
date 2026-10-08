@@ -31,3 +31,29 @@ export function onColor(background: string): string {
 export function readable(wanted: string, background: string): string {
   return contrast(wanted, background) >= 3 ? wanted : onColor(background)
 }
+
+function parse(hex: string): [number, number, number] {
+  const n = parseInt(hex.replace('#', ''), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+function mix(from: string, to: string, t: number): string {
+  const [a, b] = [parse(from), parse(to)]
+  return `#${[0, 1, 2].map((i) => Math.round(a[i]! + (b[i]! - a[i]!) * t).toString(16).padStart(2, '0')).join('')}`
+}
+
+/**
+ * A fill and the text to put on it that meet 4.5:1. Black or white is the best text, but a mid-tone color can fail
+ * against both (a medium blue gets 4.4:1 either way). Then the fill is nudged, keeping its hue, until the text
+ * passes, so a button in an organizer's color is never unreadable.
+ */
+export function withReadableText(fill: string, min = 4.5): { fill: string; text: string } {
+  const text = onColor(fill)
+  if (contrast(text, fill) >= min) return { fill, text }
+  const away = text === LIGHT ? '#000000' : '#ffffff'
+  for (let t = 0.04; t <= 1; t += 0.04) {
+    const candidate = mix(fill, away, t)
+    if (contrast(text, candidate) >= min) return { fill: candidate, text }
+  }
+  return { fill: away, text }
+}
