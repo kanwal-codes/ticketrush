@@ -8,6 +8,7 @@ import com.ticketrush.queue.domain.QueueStatus;
 import com.ticketrush.queue.domain.RateLimiter;
 import com.ticketrush.queue.domain.SalePhase;
 import com.ticketrush.queue.domain.WaitingLine;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,9 +56,9 @@ public class QueueService {
 	 * What a guest sees. The numbers are exact. Only the wait time is an estimate, worked out from the
 	 * configured admission rate.
 	 */
-	public record QueueView(QueueState state, Long position, long aheadOfYou, long queueLength,
-			long estimatedWaitSeconds, String admissionToken, Instant admittedUntil, SalePhase saleState,
-			Instant serverTime) {
+	public record QueueView(QueueState state, @Schema(nullable = true) Long position, long aheadOfYou, long queueLength,
+			long estimatedWaitSeconds, @Schema(nullable = true) String admissionToken,
+			@Schema(nullable = true) Instant admittedUntil, SalePhase saleState, Instant serverTime) {
 	}
 
 	/** Joins the line. Safe to repeat: a guest who is already waiting keeps their place. */
@@ -88,6 +89,15 @@ public class QueueService {
 	/** Used by the live stream, which is the intended way to watch your place, so it is not rate limited. */
 	public QueueView streamStatus(long userId, long eventId) {
 		return statusWithoutLimit(userId, eventId, clock.instant());
+	}
+
+	/** What the organizer sees of their event's line: people waiting and people inside. */
+	public WaitingLine.Depth depth(long organizerId, long eventId) {
+		Long owner = events.organizerOf(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+		if (owner != organizerId) {
+			throw new NotYourEventException();
+		}
+		return line.depth(eventId, clock.instant());
 	}
 
 	public void leave(long userId, long eventId) {

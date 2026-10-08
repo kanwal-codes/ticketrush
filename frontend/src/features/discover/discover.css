@@ -1,0 +1,148 @@
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: end;
+  padding-bottom: var(--space-7);
+  border-bottom: 1px solid var(--rule);
+}
+
+.hero__poster {
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.hero__body {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.hero__kicker {
+  color: var(--ev-text);
+}
+
+.hero__title {
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  font-weight: 900;
+  font-variation-settings: 'wdth' 100;
+  color: var(--ev-text);
+}
+
+.hero__artist {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.hero__meta {
+  color: var(--muted);
+}
+
+.hero__countdown {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-block: var(--space-3);
+}
+
+.hero__clock {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 500;
+}
+
+.hero__note {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.discover__list {
+  margin-top: var(--space-7);
+}
+
+.discover__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.discover__search {
+  flex: 0 1 380px;
+}
+
+.discover__search input {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--ink);
+  background: var(--white);
+  border-radius: 0;
+}
+
+.discover__empty {
+  padding-block: var(--space-6);
+  color: var(--muted);
+}
+
+.discover__more {
+  margin-top: var(--space-6);
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: var(--space-6) var(--space-5);
+}
+
+.card__link {
+  display: block;
+  text-decoration: none;
+}
+
+.card__poster {
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.card__link:hover .card__poster,
+.card__link:focus-visible .card__poster {
+  border-color: var(--ink);
+}
+
+.card__body {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.card__title {
+  font-size: 1.05rem;
+}
+
+.card__venue {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.card__price {
+  margin-top: var(--space-1);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__poster {
+    max-width: 280px;
+  }
+}
