@@ -1,0 +1,44 @@
+name: Deploy
+
+# Run by hand from the Actions tab. Merging never deploys: a deploy changes what real people see, so a person starts it.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to deploy
+        default: main
+        required: true
+      smoke_url:
+        description: Public address of the web app, for the smoke test afterwards (for example https://ticketrush-web.fly.dev)
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Put required reviewers on this environment (Settings, Environments) to make a second person approve.
+    environment: production
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      # The API first: the web app forwards to it, and the API's own health check must pass before the web app moves.
+      - name: Deploy the API
+        working-directory: backend
+        run: flyctl deploy --no-public-ips --remote-only --ha=false
+      - name: Deploy the web app
+        working-directory: frontend
+        run: flyctl deploy --remote-only --ha=false
+      - name: Smoke test the live site
+        run: scripts/smoke-live.sh "${{ inputs.smoke_url }}"

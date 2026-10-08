@@ -23,13 +23,17 @@ public class Venue {
 	@Column(nullable = false)
 	private String city;
 
+	@Column(name = "owner_id")
+	private Long ownerId;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt = Instant.now();
 
 	protected Venue() {
 	}
 
-	public Venue(String name, String city) {
+	public Venue(Long ownerId, String name, String city) {
+		this.ownerId = ownerId;
 		this.name = name;
 		this.city = city;
 	}
@@ -40,6 +44,10 @@ public class Venue {
 
 	public String getName() {
 		return name;
+	}
+
+	public Long getOwnerId() {
+		return ownerId;
 	}
 
 	public String getCity() {

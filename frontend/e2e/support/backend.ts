@@ -130,3 +130,15 @@ export async function buySeats(guest: { token: string }, eventId: number, seatId
 export async function ordersOf(token: string): Promise<{ id: number; reference: string; status: string }[]> {
   return call('GET', '/api/orders', undefined, token)
 }
+
+/** The seat ids of a published event, in reading order. */
+export async function seatIdsOf(eventId: number): Promise<number[]> {
+  const map = await call<{ sections: { rows: { seats: { id: number }[] }[] }[] }>('GET', `/api/events/${eventId}/seats`)
+  return map.sections.flatMap((s) => s.rows.flatMap((r) => r.seats.map((seat) => seat.id)))
+}
+
+/** The codes on a guest's tickets, which is what the door scanner reads off the QR code. */
+export async function ticketCodesOf(token: string): Promise<string[]> {
+  const tickets = await call<{ code: string }[]>('GET', '/api/tickets', undefined, token)
+  return tickets.map((t) => t.code)
+}

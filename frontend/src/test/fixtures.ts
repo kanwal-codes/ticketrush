@@ -76,3 +76,22 @@ export function holdView(overrides: Partial<HoldView> = {}): HoldView {
     ...overrides,
   }
 }
+
+export const organizer = { id: 1, email: 'boss@ticketrush.test', displayName: 'Demo Organizer', role: 'ORGANIZER' }
+export const guestMe = { id: 2, email: 'ana@example.org', displayName: 'Ana', role: 'GUEST' }
+
+export function summary(overrides: Partial<import('../api/types').SalesSummary> = {}): import('../api/types').SalesSummary {
+  return {
+    eventId: 7,
+    title: 'Afterlight Tour',
+    status: 'PUBLISHED',
+    tiers: [
+      { sectionId: 1, name: 'Floor', priceCents: 9600, total: 100, sold: 40, held: 10, available: 50 },
+      { sectionId: 2, name: 'Balcony', priceCents: 6400, total: 50, sold: 0, held: 0, available: 50 },
+    ],
+    revenue: { paidOrders: 20, subtotalCents: 384000, feeCents: 28800, totalCents: 412800 },
+    ordersByStatus: { PAID: 20, FAILED: 1 },
+    door: { issued: 40, checkedIn: 12 },
+    ...overrides,
+  }
+}
