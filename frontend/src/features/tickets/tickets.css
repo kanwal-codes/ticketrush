@@ -22,6 +22,10 @@
   margin-bottom: var(--space-4);
 }
 
+.tickets__event header .notice {
+  margin-bottom: var(--space-4);
+}
+
 .tickets__skeleton {
   height: 220px;
   margin-top: var(--space-5);

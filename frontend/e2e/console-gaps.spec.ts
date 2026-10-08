@@ -62,7 +62,8 @@ test('cancelling an event refunds the buyers, and they see it', async ({ page, b
   await guest.addInitScript((token) => sessionStorage.setItem('tr.token', token), buyer.token)
   const guestPage = await guest.newPage()
   await guestPage.goto('/tickets')
-  await expect(guestPage.getByText('Cancelled')).toHaveCount(2)
+  await expect(guestPage.getByText('This event was cancelled')).toBeVisible()
+  await expect(guestPage.getByText('Cancelled', { exact: true })).toHaveCount(2)
   await guest.close()
 })
 
