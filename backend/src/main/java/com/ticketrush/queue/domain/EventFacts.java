@@ -8,6 +8,9 @@ public interface EventFacts {
 
 	Optional<Facts> find(long eventId, Instant now);
 
+	/** Who runs the event, whatever its status. */
+	Optional<Long> organizerOf(long eventId);
+
 	record Facts(boolean waitingRoom, SalePhase phase, Instant opensAt) {
 	}
 
