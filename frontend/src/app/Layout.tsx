@@ -1,11 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, NavLink, Outlet } from 'react-router'
 import { clearToken, useToken } from '../auth/session'
+import { useMe } from '../features/auth/api'
 import './layout.css'
 
 export function Layout() {
   const token = useToken()
   const queryClient = useQueryClient()
+  const me = useMe().data
 
   function signOut() {
     clearToken()
@@ -28,9 +30,12 @@ export function Layout() {
             </NavLink>
             <NavLink to="/tickets">My tickets</NavLink>
             {token ? (
-              <button type="button" className="site-nav__button" onClick={signOut}>
-                Sign out
-              </button>
+              <>
+                {me && <span className="site-nav__who">{me.displayName}</span>}
+                <button type="button" className="site-nav__button" onClick={signOut}>
+                  Sign out
+                </button>
+              </>
             ) : (
               <NavLink to="/signin">Sign in</NavLink>
             )}

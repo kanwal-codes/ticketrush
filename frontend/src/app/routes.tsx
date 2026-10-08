@@ -10,6 +10,8 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, lazy: async () => ({ Component: (await import('../features/discover/Discover')).Discover }) },
       { path: 'events/:id', lazy: async () => ({ Component: (await import('../features/event/EventPage')).EventPage }) },
+      { path: 'signin', lazy: async () => ({ Component: (await import('../features/auth/pages')).SignIn }) },
+      { path: 'register', lazy: async () => ({ Component: (await import('../features/auth/pages')).Register }) },
       { path: '*', element: <NotFound /> },
     ],
   },

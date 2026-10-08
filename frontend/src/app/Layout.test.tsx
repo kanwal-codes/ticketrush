@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { getToken, setToken } from '../auth/session'
+import { json, mockApi } from '../test/mockApi'
 import { routes } from './routes'
 
 function renderAt(path: string) {
@@ -31,6 +32,13 @@ describe('app shell', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
     expect(getToken()).toBeNull()
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument()
+  })
+
+  it('greets a signed-in guest by name', async () => {
+    setToken('abc')
+    mockApi({ 'GET /api/me': () => json({ id: 1, email: 'a@b.co', displayName: 'Ana', role: 'GUEST' }), 'GET /api/events': () => json({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 1 }) })
+    renderAt('/')
+    expect(await screen.findByText('Ana')).toBeInTheDocument()
   })
 
   it('says plainly when a page does not exist', async () => {
