@@ -1,0 +1,40 @@
+.poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.poster__mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+
+/* The four faces the canvas uses, all Archivo, varied by weight and width. */
+.poster__condensed {
+  font-family: var(--font-ui);
+  font-weight: 900;
+  font-variation-settings: 'wdth' 62;
+  letter-spacing: -1px;
+}
+
+.poster__wide {
+  font-family: var(--font-ui);
+  font-weight: 900;
+  font-variation-settings: 'wdth' 125;
+  letter-spacing: -1px;
+}
+
+.poster__lightWide {
+  font-family: var(--font-ui);
+  font-weight: 300;
+  font-variation-settings: 'wdth' 125;
+  letter-spacing: 3px;
+}
+
+.poster__lightCondensed {
+  font-family: var(--font-ui);
+  font-weight: 300;
+  font-variation-settings: 'wdth' 62;
+  letter-spacing: 0;
+}

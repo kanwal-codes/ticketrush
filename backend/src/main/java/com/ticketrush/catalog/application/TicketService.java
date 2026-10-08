@@ -4,6 +4,7 @@ import com.ticketrush.catalog.application.OrderQueryService.OrderView;
 import com.ticketrush.catalog.application.OrderQueryService.TicketView;
 import com.ticketrush.catalog.domain.Event;
 import com.ticketrush.catalog.domain.EventRepository;
+import com.ticketrush.catalog.domain.OrganizerStore;
 import com.ticketrush.catalog.domain.SeatStore;
 import com.ticketrush.catalog.domain.SeatStore.HeldSeat;
 import com.ticketrush.catalog.domain.Ticket;
@@ -11,6 +12,7 @@ import com.ticketrush.catalog.domain.TicketOrder;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
 import com.ticketrush.catalog.domain.TicketRepository;
 import com.ticketrush.catalog.domain.TicketStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,15 +29,17 @@ public class TicketService {
 	private final EventRepository events;
 	private final SeatStore seats;
 	private final OrderQueryService orderViews;
+	private final OrganizerStore organizer;
 	private final Clock clock;
 
 	public TicketService(TicketRepository tickets, TicketOrderRepository orders, EventRepository events,
-			SeatStore seats, OrderQueryService orderViews, Clock clock) {
+			SeatStore seats, OrderQueryService orderViews, OrganizerStore organizer, Clock clock) {
 		this.tickets = tickets;
 		this.orders = orders;
 		this.events = events;
 		this.seats = seats;
 		this.orderViews = orderViews;
+		this.organizer = organizer;
 		this.clock = clock;
 	}
 
@@ -48,7 +52,8 @@ public class TicketService {
 	}
 
 	/** The seat is shown to the person at the door; usedAt only when the ticket was already accepted. */
-	public record ScanResult(ScanOutcome outcome, String seat, Instant usedAt) {
+	public record ScanResult(ScanOutcome outcome, @Schema(nullable = true) String seat,
+			@Schema(nullable = true) Instant usedAt) {
 	}
 
 	/** Every ticket the guest holds, newest order first. */
@@ -72,22 +77,37 @@ public class TicketService {
 	 */
 	@Transactional
 	public ScanResult scan(long organizerId, String code, Long eventId) {
-		Ticket ticket = tickets.findByCode(code.trim().toUpperCase()).orElse(null);
+		String clean = code.trim().toUpperCase();
+		Ticket ticket = tickets.findByCode(clean).orElse(null);
 		if (ticket == null || ticket.getStatus() == TicketStatus.VOID) {
-			return new ScanResult(ScanOutcome.UNKNOWN, null, null);
+			return log(organizerId, clean, eventId, null, new ScanResult(ScanOutcome.UNKNOWN, null, null));
 		}
 		Event event = events.findById(ticket.getEventId()).orElseThrow();
 		if (!event.getOrganizerId().equals(organizerId)) {
 			throw new NotOwnerException();
 		}
 		if (eventId != null && !eventId.equals(ticket.getEventId())) {
-			return new ScanResult(ScanOutcome.WRONG_EVENT, null, null);
+			return log(organizerId, clean, eventId, null, new ScanResult(ScanOutcome.WRONG_EVENT, null, null));
 		}
 		String seat = seatLabel(ticket);
-		if (tickets.markUsed(ticket.getCode(), clock.instant()) == 1) {
-			return new ScanResult(ScanOutcome.VALID, seat, null);
+		ScanResult result = tickets.markUsed(ticket.getCode(), clock.instant()) == 1
+				? new ScanResult(ScanOutcome.VALID, seat, null)
+				: new ScanResult(ScanOutcome.ALREADY_USED, seat, tickets.usedAt(ticket.getCode()));
+		return log(organizerId, clean, eventId, ticket.getEventId(), result);
+	}
+
+	/**
+	 * Writes down what happened at the door, after the ticket itself was dealt with, so the record can never change
+	 * the outcome. It goes under the event the door was working when that event is the scanner's own, otherwise
+	 * under the ticket's event; a code that belongs to nobody and a door nobody owns leave no trace.
+	 */
+	private ScanResult log(long organizerId, String code, Long doorEventId, Long ticketEventId, ScanResult result) {
+		Long target = doorEventId != null && events.findById(doorEventId).filter(e -> e.isOwnedBy(organizerId)).isPresent()
+				? doorEventId : ticketEventId;
+		if (target != null) {
+			organizer.recordScan(target, organizerId, code, result.outcome().name(), result.seat(), clock.instant());
 		}
-		return new ScanResult(ScanOutcome.ALREADY_USED, seat, tickets.usedAt(ticket.getCode()));
+		return result;
 	}
 
 	private String seatLabel(Ticket ticket) {
