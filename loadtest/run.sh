@@ -26,18 +26,20 @@ for _ in $(seq 1 90); do
 done
 echo
 
-if [ "$SCENARIO" = "stream" ]; then
-  java loadtest/Stream.java "${STREAMS:-2000}"
-  exit $?
-fi
 
 case "$SCENARIO" in
   smoke) GUESTS_NEEDED=20 ;;
   contention) GUESTS_NEEDED="${GUESTS:-1000}" ;;
   drop) GUESTS_NEEDED="${GUESTS:-1500}" ;;
+  stream) GUESTS_NEEDED="${STREAMS:-2000}" ;;
   *) GUESTS_NEEDED= ;;
 esac
 if [ -n "$GUESTS_NEEDED" ]; then loadtest/prepare.sh "$GUESTS_NEEDED" || exit 2; fi
+
+if [ "$SCENARIO" = "stream" ]; then
+  java loadtest/StreamLoad.java "${STREAMS:-2000}" "${STREAM_SECONDS:-30}"
+  exit $?
+fi
 
 echo "Running $SCENARIO. Watch it at http://localhost:3000 (dashboard TicketRush)."
 docker compose --profile load run --rm -e GUESTS="${GUESTS:-}" k6 run --quiet "/loadtest/$SCENARIO.js"
