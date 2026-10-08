@@ -1,0 +1,36 @@
+.connection {
+  position: fixed;
+  z-index: 8;
+  top: 61px; /* just under the header */
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.connection__bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  max-width: min(100% - 2 * var(--gutter), 720px);
+  font-size: 0.9rem;
+  color: var(--paper);
+  animation: slide-down-in var(--dur-base) var(--ease-out) both;
+}
+
+.connection__bar--bad {
+  background: #5c3d00;
+}
+
+.connection__bar--ok {
+  background: #14553a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection__bar {
+    animation: none;
+  }
+}

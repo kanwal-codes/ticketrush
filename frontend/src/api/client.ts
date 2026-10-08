@@ -1,5 +1,6 @@
 import createClient, { type Middleware } from 'openapi-fetch'
 import { clearToken, getToken } from '../auth/session'
+import { reportReachable, reportUnreachable } from './connection'
 import { networkError, problemToError, type Problem } from './errors'
 import type { paths } from './schema'
 
@@ -18,7 +19,18 @@ const auth: Middleware = {
 
 export function createApi(fetchImpl: typeof fetch = (...args) => fetch(...args)) {
   // The page's own origin: the dev server and nginx both forward /api to the backend, so there is no CORS.
-  const client = createClient<paths>({ baseUrl: globalThis.location?.origin ?? '', fetch: fetchImpl })
+  // Every call reports whether anything answered, which is how the page knows to say "we can't reach TicketRush".
+  const watched: typeof fetch = async (...args) => {
+    try {
+      const response = await fetchImpl(...args)
+      reportReachable()
+      return response
+    } catch (error) {
+      reportUnreachable()
+      throw error
+    }
+  }
+  const client = createClient<paths>({ baseUrl: globalThis.location?.origin ?? '', fetch: watched })
   client.use(auth)
   return client
 }

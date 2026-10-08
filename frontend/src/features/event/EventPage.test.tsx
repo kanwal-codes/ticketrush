@@ -80,7 +80,7 @@ describe('EventPage', () => {
   it('shows the error screen for an event that does not exist', async () => {
     mockApi({ 'GET /api/events/99': () => json({ title: 'Not found', detail: 'Event 99 not found' }, 404) })
     renderRoute('/events/99')
-    expect(await screen.findByRole('alert')).toHaveTextContent('Event 99 not found')
+    expect(await screen.findByRole('alert')).toHaveTextContent('We could not find that')
   })
 
   it('treats a nonsense address as not found without asking the server', async () => {

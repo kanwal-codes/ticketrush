@@ -1,3 +1,6 @@
+import { ErrorScreen } from '../../components/ErrorScreen'
+import { Notice } from '../../components/Notice'
+import type { Tone } from '../../lib/errorCopy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -70,7 +73,12 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
   useTitle(`Checkout · ${event.title}`)
 
   const [view, setView] = useState<View>({ step: 'form' })
-  const [message, setMessage] = useState('')
+  const [message, setMessageText] = useState('')
+  const [tone, setTone] = useState<Tone>('error')
+  const setMessage = (text: string, next: Tone = 'error') => {
+    setMessageText(text)
+    setTone(next)
+  }
   const [retrySafely, setRetrySafely] = useState(false)
   const [card, setCard] = useState({ number: '', expiry: '', cvc: '' })
   const [errors, setErrors] = useState<CardErrors>({})
@@ -105,6 +113,9 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
         setView({ step: 'gone', message: outcome.message })
         return
       case 'inProgress':
+        setView({ step: 'form' })
+        setMessage(outcome.message, 'info')
+        return
       case 'rejected':
         setView({ step: 'form' })
         setMessage(outcome.message)
@@ -112,7 +123,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
       case 'unknown':
         // Not known whether it went through. The same card retried is safe, so say that and keep the key.
         setView((v) => (v.step === 'pending' ? v : { step: 'form' }))
-        setMessage(outcome.message)
+        setMessage(outcome.message, 'warning')
         setRetrySafely(true)
     }
     },
@@ -148,31 +159,32 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
   }
 
   const paying = view.step === 'paying'
+  const NOTICE_TITLE: Record<Tone, string> = { error: 'The payment did not go through', warning: 'We could not confirm your payment', info: 'Your payment is still in progress', success: 'Done' }
 
   if (view.step === 'gone') {
     return (
-      <div className="page checkout" style={eventTheme(event.poster)}>
-        <h1>Your seats are no longer held</h1>
-        <p className="checkout__lead" role="alert">{view.message}</p>
-        <p className="checkout__actions">
-          <Link to={`/events/${event.id}/seats`} className="btn">Choose seats again</Link>
-          <Link to="/tickets">My tickets</Link>
-        </p>
+      <div style={eventTheme(event.poster)}>
+        <ErrorScreen
+          eyebrow="Hold ended"
+          title="Your seats are no longer held"
+          primary={{ label: 'Choose seats again', to: `/events/${event.id}/seats` }}
+          secondary={{ label: 'My tickets', to: '/tickets' }}
+        >
+          <p>{view.message}</p>
+        </ErrorScreen>
       </div>
     )
   }
 
   if (view.step === 'refunded') {
     return (
-      <div className="page checkout" style={eventTheme(event.poster)}>
-        <h1>Sorry, those seats were taken</h1>
-        <p className="checkout__lead" role="alert">
-          Someone else got the seats while your payment was going through, so we could not give them to you.{' '}
-          {view.refunding ? 'Your money is on its way back to your card.' : 'Your money has been returned to your card.'}
-        </p>
-        <p className="checkout__actions">
-          <Link to={`/events/${event.id}/seats`} className="btn">Choose other seats</Link>
-        </p>
+      <div style={eventTheme(event.poster)}>
+        <ErrorScreen eyebrow="Seats lost" title="Sorry, those seats were taken" primary={{ label: 'Choose other seats', to: `/events/${event.id}/seats` }}>
+          <p>
+            Someone else got the seats while your payment was going through, so we could not give them to you.{' '}
+            {view.refunding ? 'Your money is on its way back to your card.' : 'Your money has been returned to your card.'}
+          </p>
+        </ErrorScreen>
       </div>
     )
   }
@@ -239,7 +251,9 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
           </details>
 
           {message && (
-            <p className="notice notice--error" role="alert">{message}</p>
+            <Notice tone={tone} title={NOTICE_TITLE[tone]} compact>
+              {message}
+            </Notice>
           )}
 
           <button type="submit" className="btn checkout__pay" disabled={paying}>

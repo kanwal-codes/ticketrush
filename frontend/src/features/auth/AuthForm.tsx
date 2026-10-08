@@ -1,7 +1,10 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { ApiError } from '../../api/errors'
 import { Field } from '../../components/Field'
+import { Notice } from '../../components/Notice'
+import { describeError, type ErrorDescription } from '../../lib/errorCopy'
+import { useRetryCountdown } from '../../lib/useRetryCountdown'
 import { safeRedirect } from '../../auth/redirect'
 import { useToken } from '../../auth/session'
 import { useTitle } from '../../lib/useTitle'
@@ -19,7 +22,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   const [values, setValues] = useState<Values>({ displayName: '', email: '', password: '' })
   const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>({})
-  const [formError, setFormError] = useState<ReactNode>(null)
+  const [formError, setFormError] = useState<Pick<ErrorDescription, 'tone' | 'title' | 'message'> | null>(null)
+  const [waitSeconds, startWait] = useRetryCountdown()
   const [busy, setBusy] = useState(false)
 
   if (token && !busy) return <Navigate to={from} replace />
@@ -45,9 +49,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
         const fields = { ...error.fieldErrors } as Partial<Record<keyof Values, string>>
         if (error.status === 409) fields.email = error.message
         if (Object.keys(fields).length > 0 && error.status !== 401) setErrors(fields)
-        else setFormError(error.isNetwork ? error.message : error.status === 401 ? 'That email and password do not match. Try again.' : error.message)
+        else if (error.status === 401) setFormError({ tone: 'error', title: 'That did not match', message: 'The email and password do not match an account. Check them and try again.' })
+        else {
+          const d = describeError(error)
+          if (d.retryAfterSeconds) startWait(d.retryAfterSeconds)
+          setFormError(d)
+        }
       } else {
-        setFormError('Something went wrong. Try again.')
+        setFormError(describeError(error))
       }
     }
   }
@@ -70,12 +79,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
           autoComplete={isRegister ? 'new-password' : 'current-password'}
         />
         {formError && (
-          <p className="notice notice--error" role="alert">
-            {formError}
-          </p>
+          <Notice tone={formError.tone} title={formError.title} compact>
+            {formError.message}
+            {waitSeconds > 0 && <> You can try again in {waitSeconds} s.</>}
+          </Notice>
         )}
-        <button type="submit" className="btn auth__submit" disabled={busy}>
-          {busy ? 'One moment…' : isRegister ? 'Create account' : 'Sign in'}
+        <button type="submit" className="btn auth__submit" disabled={busy || waitSeconds > 0}>
+          {busy ? 'One moment…' : waitSeconds > 0 ? `Try again in ${waitSeconds} s` : isRegister ? 'Create account' : 'Sign in'}
         </button>
       </form>
 

@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useEvents } from '../../api/queries'
 import { useTitle } from '../../lib/useTitle'
+import { Notice } from '../../components/Notice'
 import { HeroSkeleton } from '../../components/PageSkeletons'
+import { describeError } from '../../lib/errorCopy'
 import { EventCard, EventCardSkeleton } from './EventCard'
 import { Hero } from './Hero'
 import { pickFeatured } from './pickFeatured'
@@ -25,6 +27,7 @@ export function Discover() {
   }, [text, q, setParams])
 
   const { data, isPending, isFetching, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useEvents(q)
+  const failure = error && !data ? describeError(error, 'the events') : null
   const events = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data])
   const featured = q ? undefined : pickFeatured(events)
 
@@ -46,15 +49,10 @@ export function Discover() {
           </form>
         </div>
 
-        {error && !data ? (
-          <div className="notice notice--error" role="alert">
-            <p>{error.message}</p>
-            <p style={{ marginTop: 'var(--space-4)' }}>
-              <button type="button" className="btn btn--quiet" onClick={() => void refetch()}>
-                Try again
-              </button>
-            </p>
-          </div>
+        {failure ? (
+          <Notice tone={failure.tone} title={failure.title} actions={<button type="button" className="btn btn--quiet" onClick={() => void refetch()}>Try again</button>}>
+            {failure.message}
+          </Notice>
         ) : isPending ? (
           <ul className="grid" aria-busy="true" aria-label="Loading events">
             {Array.from({ length: 6 }, (_, i) => (

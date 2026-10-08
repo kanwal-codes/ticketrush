@@ -112,16 +112,6 @@
   }
 }
 
-.notice {
-  border: 1px solid var(--rule);
-  padding: var(--space-5);
-  background: var(--white);
-}
-
-.notice--error {
-  border-color: var(--danger);
-}
-
 .field {
   display: grid;
   gap: var(--space-1);
