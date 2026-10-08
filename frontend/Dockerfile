@@ -1,5 +1,5 @@
 # Build stage: installs exactly what the lockfile says and builds the static site.
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -12,7 +12,7 @@ ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
 RUN npx vite build
 
 # Run stage: nginx serves the files and forwards /api to the backend.
-FROM nginx:1.29-alpine
+FROM nginx:1.31-alpine
 # BACKEND is where /api goes, RESOLVER the DNS server that finds it. The defaults are docker compose's; Fly sets both.
 ENV BACKEND=http://app:8080
 ENV RESOLVER=127.0.0.11
