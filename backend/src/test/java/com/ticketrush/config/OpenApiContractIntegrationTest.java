@@ -24,7 +24,7 @@ class OpenApiContractIntegrationTest extends AbstractIntegrationTest {
 
 	@Test
 	void fieldsAreRequiredUnlessTheyCanBeNull() throws Exception {
-		assertThat(required("EventDetail")).contains("id", "title", "serverTime", "tiers", "poster", "waitingRoom");
+		assertThat(required("EventDetail")).contains("id", "title", "serverTime", "tiers", "poster", "waitingRoom", "cancelled");
 		assertThat(required("HoldView")).contains("id", "expiresAt", "serverTime", "seats", "totalCents");
 		assertThat(required("OrderView")).contains("id", "status", "totalCents", "seats", "tickets")
 				.doesNotContain("failureReason", "paidAt");

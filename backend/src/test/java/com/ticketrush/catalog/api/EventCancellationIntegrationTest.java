@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,6 +48,18 @@ class EventCancellationIntegrationTest extends OrderTestSupport {
 				.hasSize(2);
 		assertThat(count("select count(*) from event_seat where event_id = :p0 and status = 'SOLD'", eventId)).isZero();
 		assertMoneyAndSeatsAddUp();
+	}
+
+	@Test
+	void aCancelledEventCanStillBeReadButNeverBought() throws Exception {
+		setUpEvent();
+		cancel(organizer).andExpect(status().isOk());
+
+		mvc.perform(get("/api/events/" + eventId)).andExpect(status().isOk())
+				.andExpect(jsonPath("$.cancelled").value(true)).andExpect(jsonPath("$.saleState").value("ENDED"));
+		mvc.perform(get("/api/events/" + eventId + "/seats")).andExpect(status().isNotFound());
+		mvc.perform(get("/api/events").param("size", "50")).andExpect(jsonPath("$.items[?(@.id == " + eventId + ")]").isEmpty());
+		hold(createGuests(1).get(0).token(), seats.get(0)).andExpect(status().isNotFound());
 	}
 
 	@Test
