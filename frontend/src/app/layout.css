@@ -54,6 +54,14 @@
   border-bottom: 2px solid transparent;
 }
 
+.site-nav__who {
+  color: var(--muted);
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .site-nav a[aria-current='page'] {
   border-bottom-color: var(--ink);
 }
@@ -71,6 +79,12 @@
 
 .site-footer p {
   margin-inline: auto;
+}
+
+@media (max-width: 560px) {
+  .site-nav__who {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
