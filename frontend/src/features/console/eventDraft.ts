@@ -1,4 +1,4 @@
-import type { CreateEventRequest, CreateVenueRequest, VenueView } from '../../api/types'
+import type { CreateEventRequest, CreateVenueRequest, OrganizerEvent, VenueView } from '../../api/types'
 
 export type PosterStyle = CreateEventRequest['poster']['style']
 
@@ -81,6 +81,34 @@ export function emptyDraft(now: Date = new Date()): Draft {
     inkOne: '#2b2fd9',
     inkTwo: '#ff5a36',
     paperColor: '#ffd9c4',
+  }
+}
+
+/** The form's starting values for an event being edited: what the server holds, as the text the form works in. */
+export function draftFromEvent(event: OrganizerEvent, venue: VenueView): Draft {
+  const nameOf = new Map(venue.sections.map((s) => [s.id, s.name]))
+  const prices: Record<string, string> = {}
+  for (const p of event.prices) {
+    const name = nameOf.get(p.sectionId)
+    if (name) prices[name] = (p.priceCents / 100).toFixed(2)
+  }
+  return {
+    ...emptyDraft(),
+    venueMode: 'existing',
+    venueId: String(venue.id),
+    title: event.title,
+    artist: event.artist,
+    description: event.description,
+    dropOpensAt: toLocalInput(new Date(event.dropOpensAt)),
+    onSaleAt: toLocalInput(new Date(event.onSaleAt)),
+    doorsAt: toLocalInput(new Date(event.doorsAt)),
+    startsAt: toLocalInput(new Date(event.startsAt)),
+    waitingRoom: event.waitingRoom,
+    prices,
+    posterStyle: event.poster.style,
+    inkOne: event.poster.inkOne,
+    inkTwo: event.poster.inkTwo,
+    paperColor: event.poster.paperColor,
   }
 }
 

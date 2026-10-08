@@ -4,6 +4,10 @@
 app = "ticketrush-web"
 primary_region = "yyz"
 
+[build.args]
+  # The public Turnstile site key (not a secret). Empty until the Cloudflare widget exists.
+  VITE_TURNSTILE_SITE_KEY = ""
+
 [env]
   # The API app's private address (see backend/fly.toml), and Fly's private DNS server that resolves it.
   BACKEND = "http://ticketrush-api.internal:8080"

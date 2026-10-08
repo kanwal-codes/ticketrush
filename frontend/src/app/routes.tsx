@@ -33,6 +33,7 @@ export const routes: RouteObject[] = [
                 children: [
                   { path: 'console', lazy: async () => ({ Component: (await import('../features/console/ConsoleEvents')).ConsoleEvents }) },
                   { path: 'console/events/new', lazy: async () => ({ Component: (await import('../features/console/EventForm')).EventForm }) },
+                  { path: 'console/events/:id/edit', lazy: async () => ({ Component: (await import('../features/console/EventForm')).EventForm }) },
                   { path: 'console/events/:id', lazy: async () => ({ Component: (await import('../features/console/Dashboard')).Dashboard }) },
                   { path: 'console/events/:id/scan', lazy: async () => ({ Component: (await import('../features/console/Scanner')).Scanner }) },
                 ],
