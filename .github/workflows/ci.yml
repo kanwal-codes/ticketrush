@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      # Integration tests start real Postgres and Redis containers with Testcontainers; the runner has Docker.
+      - name: Test
+        working-directory: backend
+        run: ./mvnw -B verify
+      - name: Coverage in the job summary
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import csv, os
+          path = "backend/target/site/jacoco/jacoco.csv"
+          if os.path.exists(path):
+              rows = list(csv.DictReader(open(path)))
+              def pct(kind):
+                  missed = sum(int(r[kind + "_MISSED"]) for r in rows)
+                  covered = sum(int(r[kind + "_COVERED"]) for r in rows)
+                  return 100 * covered / max(1, missed + covered)
+              print("### Test coverage")
+              print(f"- Lines: **{pct('LINE'):.1f}%**")
+              print(f"- Branches: **{pct('BRANCH'):.1f}%**")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            backend/target/surefire-reports
+            backend/target/site/jacoco
+          retention-days: 14
+
+  load-smoke:
+    name: Load smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: test
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ticketrush
+          POSTGRES_USER: ticketrush
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ticketrush" --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      # Throwaway values for a throwaway database.
+      DB_URL: jdbc:postgresql://localhost:5432/ticketrush
+      DB_USER: ticketrush
+      DB_PASSWORD: ci-only-password
+      JWT_SECRET: ci-only-secret-that-is-at-least-32-characters-long
+      DEMO_ORGANIZER_PASSWORD: ci-only-organizer-password
+      ORGANIZER_PASSWORD: ci-only-organizer-password
+      SPRING_PROFILES_ACTIVE: dev,loadtest
+      TICKETRUSH_PAYMENTS_MOCK_LATENCY: PT0.1S
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Start the app
+        working-directory: backend
+        run: |
+          ./mvnw -B -q package -DskipTests
+          nohup java -jar target/ticketrush-backend-*.jar > ../app.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:8081/actuator/health > /dev/null && exit 0; sleep 2; done
+          cat ../app.log; exit 1
+      - name: Prepare guests
+        run: loadtest/prepare.sh 20
+      - uses: grafana/setup-k6-action@v1
+      - name: Run the smoke scenario
+        # k6 reads and writes under /loadtest in its scripts, so give it that path.
+        run: |
+          sudo ln -sfn "$PWD/loadtest" /loadtest
+          k6 run --quiet loadtest/smoke.js
+      - name: Check the database
+        run: |
+          command -v psql > /dev/null || sudo apt-get install -y -qq postgresql-client
+          loadtest/verify.sh Smoke
+        env:
+          PSQL_CMD: psql postgresql://ticketrush:ci-only-password@localhost:5432/ticketrush
+      - name: App log on failure
+        if: failure()
+        run: tail -n 200 app.log

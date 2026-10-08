@@ -27,6 +27,15 @@ done
 echo
 
 
+# A real drop hits an instance that has been running for a while. Every run here starts a fresh JVM, which
+# is slow for its first half minute (the JIT compiler competes with the load for the same two CPUs), so warm
+# it up with 20 seconds of ordinary traffic first. WARMUP=0 skips this, to measure a cold start on purpose.
+if [ "${WARMUP:-1}" = "1" ] && [ "$SCENARIO" != "smoke" ] && [ "$SCENARIO" != "stream" ]; then
+  echo "Warming up the app (20 seconds)"
+  loadtest/prepare.sh 20 > /dev/null || exit 2
+  docker compose --profile load run --rm -e SMOKE_DURATION=20s k6 run --quiet /loadtest/smoke.js > /dev/null 2>&1
+fi
+
 case "$SCENARIO" in
   smoke) GUESTS_NEEDED=20 ;;
   contention) GUESTS_NEEDED="${GUESTS:-1000}" ;;
