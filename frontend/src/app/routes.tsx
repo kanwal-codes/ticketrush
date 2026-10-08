@@ -15,6 +15,7 @@ export const routes: RouteObject[] = [
         // Everything below needs a signed-in guest.
         element: <RequireAuth />,
         children: [
+          { path: 'events/:id/seats', lazy: async () => ({ Component: (await import('../features/seats/SeatsPage')).SeatsPage }) },
           { path: 'events/:id/queue', lazy: async () => ({ Component: (await import('../features/queue/WaitingRoom')).WaitingRoom }) },
         ],
       },

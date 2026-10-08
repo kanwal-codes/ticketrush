@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Link, NavLink, Outlet } from 'react-router'
 import { clearToken, useToken } from '../auth/session'
 import { useMe } from '../features/auth/api'
+import { HoldTimer } from '../features/seats/HoldTimer'
 import './layout.css'
 
 export function Layout() {
@@ -28,6 +29,7 @@ export function Layout() {
             <NavLink to="/" end>
               Events
             </NavLink>
+            <HoldTimer />
             <NavLink to="/tickets">My tickets</NavLink>
             {token ? (
               <>
