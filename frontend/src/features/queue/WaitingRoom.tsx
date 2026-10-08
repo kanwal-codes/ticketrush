@@ -1,3 +1,4 @@
+import { RollingNumber } from '../../components/RollingNumber'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
@@ -136,7 +137,7 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
       <p className="queue__ahead" aria-hidden="true">
         {view.aheadOfYou > 0 ? (
           <>
-            <span className="queue__count num">{view.aheadOfYou.toLocaleString('en-CA')}</span>
+            <RollingNumber className="queue__count num" value={view.aheadOfYou.toLocaleString('en-CA')} />
             <span>{view.aheadOfYou === 1 ? 'person ahead of you' : 'people ahead of you'}</span>
           </>
         ) : (

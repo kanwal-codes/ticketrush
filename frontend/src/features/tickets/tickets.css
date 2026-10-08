@@ -38,6 +38,8 @@
   padding: 0;
   display: grid;
   gap: var(--space-5);
+  /* A ticket tilts slightly as it arrives; that must never make the page scroll sideways. */
+  overflow-x: clip;
 }
 
 /* A ticket: the event's ink on the left, a white stub with the QR on the right, notches where it tears. */

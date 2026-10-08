@@ -42,7 +42,8 @@ async function chooseFree(page: Page, row: string, count: number) {
 }
 
 // The home page and event page come first, while there is only one Afterlight Tour to show.
-const upcoming = await createEvent({ ...afterlight, onSaleInSeconds: 21 * 3600 + 42 * 60 + 10, waitingRoom: true })
+// It happens soon so it sits on the first page of a database that already holds many events (the list is ordered by date).
+const upcoming = await createEvent({ ...afterlight, startsInDays: 2, onSaleInSeconds: 21 * 3600 + 42 * 60 + 10, waitingRoom: true })
 
 await shoot('discover', 1280, 960, async (page) => {
   await page.goto(`${WEB}/`)
@@ -123,6 +124,28 @@ await shoot('tickets', 1280, 1000, async (page) => {
 await shoot('tickets-phone', 390, 844, async (page) => {
   await page.goto(`${WEB}/tickets`)
   await page.locator('img.stub__qr').first().waitFor()
+  await page.waitForTimeout(500)
+})
+
+// What going wrong looks like. Each failure is made on purpose in the browser, the backend is untouched.
+await shoot('error-load', 1280, 700, async (page) => {
+  await page.route('**/api/events?*', (route) => route.fulfill({ status: 503, contentType: 'application/problem+json', body: '{"title":"Unavailable","status":503}' }))
+  await page.goto(`${WEB}/`)
+  await page.getByRole('alert').waitFor()
+  await page.waitForTimeout(700)
+})
+
+await shoot('error-not-found', 1280, 700, async (page) => {
+  await page.goto(`${WEB}/events/999999`)
+  await page.getByRole('heading', { level: 1, name: 'We could not find that' }).waitFor()
+  await page.waitForTimeout(900)
+})
+
+await shoot('error-offline-phone', 390, 844, async (page) => {
+  await page.goto(`${WEB}/events/${queued.id}/queue`)
+  await page.getByText('312', { exact: true }).waitFor()
+  await page.context().setOffline(true)
+  await page.getByText('You are offline.').waitFor()
   await page.waitForTimeout(500)
 })
 
