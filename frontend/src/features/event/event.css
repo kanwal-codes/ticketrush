@@ -1,0 +1,128 @@
+.event__back {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.event__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: var(--space-7);
+  margin-top: var(--space-4);
+  align-items: start;
+}
+
+.event__poster {
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  position: sticky;
+  top: 84px;
+}
+
+.event__main {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.event__kicker {
+  color: var(--ev-text);
+}
+
+.event__title {
+  color: var(--ev-text);
+  margin-top: calc(-1 * var(--space-4));
+  font-weight: 900;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4) var(--space-5);
+  margin: 0;
+  padding-block: var(--space-4);
+  border-block: 1px solid var(--rule);
+}
+
+.facts dd {
+  margin: var(--space-1) 0 0;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.facts .num {
+  font-weight: 500;
+}
+
+.sale {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-5);
+  background: var(--ev-paper);
+  color: var(--on-ev-paper);
+  border: 1px solid var(--ink);
+}
+
+.sale__headline {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.sale__clock {
+  font-size: clamp(2.25rem, 6vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.sale__note {
+  font-size: 0.9rem;
+}
+
+.tiers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+}
+
+.tier {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tier__name {
+  font-size: 1.1rem;
+}
+
+.tier__price {
+  font-size: 1.15rem;
+  text-align: right;
+}
+
+.event__explain {
+  margin-top: var(--space-4);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.event__about {
+  max-width: var(--measure);
+}
+
+@media (max-width: 760px) {
+  .event__layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .event__poster {
+    position: static;
+    max-width: 280px;
+  }
+}

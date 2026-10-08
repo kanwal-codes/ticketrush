@@ -1,0 +1,31 @@
+.auth {
+  max-width: 460px;
+}
+
+.auth__lead {
+  margin-top: var(--space-3);
+  color: var(--muted);
+}
+
+.auth__form {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.auth__submit {
+  margin-top: var(--space-2);
+}
+
+.auth__switch {
+  margin-top: var(--space-5);
+}
+
+.field__hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.auth h1 {
+  font-size: clamp(1.9rem, 4vw, 2.5rem);
+}
