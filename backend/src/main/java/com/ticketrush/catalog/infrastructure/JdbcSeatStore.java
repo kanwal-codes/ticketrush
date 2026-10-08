@@ -53,6 +53,15 @@ class JdbcSeatStore implements SeatStore {
 	}
 
 	@Override
+	public int freeSoldSeatsOf(long orderId) {
+		return jdbc.sql("update event_seat es set status = 'AVAILABLE', hold_id = null, held_until = null "
+				+ "from ticket t where t.order_id = :order and es.event_id = t.event_id and es.seat_id = t.seat_id "
+				+ "and es.status = 'SOLD'")
+				.param("order", orderId)
+				.update();
+	}
+
+	@Override
 	public List<SectionAvailability> availabilityBySection(long eventId, Instant now) {
 		return jdbc.sql("select s.id as section_id, count(*) as total, "
 				+ "count(*) filter (where " + CLAIMABLE + ") as available "

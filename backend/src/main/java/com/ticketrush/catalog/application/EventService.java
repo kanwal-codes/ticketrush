@@ -7,15 +7,22 @@ import com.ticketrush.catalog.domain.EventRepository;
 import com.ticketrush.catalog.domain.EventStatus;
 import com.ticketrush.catalog.domain.PosterStyle;
 import com.ticketrush.catalog.domain.SeatStore;
+import com.ticketrush.catalog.domain.TicketOrder;
+import com.ticketrush.catalog.domain.TicketOrderRepository;
+import com.ticketrush.catalog.domain.TicketRepository;
 import com.ticketrush.catalog.domain.Venue;
 import com.ticketrush.catalog.domain.VenueRepository;
 import com.ticketrush.catalog.domain.VenueSection;
 import com.ticketrush.catalog.domain.VenueSectionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,20 +31,31 @@ import java.util.stream.Collectors;
 @Service
 public class EventService {
 
+	private static final Logger log = LoggerFactory.getLogger(EventService.class);
+
 	private final EventRepository events;
 	private final EventPriceRepository prices;
 	private final VenueRepository venues;
 	private final VenueSectionRepository sections;
 	private final SeatStore seats;
+	private final TicketOrderRepository orderRows;
+	private final TicketRepository tickets;
+	private final OrderService orders;
+	private final TransactionTemplate tx;
 	private final Clock clock;
 
 	public EventService(EventRepository events, EventPriceRepository prices, VenueRepository venues,
-			VenueSectionRepository sections, SeatStore seats, Clock clock) {
+			VenueSectionRepository sections, SeatStore seats, TicketOrderRepository orderRows,
+			TicketRepository tickets, OrderService orders, TransactionTemplate tx, Clock clock) {
 		this.events = events;
 		this.prices = prices;
 		this.venues = venues;
 		this.sections = sections;
 		this.seats = seats;
+		this.orderRows = orderRows;
+		this.tickets = tickets;
+		this.orders = orders;
+		this.tx = tx;
 		this.clock = clock;
 	}
 
@@ -126,13 +144,45 @@ public class EventService {
 		return ref(event);
 	}
 
-	@Transactional
+	/**
+	 * Takes the event off sale and gives every guest their money back. In one transaction the event is cancelled and
+	 * each paid order that nobody has been admitted on is set to REFUNDING, its tickets voided and its seats freed.
+	 * After that commits the refunds are sent; one that fails stays REFUNDING and the reconciler retries it, so a
+	 * provider outage cannot lose a refund. An order with a ticket already scanned is left alone: that guest was
+	 * let in. Safe to repeat: a second cancel finds nothing left to refund.
+	 */
 	public EventRef cancel(long organizerId, long eventId) {
+		Cancelled done = tx.execute(status -> cancelInTransaction(organizerId, eventId));
+		for (long orderId : done.refunds()) {
+			try {
+				orders.completeRefund(orderId);
+			}
+			catch (RuntimeException e) {
+				log.warn("Refund of order {} did not go through, the reconciler will retry it: {}", orderId, e.getMessage());
+			}
+		}
+		return done.ref();
+	}
+
+	private record Cancelled(EventRef ref, List<Long> refunds) {
+	}
+
+	private Cancelled cancelInTransaction(long organizerId, long eventId) {
 		Event event = lockOwned(organizerId, eventId);
 		if (event.getStatus() != EventStatus.CANCELLED) {
 			event.markCancelled();
 		}
-		return ref(event);
+		List<Long> refunds = new ArrayList<>();
+		for (TicketOrder order : orderRows.findPaidByEventId(eventId)) {
+			if (tickets.anyUsed(order.getId())) {
+				continue;
+			}
+			seats.freeSoldSeatsOf(order.getId());
+			tickets.voidIssued(order.getId());
+			order.markRefunding(order.getPaymentRef(), "The event was cancelled. You are being refunded.");
+			refunds.add(order.getId());
+		}
+		return new Cancelled(ref(event), refunds);
 	}
 
 	private Event lockOwned(long organizerId, long eventId) {

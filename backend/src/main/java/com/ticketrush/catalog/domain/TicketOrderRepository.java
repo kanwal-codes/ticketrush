@@ -21,6 +21,10 @@ public interface TicketOrderRepository extends JpaRepository<TicketOrder, Long> 
 
 	List<TicketOrder> findByUserIdOrderByIdDesc(Long userId);
 
+	/** Every order of the event that was paid for and has not been refunded. */
+	@Query("select o from TicketOrder o where o.eventId = :eventId and o.status = com.ticketrush.catalog.domain.OrderStatus.PAID")
+	List<TicketOrder> findPaidByEventId(Long eventId);
+
 	List<TicketOrder> findByStatusAndCreatedAtBefore(OrderStatus status, Instant before);
 
 }

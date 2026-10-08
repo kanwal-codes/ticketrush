@@ -25,6 +25,16 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 			+ "where t.code = :code and t.status = com.ticketrush.catalog.domain.TicketStatus.ISSUED")
 	int markUsed(String code, Instant now);
 
+	/** Whether any ticket of the order has been accepted at a door. */
+	@Query("select count(t) > 0 from Ticket t where t.orderId = :orderId and t.status = com.ticketrush.catalog.domain.TicketStatus.USED")
+	boolean anyUsed(Long orderId);
+
+	/** Cancels the order's unused tickets, so they can no longer be scanned in. */
+	@Modifying
+	@Query("update Ticket t set t.status = com.ticketrush.catalog.domain.TicketStatus.VOID "
+			+ "where t.orderId = :orderId and t.status = com.ticketrush.catalog.domain.TicketStatus.ISSUED")
+	int voidIssued(Long orderId);
+
 	/** Read straight from the table, so it reflects a scan made a moment ago by someone else. */
 	@Query("select t.usedAt from Ticket t where t.code = :code")
 	Instant usedAt(String code);
