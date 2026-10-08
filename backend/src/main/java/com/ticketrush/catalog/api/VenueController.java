@@ -10,6 +10,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,10 +35,10 @@ class VenueController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	VenueView create(@Valid @RequestBody CreateVenueRequest request) {
+	VenueView create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateVenueRequest request) {
 		List<SectionSpec> specs = request.sections().stream()
 				.map(s -> new SectionSpec(s.name(), s.rows(), s.seatsPerRow())).toList();
-		return venues.create(request.name(), request.city(), specs);
+		return venues.create(Long.parseLong(jwt.getSubject()), request.name(), request.city(), specs);
 	}
 
 	@GetMapping("/{id}")

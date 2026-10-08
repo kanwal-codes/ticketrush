@@ -1,4 +1,13 @@
-# The web app is static files plus a proxy for /api. The official nginx image fills in ${BACKEND} at start-up.
+# The web app is static files plus a proxy for /api. The official nginx image fills in ${BACKEND} and ${RESOLVER}
+# at start-up.
+
+# The address of the person's browser, for the backend's sign-in rate limit. Behind Fly, its proxy sets Fly-Client-IP
+# itself (overwriting anything the client sent), so that is the one to trust. Anywhere else it is the connection's.
+map $http_fly_client_ip $client_ip {
+  default $http_fly_client_ip;
+  ""      $remote_addr;
+}
+
 server {
   listen 80;
   server_name _;
@@ -8,7 +17,15 @@ server {
   gzip_types text/css application/javascript image/svg+xml application/json;
 
   # Resolved when a request arrives, not when nginx starts, so the web container can start before the app.
-  resolver 127.0.0.11 valid=10s;
+  # RESOLVER is Docker's DNS in compose and Fly's private DNS ([fdaa::3]) on Fly.
+  resolver ${RESOLVER} valid=10s;
+
+  # For the host's health check. Answers without touching the backend, so the web app reports on itself only.
+  location = /healthz {
+    access_log off;
+    default_type text/plain;
+    return 200 "ok\n";
+  }
 
   location /api/ {
     include /etc/nginx/security-headers.conf;
@@ -17,7 +34,8 @@ server {
     proxy_http_version 1.1;
     proxy_set_header Connection "";
     proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    # Only the real client address, never a list a client could have started with a forged one.
+    proxy_set_header X-Forwarded-For $client_ip;
     proxy_set_header X-Forwarded-Proto $scheme;
     # The waiting room stream is a long-lived response: do not hold it back, and do not cut it off.
     proxy_buffering off;
