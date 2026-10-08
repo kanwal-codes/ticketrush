@@ -1,7 +1,10 @@
 package com.ticketrush.identity.api;
 
+import com.ticketrush.identity.application.BotCheckFailedException;
+import com.ticketrush.identity.application.BotCheckUnavailableException;
 import com.ticketrush.identity.application.DuplicateEmailException;
 import com.ticketrush.identity.application.InvalidCredentialsException;
+import com.ticketrush.identity.application.SessionExpiredException;
 import com.ticketrush.identity.application.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -19,6 +22,21 @@ class IdentityExceptionHandler {
 	@ExceptionHandler(InvalidCredentialsException.class)
 	ProblemDetail invalidCredentials(InvalidCredentialsException e) {
 		return problem(HttpStatus.UNAUTHORIZED, "Sign-in failed", e.getMessage());
+	}
+
+	@ExceptionHandler(SessionExpiredException.class)
+	ProblemDetail sessionExpired(SessionExpiredException e) {
+		return problem(HttpStatus.UNAUTHORIZED, "Session ended", e.getMessage());
+	}
+
+	@ExceptionHandler(BotCheckFailedException.class)
+	ProblemDetail botCheckFailed(BotCheckFailedException e) {
+		return problem(HttpStatus.BAD_REQUEST, "Check not passed", e.getMessage());
+	}
+
+	@ExceptionHandler(BotCheckUnavailableException.class)
+	ProblemDetail botCheckUnavailable(BotCheckUnavailableException e) {
+		return problem(HttpStatus.SERVICE_UNAVAILABLE, "Check unavailable", e.getMessage());
 	}
 
 	@ExceptionHandler(UserNotFoundException.class)

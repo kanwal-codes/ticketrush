@@ -24,7 +24,7 @@ class JwtTokenIssuer implements TokenIssuer {
 	}
 
 	@Override
-	public IssuedToken issue(User user) {
+	public IssuedToken issue(User user, Instant authTime) {
 		Instant now = Instant.now();
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				.issuer(properties.issuer())
@@ -33,6 +33,7 @@ class JwtTokenIssuer implements TokenIssuer {
 				.subject(String.valueOf(user.getId()))
 				.claim("email", user.getEmail())
 				.claim("roles", List.of(user.getRole().name()))
+				.claim("auth_time", authTime.getEpochSecond())
 				.build();
 		String token = encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
 				.getTokenValue();
