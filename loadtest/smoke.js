@@ -11,7 +11,7 @@ const paid = new Counter('orders_paid');
 
 export const options = {
   scenarios: {
-    smoke: { executor: 'constant-vus', vus: 20, duration: '30s' },
+    smoke: { executor: 'constant-vus', vus: 20, duration: __ENV.SMOKE_DURATION || '30s' },
   },
   thresholds: {
     server_errors: ['count==0'],
