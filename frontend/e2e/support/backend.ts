@@ -125,3 +125,8 @@ export async function buySeats(guest: { token: string }, eventId: number, seatId
   })
   if (!response.ok) throw new Error(`Could not buy seats: ${response.status}`)
 }
+
+/** A guest's own orders, to look up one by what the page showed. */
+export async function ordersOf(token: string): Promise<{ id: number; reference: string; status: string }[]> {
+  return call('GET', '/api/orders', undefined, token)
+}

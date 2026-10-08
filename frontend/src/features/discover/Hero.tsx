@@ -11,7 +11,7 @@ export function Hero({ event, onTick }: { event: EventSummary; onTick?: () => vo
   const cta = event.saleState === 'QUEUE_OPEN' ? 'Join the waiting room' : event.saleState === 'ON_SALE' ? 'Get tickets' : 'See the event'
   return (
     <section className="hero" style={eventTheme(event.poster)} aria-labelledby="hero-title">
-      <div className="hero__poster">
+      <div className="hero__poster" style={{ viewTransitionName: `poster-${event.id}` }}>
         <Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} />
       </div>
       <div className="hero__body">
@@ -29,7 +29,7 @@ export function Hero({ event, onTick }: { event: EventSummary; onTick?: () => vo
             <span className="label">until tickets go on sale</span>
           </p>
         )}
-        <Link to={`/events/${event.id}`} className="btn">
+        <Link to={`/events/${event.id}`} className="btn" viewTransition>
           {cta}
         </Link>
         {waiting && <p className="hero__note">The queue opens at {formatTime(event.dropOpensAt)}, and people get in by arrival time. A refresh keeps your place.</p>}

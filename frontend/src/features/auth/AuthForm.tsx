@@ -37,7 +37,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
     try {
       if (isRegister) await register({ ...values, email: values.email.trim(), displayName: values.displayName.trim() })
       else await signIn(values.email.trim(), values.password)
-      void navigate(from, { replace: true })
+      void navigate(from, { replace: true, viewTransition: true })
     } catch (error) {
       setBusy(false)
       if (error instanceof ApiError) {

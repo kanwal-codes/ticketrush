@@ -1,12 +1,15 @@
 import { createBrowserRouter, type RouteObject } from 'react-router'
 import { RequireAuth } from '../auth/RequireAuth'
 import { Layout } from './Layout'
+import { BootFallback } from './BootFallback'
 import { NotFound, RouteError } from './RouteError'
 
 export const routes: RouteObject[] = [
   {
     path: '/',
     element: <Layout />,
+    // Shown for the moment before the first page's code has loaded.
+    HydrateFallback: BootFallback,
     errorElement: <RouteError />,
     children: [
       { index: true, lazy: async () => ({ Component: (await import('../features/discover/Discover')).Discover }) },

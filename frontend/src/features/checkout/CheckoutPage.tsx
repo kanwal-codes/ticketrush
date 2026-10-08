@@ -5,6 +5,7 @@ import { useEvent } from '../../api/queries'
 import type { EventDetail, HoldView, OrderView } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
 import { Field } from '../../components/Field'
+import { CheckoutSkeleton } from '../../components/PageSkeletons'
 import { digitsOnly, formatCardNumber, formatExpiry, TEST_CARDS, validateCard, type CardErrors } from '../../lib/card'
 import { eventTheme } from '../../lib/eventTheme'
 import { formatMoney } from '../../lib/money'
@@ -34,7 +35,7 @@ function Checkout({ id }: { id: number }) {
 
   const failure = [event, hold].find((q) => q.error && q.data === undefined)?.error
   if (failure) throw failure
-  if (!event.data || (hold.data === undefined && !kept)) return <div className="page" aria-busy="true" aria-label="Loading checkout" />
+  if (!event.data || (hold.data === undefined && !kept)) return <CheckoutSkeleton />
   if (!current) return <NoHold event={event.data} />
   return <CheckoutBody event={event.data} hold={current} />
 }
@@ -83,7 +84,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
         void queryClient.invalidateQueries({ queryKey: ['tickets'] })
         void queryClient.invalidateQueries({ queryKey: seatKeys.hold(event.id) })
         void queryClient.invalidateQueries({ queryKey: seatKeys.seats(event.id) })
-        void navigate('/tickets', { replace: true, state: { paid: { reference: outcome.order.reference, totalCents: outcome.order.totalCents } } })
+        void navigate('/tickets', { replace: true, viewTransition: true, state: { paid: { reference: outcome.order.reference, totalCents: outcome.order.totalCents } } })
         return
       case 'declined':
         setView({ step: 'form' })

@@ -5,6 +5,7 @@ import { ApiError } from '../../api/errors'
 import { useEvent } from '../../api/queries'
 import type { EventDetail, HoldView, SeatMap as SeatMapData } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
+import { SeatsSkeleton } from '../../components/PageSkeletons'
 import { clearToken } from '../../auth/session'
 import { MAX_SEATS } from '../../lib/constants'
 import { eventTheme } from '../../lib/eventTheme'
@@ -29,7 +30,7 @@ function Seats({ id }: { id: number }) {
   const hold = useMyHold(id)
   const failure = [event, map, hold].find((q) => q.error && !q.data && q.data !== null)?.error
   if (failure) throw failure
-  if (!event.data || !map.data || hold.data === undefined) return <div className="page" aria-busy="true" aria-label="Loading seats" />
+  if (!event.data || !map.data || hold.data === undefined) return <SeatsSkeleton />
 
   // A waiting-room event needs the admission token to hold seats, unless the guest already holds some.
   if (event.data.waitingRoom && !getAdmission(id) && !hold.data) return <Navigate to={`/events/${id}/queue`} replace />
@@ -82,13 +83,13 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
   }
 
   async function onContinue() {
-    if (isHeld && hold) return void navigate(`/events/${event.id}/checkout`)
+    if (isHeld && hold) return void navigate(`/events/${event.id}/checkout`, { viewTransition: true })
     setBusy(true)
     setMessage('')
     try {
       const next = await holdSeats(event.id, effective, getAdmission(event.id))
       queryClient.setQueryData(seatKeys.hold(event.id), next)
-      void navigate(`/events/${event.id}/checkout`)
+      void navigate(`/events/${event.id}/checkout`, { viewTransition: true })
     } catch (e) {
       setBusy(false)
       if (!(e instanceof ApiError)) return setMessage('Something went wrong. Try again.')

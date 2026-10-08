@@ -74,6 +74,11 @@ svg {
   outline-offset: 2px;
 }
 
+/* Pages move focus to their heading after a navigation, for keyboard and screen reader users. No ring needed there. */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
 /* Numbers that line up: prices, countdowns, seat numbers. */
 .num {
   font-family: var(--font-mono);

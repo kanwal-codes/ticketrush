@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useEventsById } from '../../api/queries'
 import type { MyTicket } from '../../api/types'
+import { WalletSkeleton } from '../../components/PageSkeletons'
 import { eventTheme } from '../../lib/eventTheme'
 import { formatMoney } from '../../lib/money'
 import { useTitle } from '../../lib/useTitle'
@@ -29,6 +30,7 @@ export function TicketsPage() {
   }, [paid])
 
   if (tickets.error && !tickets.data) throw tickets.error
+  if (tickets.isPending && !paid) return <WalletSkeleton />
 
   return (
     <div className="page tickets">

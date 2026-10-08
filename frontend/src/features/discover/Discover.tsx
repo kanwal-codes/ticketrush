@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useEvents } from '../../api/queries'
 import { useTitle } from '../../lib/useTitle'
+import { HeroSkeleton } from '../../components/PageSkeletons'
 import { EventCard, EventCardSkeleton } from './EventCard'
 import { Hero } from './Hero'
 import { pickFeatured } from './pickFeatured'
@@ -31,6 +32,7 @@ export function Discover() {
     <div className="page">
       <h1 className="visually-hidden">Events</h1>
 
+      {isPending && !q && <HeroSkeleton />}
       {featured && <Hero event={featured} onTick={() => void queryClient.invalidateQueries({ queryKey: ['events'] })} />}
 
       <section aria-labelledby="events-heading" className="discover__list">
@@ -64,8 +66,8 @@ export function Discover() {
         ) : (
           <>
             <ul className="grid" aria-busy={isFetching && !isFetchingNextPage}>
-              {events.map((event) => (
-                <EventCard key={event.id} event={event} />
+              {events.map((event, index) => (
+                <EventCard key={event.id} event={event} index={index} sharedPoster={event.id !== featured?.id} />
               ))}
             </ul>
             {hasNextPage && (
