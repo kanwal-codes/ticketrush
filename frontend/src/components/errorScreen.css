@@ -1,0 +1,79 @@
+.error-screen {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.error-screen__stub {
+  width: 160px;
+  height: 96px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linejoin: miter;
+}
+
+.error-screen__half {
+  fill: var(--paper);
+  animation: stub-left var(--dur-slow) var(--ease-out) both;
+}
+
+.error-screen__half--right {
+  animation-name: stub-right;
+}
+
+.error-screen__rule {
+  stroke-width: 2;
+  stroke-linecap: square;
+  opacity: 0.4;
+}
+
+@keyframes stub-left {
+  from { transform: translateX(8px) rotate(0deg); }
+  to   { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes stub-right {
+  from { transform: translateX(-8px); }
+  to   { transform: translateX(6px) rotate(3deg); }
+}
+
+.error-screen__half--right {
+  transform-origin: 130px 88px;
+  transform: translateX(6px) rotate(3deg);
+}
+
+.error-screen__text {
+  max-width: 52ch;
+}
+
+.error-screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.error-screen__details {
+  font-size: 0.875rem;
+  color: var(--ink-muted, var(--ink));
+}
+
+.error-screen__details summary {
+  cursor: pointer;
+}
+
+.error-screen__details ul {
+  margin: var(--space-3) 0;
+  padding: 0;
+  list-style: none;
+  font-family: ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-screen__half {
+    animation: none;
+  }
+}

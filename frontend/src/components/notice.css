@@ -1,0 +1,110 @@
+.notice {
+  --tone: var(--ink);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-3);
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--tone);
+  animation: slide-up-in var(--dur-base) var(--ease-out) both;
+}
+
+.notice--error {
+  --tone: var(--danger);
+  /* An error arrives, then shakes once, so the eye goes where it happened. */
+  animation:
+    slide-up-in var(--dur-base) var(--ease-out) both,
+    shake 0.4s 0.2s var(--ease-in-out) both;
+}
+
+.notice--warning {
+  --tone: #8a5a00;
+}
+
+.notice--info {
+  --tone: var(--ev, var(--ink));
+}
+
+.notice--success {
+  --tone: var(--ok);
+}
+
+.notice__icon {
+  color: var(--tone);
+  display: grid;
+  place-items: center;
+  padding-top: 1px;
+}
+
+.notice__title {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.notice__text {
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.notice__text p {
+  max-width: none;
+}
+
+.notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin-top: var(--space-3);
+}
+
+.notice__close {
+  border: 0;
+  background: none;
+  padding: var(--space-1);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
+
+.notice__close:hover {
+  color: var(--ink);
+}
+
+.notice--compact {
+  padding: var(--space-3);
+  gap: var(--space-2);
+  font-size: 0.9rem;
+}
+
+.notice--compact .notice__title {
+  font-size: 0.95rem;
+}
+
+/* The tick draws itself in. */
+.icon__draw {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: draw var(--dur-slow) var(--ease-out) 0.1s forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notice,
+  .notice--error {
+    animation: none;
+  }
+
+  .icon__draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
