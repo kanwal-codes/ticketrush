@@ -48,6 +48,11 @@ class EventCancellationIntegrationTest extends OrderTestSupport {
 				.hasSize(2);
 		assertThat(count("select count(*) from event_seat where event_id = :p0 and status = 'SOLD'", eventId)).isZero();
 		assertMoneyAndSeatsAddUp();
+
+		// The buyer still sees what they had, marked void, with its seat.
+		mvc.perform(get("/api/tickets").header("Authorization", bearer(guests.get(0).token()))).andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(2)).andExpect(jsonPath("$[0].status").value("VOID"))
+				.andExpect(jsonPath("$[0].section").value("Main")).andExpect(jsonPath("$[0].row").value("A"));
 	}
 
 	@Test
