@@ -23,6 +23,12 @@ public class EventLookup {
 	public record Schedule(boolean waitingRoom, Instant dropOpensAt, Instant onSaleAt, Instant startsAt) {
 	}
 
+	/** The organizer of an event in any status, or empty when there is no such event. */
+	@Transactional(readOnly = true)
+	public Optional<Long> organizerOf(long eventId) {
+		return events.findById(eventId).map(e -> e.getOrganizerId());
+	}
+
 	@Cacheable(cacheNames = "eventschedule", key = "#eventId")
 	@Transactional(readOnly = true)
 	public Optional<Schedule> schedule(long eventId) {
