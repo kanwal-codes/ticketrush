@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { contrast } from './color'
 import { eventTheme, textInk } from './eventTheme'
 
 const poster = (inkOne: string, inkTwo: string, paperColor = '#ffd9c4') => ({ style: 'ORBIT' as const, inkOne, inkTwo, paperColor })
@@ -15,6 +16,11 @@ describe('textInk', () => {
 })
 
 describe('eventTheme', () => {
+  it('keeps text on the event ink legible even for a mid-tone organizer color', () => {
+    const style = eventTheme(poster('#3f6bff', '#5cf2b0', '#101b3a')) as Record<string, string>
+    expect(contrast(style['--on-ev']!, style['--ev']!)).toBeGreaterThanOrEqual(4.5)
+  })
+
   it('sets the variables the pages use, with readable text on the event paper and on the ink', () => {
     const style = eventTheme(poster('#0e4d3a', '#f08fa8', '#101b3a')) as Record<string, string>
     expect(style['--ev']).toBe('#0e4d3a')

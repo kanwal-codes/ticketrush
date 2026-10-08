@@ -31,6 +31,7 @@
 
 .checkout__email {
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .checkout__pair {

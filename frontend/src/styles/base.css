@@ -26,6 +26,8 @@ h3 {
   line-height: 1.08;
   letter-spacing: -0.02em;
   text-wrap: balance;
+  /* A very long word with nowhere to break must not push the page wider than the screen. */
+  overflow-wrap: anywhere;
 }
 
 h1 {
@@ -43,6 +45,7 @@ h3 {
 p {
   margin: 0;
   max-width: var(--measure);
+  overflow-wrap: break-word;
 }
 
 a {
