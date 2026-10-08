@@ -4,11 +4,12 @@
 
 Flash-sale ticketing that stays correct under a traffic spike: a waiting room, live seat maps, timed seat holds, and zero oversold seats, backed by a published load test.
 
-> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, a load test with published results, and the guest web app. Next: the organizer console and a live deployment.
+> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, a load test with published results, the guest web app, and the organizer console. It is live at https://ticketrush-web.fly.dev (demo data, mock payments; [how it is deployed](docs/deploy.md)).
 
 ## Stack
 
 - **Backend:** Java 21 (virtual threads), Spring Boot 4, Spring Security with JWT, PostgreSQL 16, Redis 7, Flyway
+- **Deployment:** Docker images, nginx, Fly.io (two apps, the API private), a smoke test for what must be closed
 - **Frontend:** React 19, TypeScript (strict), Vite, React Router, TanStack Query, plain CSS, served by nginx. Types are generated from the backend's OpenAPI document
 - **Quality:** JUnit 5, Testcontainers, ArchUnit, JaCoCo (95% of lines, gated), Vitest and Testing Library, Playwright and axe, k6, Prometheus and Grafana, GitHub Actions
 
@@ -57,7 +58,8 @@ The end-to-end tests drive Chromium against the real backend and database, so st
 (`ORGANIZER_PASSWORD=...`). They cover the whole purchase, a declined card, an unknown payment outcome, two guests
 racing for the same seats, refreshing mid-queue, the whole purchase by keyboard, failures made on purpose (a failing server, a
 missing page, a rate limit, going offline), reduced motion, layout shift, accessibility scans of every
-screen, and that no screen scrolls sideways on a phone.
+screen, running a whole event as an organizer (create, publish, a guest buys, the dashboard agrees to the cent, the door
+scanner admits once), and that no screen scrolls sideways on a phone.
 
 Integration tests start real Postgres and Redis containers with Testcontainers, so Docker must be running. The build also writes a JaCoCo coverage report and fails if line coverage drops below 93% or branch coverage below 82%.
 
@@ -74,6 +76,22 @@ Integration tests start real Postgres and Redis containers with Testcontainers, 
 <img src="docs/img/screens/error-load.png" alt="The events could not load" width="49%">
 <img src="docs/img/screens/error-not-found.png" alt="A page that does not exist" width="49%">
 </p>
+
+### The organizer console
+
+<p>
+<img src="docs/img/screens/console-dashboard.png" alt="Sales dashboard" width="49%">
+<img src="docs/img/screens/console-new.png" alt="Creating an event with a live poster preview" width="49%">
+</p>
+
+<p>
+<img src="docs/img/screens/console-scanner-phone.png" alt="The door scanner on a phone" width="22%">
+</p>
+
+The dashboard shows revenue, seats sold and held, the people in the waiting room and the door count, to the cent and
+refreshed every five seconds. The create form checks the server's rules before asking, keeps its draft if the sign-in
+runs out, and shows the poster as you design it. The door scanner takes a keyboard-style reader or typed codes. See
+[the console and deployment record](docs/adr/0007-organizer-console-and-deployment.md).
 
 <p>
 <img src="docs/img/screens/tickets.png" alt="Tickets" width="49%">
@@ -125,6 +143,8 @@ The conditions, the tables with ranges, what went wrong along the way and what i
 | Confirmations | Paying writes an outbox row in the same transaction. A relay delivers it to idempotent listeners: one confirmation message per order, and the guest's place in the waiting room is freed. A failing delivery is counted and retried, never lost |
 | Tickets | `GET /api/tickets`, a QR code per ticket as SVG at `/api/tickets/{id}/qr.svg`, and organizer scanning at `POST /api/tickets/scan`. 20 scanners presenting one ticket at once admit it exactly once |
 | Roles | Browsing is public. Creating venues and events is organizer only, and an organizer can only change their own events |
+| Organizer console | `/api/organizer/**`: my events (drafts too), sales per section with revenue and door count, the waiting room's depth, every scan attempt. Ownership is checked on every route, and tests compare each number with direct SQL |
+| Production | Sign-in and sign-up are rate limited per address, the first organizer comes from configuration, a `prod` profile closes the API docs, and the API has no public address on Fly. See [docs/deploy.md](docs/deploy.md) |
 | Errors | RFC 7807 problem responses, with each invalid field listed |
 | Architecture | ArchUnit tests enforce `api -> application -> domain` layering and no cycles between modules |
 | Schema | Flyway migrations only. Hibernate runs in `validate` mode |

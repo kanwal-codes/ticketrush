@@ -4,12 +4,15 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+# Types and tests are checked by CI before an image is built, so this only bundles (the checks need e2e/ and scripts/,
+# which the image's context leaves out).
+RUN npx vite build
 
 # Run stage: nginx serves the files and forwards /api to the backend.
 FROM nginx:1.29-alpine
-# BACKEND is where /api goes. In docker compose that is the app container.
+# BACKEND is where /api goes, RESOLVER the DNS server that finds it. The defaults are docker compose's; Fly sets both.
 ENV BACKEND=http://app:8080
+ENV RESOLVER=127.0.0.11
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY nginx-security-headers.conf /etc/nginx/security-headers.conf
 COPY --from=build /build/dist /usr/share/nginx/html
