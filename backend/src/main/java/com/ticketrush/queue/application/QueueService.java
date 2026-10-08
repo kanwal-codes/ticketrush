@@ -91,6 +91,15 @@ public class QueueService {
 		return statusWithoutLimit(userId, eventId, clock.instant());
 	}
 
+	/** What the organizer sees of their event's line: people waiting and people inside. */
+	public WaitingLine.Depth depth(long organizerId, long eventId) {
+		Long owner = events.organizerOf(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+		if (owner != organizerId) {
+			throw new NotYourEventException();
+		}
+		return line.depth(eventId, clock.instant());
+	}
+
 	public void leave(long userId, long eventId) {
 		line.leave(eventId, userId);
 	}
