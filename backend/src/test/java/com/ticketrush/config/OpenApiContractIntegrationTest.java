@@ -31,6 +31,11 @@ class OpenApiContractIntegrationTest extends AbstractIntegrationTest {
 		assertThat(required("QueueView")).contains("state", "aheadOfYou", "queueLength", "serverTime")
 				.doesNotContain("position", "admissionToken", "admittedUntil");
 		assertThat(required("ScanResult")).contains("outcome").doesNotContain("seat", "usedAt");
+		assertThat(required("TierRow")).contains("sectionId", "name", "total", "sold", "held", "available")
+				.doesNotContain("priceCents");
+		assertThat(required("SalesSummary")).contains("eventId", "status", "tiers", "revenue", "ordersByStatus", "door");
+		assertThat(required("ScanRow")).contains("code", "outcome", "at").doesNotContain("seat");
+		assertThat(required("Depth")).contains("waiting", "inside");
 	}
 
 	@Test
