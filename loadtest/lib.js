@@ -103,7 +103,8 @@ export function jitter(baseSeconds, spreadSeconds) {
 /** Summary written next to the results. eventTitle tells the verifier which event the run created. */
 export function summaryFiles(name, data, meta, textSummary) {
   const out = {};
-  out['/loadtest/results/' + name + '-summary.json'] = JSON.stringify({ meta, metrics: data.metrics }, null, 1);
+  const dir = __ENV.RESULTS_DIR || '/loadtest/results';
+  out[dir + '/' + name + '-summary.json'] = JSON.stringify({ meta, metrics: data.metrics }, null, 1);
   out.stdout = textSummary(data, { indent: ' ', enableColors: false });
   return out;
 }

@@ -101,10 +101,9 @@ jobs:
         run: loadtest/prepare.sh 20
       - uses: grafana/setup-k6-action@v1
       - name: Run the smoke scenario
-        # k6 reads and writes under /loadtest in its scripts, so give it that path.
-        run: |
-          sudo ln -sfn "$PWD/loadtest" /loadtest
-          k6 run --quiet loadtest/smoke.js
+        run: k6 run --quiet loadtest/smoke.js
+        env:
+          RESULTS_DIR: ${{ github.workspace }}/loadtest/results
       - name: Check the database
         run: |
           command -v psql > /dev/null || sudo apt-get install -y -qq postgresql-client
