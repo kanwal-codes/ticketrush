@@ -36,9 +36,9 @@ jobs:
       # The API first: the web app forwards to it, and the API's own health check must pass before the web app moves.
       - name: Deploy the API
         working-directory: backend
-        run: flyctl deploy --no-public-ips --remote-only
+        run: flyctl deploy --no-public-ips --remote-only --ha=false
       - name: Deploy the web app
         working-directory: frontend
-        run: flyctl deploy --remote-only
+        run: flyctl deploy --remote-only --ha=false
       - name: Smoke test the live site
         run: scripts/smoke-live.sh "${{ inputs.smoke_url }}"

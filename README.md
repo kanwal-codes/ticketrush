@@ -4,7 +4,7 @@
 
 Flash-sale ticketing that stays correct under a traffic spike: a waiting room, live seat maps, timed seat holds, and zero oversold seats, backed by a published load test.
 
-> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, a load test with published results, the guest web app, and the organizer console. Deployment to Fly.io is prepared and tested locally ([how to deploy](docs/deploy.md)); it goes live when the hosting account is set up.
+> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, a load test with published results, the guest web app, and the organizer console. It is live at https://ticketrush-web.fly.dev (demo data, mock payments; [how it is deployed](docs/deploy.md)).
 
 ## Stack
 
