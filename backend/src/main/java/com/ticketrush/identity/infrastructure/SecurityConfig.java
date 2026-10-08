@@ -47,6 +47,8 @@ class SecurityConfig {
 						// Browsing events and seat maps is public. Changing the catalog is for organizers only.
 						.requestMatchers(HttpMethod.GET, "/api/events", "/api/events/**").permitAll()
 						.requestMatchers("/api/venues/**").hasRole("ORGANIZER")
+						// Only exists with the "loadtest" profile; organizers only even then.
+						.requestMatchers("/dev/**").hasRole("ORGANIZER")
 						.requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(rolesFromClaim())));
