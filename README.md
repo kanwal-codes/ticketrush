@@ -144,6 +144,8 @@ The conditions, the tables with ranges, what went wrong along the way and what i
 | Tickets | `GET /api/tickets`, a QR code per ticket as SVG at `/api/tickets/{id}/qr.svg`, and organizer scanning at `POST /api/tickets/scan`. 20 scanners presenting one ticket at once admit it exactly once |
 | Roles | Browsing is public. Creating venues and events is organizer only, and an organizer can only change their own events |
 | Organizer console | `/api/organizer/**`: my events (drafts too), sales per section with revenue and door count, the waiting room's depth, every scan attempt. Ownership is checked on every route, and tests compare each number with direct SQL |
+| Cancelling | Cancelling an event refunds every paid order once and voids the tickets (a refund that fails is retried; a guest already scanned in keeps their order). Drafts can be edited, and the organizer's list is paged. See [the decision record](docs/adr/0008-finishing-touches.md) |
+| Sessions and bots | A sign-in is renewed while it is in use (up to eight hours after the password), sign-up can require a Cloudflare Turnstile check, and a scheduled check watches the live site |
 | Production | Sign-in and sign-up are rate limited per address, the first organizer comes from configuration, a `prod` profile closes the API docs, and the API has no public address on Fly. See [docs/deploy.md](docs/deploy.md) |
 | Errors | RFC 7807 problem responses, with each invalid field listed |
 | Architecture | ArchUnit tests enforce `api -> application -> domain` layering and no cycles between modules |

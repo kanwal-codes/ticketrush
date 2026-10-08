@@ -35,12 +35,21 @@ check "organizer API refuses anonymous callers" "$(code "$BASE/api/organizer/eve
 
 echo "A guest cannot use organizer tools"
 email="smoke-$(date +%s)-$RANDOM@example.org"
-code_reg="$(code -X POST "$BASE/api/auth/register" -H 'Content-Type: application/json' -d "{\"email\":\"$email\",\"password\":\"smoke-test-pass\",\"displayName\":\"Smoke\"}")"
-check "a guest can sign up" "$code_reg" 201
-token="$(body -X POST "$BASE/api/auth/login" -H 'Content-Type: application/json' -d "{\"email\":\"$email\",\"password\":\"smoke-test-pass\"}" | sed -n 's/.*"accessToken":"\([^"]*\)".*/\1/p')"
-[ -n "$token" ] && ok "a guest can sign in" || bad "a guest could not sign in"
-check "organizer reads are forbidden to a guest" "$(code "$BASE/api/organizer/events" -H "Authorization: Bearer $token")" 403
-check "creating a venue is forbidden to a guest" "$(code -X POST "$BASE/api/venues" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d '{}')" 403
+reg="$(curl -s -w '\n%{http_code}' -X POST "$BASE/api/auth/register" -H 'Content-Type: application/json' -d "{\"email\":\"$email\",\"password\":\"smoke-test-pass\",\"displayName\":\"Smoke\"}")"
+code_reg="${reg##*$'\n'}"
+if [ "$code_reg" = 400 ] && echo "$reg" | grep -qi "complete the check"; then
+  # The bot check is on, so a script cannot make an account. That is the point; the guest-role checks need one, so skip.
+  ok "sign-up is refused without the bot check's answer"
+  echo "  skip  guest-role checks (they need an account, and the bot check is on)"
+else
+  check "a guest can sign up" "$code_reg" 201
+  token="$(body -X POST "$BASE/api/auth/login" -H 'Content-Type: application/json' -d "{\"email\":\"$email\",\"password\":\"smoke-test-pass\"}" | sed -n 's/.*"accessToken":"\([^"]*\)".*/\1/p')"
+  [ -n "$token" ] && ok "a guest can sign in" || bad "a guest could not sign in"
+  check "organizer reads are forbidden to a guest" "$(code "$BASE/api/organizer/events" -H "Authorization: Bearer $token")" 403
+  check "creating a venue is forbidden to a guest" "$(code -X POST "$BASE/api/venues" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d '{}')" 403
+  check "a sign-in can be renewed" "$(code -X POST "$BASE/api/auth/refresh" -H "Authorization: Bearer $token")" 200
+fi
+check "renewing needs a token" "$(code -X POST "$BASE/api/auth/refresh")" 401
 
 if [ -n "${2:-}" ] && [ -n "${3:-}" ]; then
   echo "The organizer can sign in"

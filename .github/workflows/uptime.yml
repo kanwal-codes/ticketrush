@@ -1,0 +1,32 @@
+name: Uptime
+
+# Looks at the live site every two hours. If it is down the run fails and GitHub emails the repository owner. The same
+# requests read the database, which keeps the free Supabase project from going quiet. Every two hours rather than more
+# often to stay well inside the free Actions minutes (each run is billed as a whole minute).
+on:
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Public address of the web app
+        default: https://ticketrush-web.fly.dev
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Live site is up
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: ${{ inputs.url || 'https://ticketrush-web.fly.dev' }}
+    steps:
+      - name: The web app answers
+        run: |
+          curl --fail --silent --show-error --max-time 20 --retry 2 --retry-delay 10 "$SITE/healthz" > /dev/null
+          curl --fail --silent --show-error --max-time 20 --retry 2 --retry-delay 10 "$SITE/" | grep -qi "<title>"
+      - name: The API answers from its database
+        run: curl --fail --silent --show-error --max-time 30 --retry 2 --retry-delay 10 "$SITE/api/events?size=1" | grep -q '"items"'
