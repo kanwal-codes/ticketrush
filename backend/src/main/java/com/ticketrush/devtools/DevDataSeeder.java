@@ -71,13 +71,13 @@ class DevDataSeeder implements ApplicationRunner {
 		long organizer = users.saveAndFlush(
 				new User(organizerEmail, encoder.encode(organizerPassword), "Demo Organizer", Role.ORGANIZER)).getId();
 
-		VenueView halden = venues.create("Halden Hall", "Montreal", List.of(new SectionSpec("Floor", 10, 40),
+		VenueView halden = venues.create(organizer, "Halden Hall", "Montreal", List.of(new SectionSpec("Floor", 10, 40),
 				new SectionSpec("Stalls", 20, 50), new SectionSpec("Balcony", 10, 60)));
-		VenueView laurier = venues.create("Théâtre Laurier", "Montreal",
+		VenueView laurier = venues.create(organizer, "Théâtre Laurier", "Montreal",
 				List.of(new SectionSpec("Orchestra", 15, 25), new SectionSpec("Balcony", 5, 25)));
-		VenueView cartier = venues.create("Maison Cartier", "Montreal",
+		VenueView cartier = venues.create(organizer, "Maison Cartier", "Montreal",
 				List.of(new SectionSpec("Parterre", 20, 30), new SectionSpec("Gallery", 5, 40)));
-		VenueView stade = venues.create("Stade Laurentien", "Montreal",
+		VenueView stade = venues.create(organizer, "Stade Laurentien", "Montreal",
 				List.of(new SectionSpec("Lower", 20, 50), new SectionSpec("Upper", 10, 50)));
 
 		// Prices are face value in cents. Guests see face plus the 7.5% fee.

@@ -112,6 +112,12 @@ class RedisWaitingLine implements WaitingLine {
 	}
 
 	@Override
+	public Depth depth(long eventId, Instant now) {
+		Long inside = redis.opsForZSet().count(admitted(eventId), now.toEpochMilli(), Double.POSITIVE_INFINITY);
+		return new Depth(size(waiting(eventId)), inside == null ? 0 : inside);
+	}
+
+	@Override
 	public boolean claimTick(long eventId, Duration interval) {
 		if (interval.isZero()) {
 			return true;

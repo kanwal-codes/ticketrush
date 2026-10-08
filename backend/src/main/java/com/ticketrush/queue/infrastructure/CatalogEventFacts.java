@@ -25,6 +25,11 @@ class CatalogEventFacts implements EventFacts {
 				phase(SaleState.at(s.dropOpensAt(), s.onSaleAt(), s.startsAt(), now)), s.dropOpensAt()));
 	}
 
+	@Override
+	public Optional<Long> organizerOf(long eventId) {
+		return lookup.organizerOf(eventId);
+	}
+
 	private static SalePhase phase(SaleState state) {
 		return switch (state) {
 			case UPCOMING -> SalePhase.NOT_YET;
