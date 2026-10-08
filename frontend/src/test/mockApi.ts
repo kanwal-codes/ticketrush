@@ -23,3 +23,19 @@ export function mockApi(routes: Record<string, Handler>) {
   vi.stubGlobal('fetch', vi.fn(impl))
   return { calls }
 }
+
+/** A server-sent events response the test can push messages into, one at a time, and close. */
+export function sseStream() {
+  let controller!: ReadableStreamDefaultController<Uint8Array>
+  const encoder = new TextEncoder()
+  const body = new ReadableStream<Uint8Array>({ start: (c) => (controller = c) })
+  return {
+    response: new Response(body, { status: 200, headers: { 'Content-Type': 'text/event-stream' } }),
+    send(data: unknown, event = 'status') {
+      controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`))
+    },
+    close() {
+      controller.close()
+    },
+  }
+}
