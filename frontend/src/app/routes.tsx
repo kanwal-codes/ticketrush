@@ -9,6 +9,7 @@ export const routes: RouteObject[] = [
     errorElement: <RouteError />,
     children: [
       { index: true, lazy: async () => ({ Component: (await import('../features/discover/Discover')).Discover }) },
+      { path: 'events/:id', lazy: async () => ({ Component: (await import('../features/event/EventPage')).EventPage }) },
       { path: '*', element: <NotFound /> },
     ],
   },
