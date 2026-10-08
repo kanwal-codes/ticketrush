@@ -13,10 +13,11 @@ export function useTickets() {
  * A ticket's QR code. It is private to its owner, so the request must carry the sign-in token, which an <img src>
  * cannot do. Fetch it, and show it from a local object URL that is released when the ticket goes away.
  */
-export function useQrImage(ticketId: number): { url?: string; failed: boolean } {
+export function useQrImage(ticketId: number, enabled = true): { url?: string; failed: boolean } {
   const [state, setState] = useState<{ url?: string; failed: boolean }>({ failed: false })
 
   useEffect(() => {
+    if (!enabled) return
     const abort = new AbortController()
     let objectUrl: string | undefined
     fetch(new URL(`/api/tickets/${ticketId}/qr.svg`, location.origin), { headers: { Authorization: `Bearer ${getToken() ?? ''}` }, signal: abort.signal })
@@ -32,7 +33,7 @@ export function useQrImage(ticketId: number): { url?: string; failed: boolean } 
       abort.abort()
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [ticketId])
+  }, [ticketId, enabled])
 
   return state
 }
