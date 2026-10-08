@@ -23,7 +23,7 @@ defence against scripts, and the live site had no one watching it.
   ten minutes remain, so only active people stay signed in. The cost: a stolen token can be renewed for up to eight hours.
 - **A bot check at sign-up** with Cloudflare Turnstile, in its quiet mode. Bots need accounts to join a queue, so account
   creation is the gate; signing in keeps the per-address rate limit, which also keeps automation and the smoke test working.
-  It is off unless a secret is configured, and it fails closed (a message to try again) when Cloudflare cannot be reached.
+  It is off unless a secret is configured (the setting `TURNSTILE_SECRET`; named so that loading `.env` on a laptop cannot switch it on locally), and it fails closed (a message to try again) when Cloudflare cannot be reached.
   The app is one page, so its security policy cannot differ per page: Cloudflare's script and frame are allowed
   site-wide, and only the sign-up page loads the script.
 - **Watching the live site** with a scheduled check every two hours that fails (and so emails the owner) when the site is down,

@@ -27,8 +27,8 @@ class CloudflareTurnstileVerifier implements TurnstileVerifier {
 	private final String secret;
 
 	@Autowired
-	CloudflareTurnstileVerifier(@Value("${ticketrush.turnstile.secret:}") String secret,
-			@Value("${ticketrush.turnstile.verify-url:https://challenges.cloudflare.com/turnstile/v0/siteverify}") String url) {
+	CloudflareTurnstileVerifier(@Value("${ticketrush.signup.turnstile-secret:}") String secret,
+			@Value("${ticketrush.signup.turnstile-verify-url:https://challenges.cloudflare.com/turnstile/v0/siteverify}") String url) {
 		this(secret, RestClient.builder().baseUrl(url).requestFactory(factory()).build());
 	}
 

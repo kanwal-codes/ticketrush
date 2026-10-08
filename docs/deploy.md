@@ -101,14 +101,14 @@ changes while it is off.
 
 1. In the Cloudflare dashboard, Turnstile, add a site for the hostname `ticketrush-web.fly.dev` (widget mode Managed).
    You get a **site key** (public) and a **secret key** (private).
-2. Put the secret on the API: `fly secrets set -a ticketrush-api TICKETRUSH_TURNSTILE_SECRET='...'`. This restarts the API.
+2. Put the secret on the API: `fly secrets set -a ticketrush-api TURNSTILE_SECRET='...'`. This restarts the API.
 3. Put the site key in `frontend/fly.toml` under `[build.args]` (`VITE_TURNSTILE_SITE_KEY`), merge, and redeploy the web
    app: `cd frontend && fly deploy --ha=false`. It is built into the page, so it cannot be changed without a redeploy.
 4. Run `scripts/smoke-live.sh`: it now expects a sign-up without the check's answer to be refused.
 
 Only sign-up is checked (bots need accounts to join a queue); signing in is protected by the per-address limit. If
 Cloudflare cannot be reached, sign-up is refused with a message to try again, and people who already have accounts are
-not affected. To turn it off: `fly secrets unset -a ticketrush-api TICKETRUSH_TURNSTILE_SECRET`.
+not affected. To turn it off: `fly secrets unset -a ticketrush-api TURNSTILE_SECRET`.
 
 ## Watching the live site
 
