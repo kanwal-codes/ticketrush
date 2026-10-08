@@ -4,13 +4,13 @@
 
 Flash-sale ticketing that stays correct under a traffic spike: a waiting room, live seat maps, timed seat holds, and zero oversold seats, backed by a published load test.
 
-> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, and a load test with published results. Next: the web frontend.
+> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, a load test with published results, and the guest web app. Next: the organizer console and a live deployment.
 
 ## Stack
 
 - **Backend:** Java 21 (virtual threads), Spring Boot 4, Spring Security with JWT, PostgreSQL 16, Redis 7, Flyway
-- **Frontend:** React, TypeScript, Vite (not started)
-- **Quality:** JUnit 5, Testcontainers, ArchUnit, JaCoCo (95% of lines, gated), k6, Prometheus and Grafana, GitHub Actions
+- **Frontend:** React 19, TypeScript (strict), Vite, React Router, TanStack Query, plain CSS, served by nginx. Types are generated from the backend's OpenAPI document
+- **Quality:** JUnit 5, Testcontainers, ArchUnit, JaCoCo (95% of lines, gated), Vitest and Testing Library, Playwright and axe, k6, Prometheus and Grafana, GitHub Actions
 
 ## Run locally
 
@@ -26,24 +26,57 @@ cd backend && SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
 
 The `dev` profile creates demo data on first start: an organizer (`organizer@ticketrush.dev`, password from `DEMO_ORGANIZER_PASSWORD`), four venues and five published events. Leave the profile off for an empty database.
 
+Then the web app, in another terminal (needs Node 24):
+
+```bash
+cd frontend && npm install && npm run dev      # http://localhost:5173, forwards /api to the backend
+```
+
 - API docs: http://localhost:8080/swagger-ui/index.html
 - Try it: `curl "localhost:8080/api/events?city=montreal"`
 
 Postgres uses port 5433 so it does not clash with one already running on 5432. Health and Prometheus metrics are on a separate management port: `localhost:8081/actuator/health`.
 
-To run the whole stack in containers instead (the app capped at 2 CPUs and 1 GB, with Prometheus and a Grafana dashboard):
+To run everything in containers instead, with the backend capped at 2 CPUs and 1 GB so measurements mean something:
 
 ```bash
-docker compose --profile app --profile monitoring up -d --build     # Grafana: localhost:3000, dashboard "TicketRush"
+docker compose --profile app --profile web up -d --build           # backend and the web app as nginx serves it: http://localhost:8088
+docker compose --profile app --profile monitoring up -d --build    # backend with Prometheus and Grafana (localhost:3000, dashboard "TicketRush")
 ```
 
 ## Tests
 
 ```bash
-cd backend && ./mvnw verify
+cd backend && ./mvnw verify                     # backend: unit, integration (Testcontainers), architecture
+cd frontend && npm test                          # web app: unit and component tests
+cd frontend && npm run e2e                       # web app: a real browser against a running stack (below)
 ```
 
+The end-to-end tests drive Chromium against the real backend and database, so start the backend with
+`SPRING_PROFILES_ACTIVE=dev,loadtest` and give the tests the demo organizer's password
+(`ORGANIZER_PASSWORD=...`). They cover the whole purchase, a declined card, an unknown payment outcome, two guests
+racing for the same seats, refreshing mid-queue, the whole purchase by keyboard, accessibility scans of every
+screen, and that no screen scrolls sideways on a phone.
+
 Integration tests start real Postgres and Redis containers with Testcontainers, so Docker must be running. The build also writes a JaCoCo coverage report and fails if line coverage drops below 93% or branch coverage below 82%.
+
+## What it looks like
+
+| | |
+|---|---|
+| ![Home](docs/img/screens/discover.png) | ![Waiting room](docs/img/screens/queue.png) |
+| The home page: the sale people are waiting for, with a countdown on the server's clock | The waiting room: an exact place that survives a refresh |
+| ![Seats](docs/img/screens/seats.png) | ![Checkout](docs/img/screens/checkout.png) |
+| The seat map, with the same totals the order will have | Checkout: the final price, and a retry that cannot charge twice |
+
+<p>
+<img src="docs/img/screens/tickets.png" alt="Tickets" width="49%">
+<img src="docs/img/screens/tickets-phone.png" alt="Tickets on a phone" width="22%">
+<img src="docs/img/screens/queue-phone.png" alt="The waiting room on a phone" width="22%">
+</p>
+
+Posters are generated from each event's data, in six styles. The design decisions, and what testing in a real browser
+found, are in [the decision record](docs/adr/0005-web-app.md). The screenshots come from `npm run screenshots`.
 
 ## Proof
 
@@ -88,6 +121,8 @@ The conditions, the tables with ranges, what went wrong along the way and what i
 | Errors | RFC 7807 problem responses, with each invalid field listed |
 | Architecture | ArchUnit tests enforce `api -> application -> domain` layering and no cycles between modules |
 | Schema | Flyway migrations only. Hibernate runs in `validate` mode |
+| Web app | Browse events, join the waiting room, pick seats, pay, and keep tickets with QR codes, on a phone or a laptop. Every state the backend can produce has a plain-words screen. See [the decision record](docs/adr/0005-web-app.md) |
+| Accessibility | One tab stop on the seat map with arrow keys, taken seats announced as taken, errors linked to their fields, a visible hold timer, and an axe scan of every screen that must find nothing serious |
 | Observability | Prometheus metrics on a separate port, and a provisioned Grafana dashboard: request rate and latency by endpoint, database pool pressure, JVM, holds by result, queue, orders by outcome, outbox backlog |
 | Load tests | k6 scenarios for the whole drop, one hot seat, browsing and open live streams, each followed by a database check that must find 0 broken invariants. Results and conditions in [docs/performance.md](docs/performance.md) |
 | CI | GitHub Actions builds, runs every test, reports coverage, and runs the smoke load test against a real app and database |
