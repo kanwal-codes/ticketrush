@@ -110,6 +110,18 @@ export function CheckoutSkeleton() {
   )
 }
 
+export function ConsoleSkeleton() {
+  return (
+    <Frame label="Loading the console">
+      <Bar width="34%" height={56} />
+      <div className="sk-stack sk-tickets">
+        <div className="skeleton sk-ticket" />
+        <div className="skeleton sk-ticket" />
+      </div>
+    </Frame>
+  )
+}
+
 export function WalletSkeleton() {
   return (
     <Frame label="Loading your tickets">

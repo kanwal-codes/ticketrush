@@ -1,0 +1,90 @@
+.dashboard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.dashboard__stat {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--rule);
+  background: var(--white);
+}
+
+.dashboard__stat dd {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.dashboard__value {
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-weight: 800;
+}
+
+.dashboard__tiers {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.dashboard__tier {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dashboard__tierhead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.dashboard__tier h3 {
+  font-size: 1rem;
+}
+
+/* Two layers scaled from the left: held (paler) behind sold (solid). Scaling, never resizing. */
+.dashboard__meter {
+  position: relative;
+  display: block;
+  height: 14px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.dashboard__meter > span {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+  transition: transform var(--dur-page) var(--ease-out);
+}
+
+.dashboard__held {
+  background: repeating-linear-gradient(135deg, var(--ink) 0 2px, var(--rule) 2px 5px);
+}
+
+.dashboard__sold {
+  background: var(--ink);
+}
+
+.dashboard__counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: 0.9rem;
+}
+
+.dashboard__orders {
+  margin-top: var(--space-4);
+}

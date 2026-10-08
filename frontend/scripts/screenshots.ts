@@ -8,7 +8,7 @@
 // seat map, checkout and tickets).
 import { chromium, type Page } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
-import { buySeats, createEvent, createGuests, joinQueue } from '../e2e/support/backend.ts'
+import { buySeats, createEvent, createGuests, joinQueue, organizerToken, ticketCodesOf } from '../e2e/support/backend.ts'
 
 const WEB = process.env.WEB_URL ?? 'http://localhost:5173'
 const OUT = new URL('../../docs/img/screens/', import.meta.url).pathname
@@ -25,9 +25,9 @@ const afterlight = { title: 'Afterlight Tour', artist: 'Mira Okafor', poster, se
 const [me] = await createGuests(1)
 const browser = await chromium.launch()
 
-async function shoot(name: string, width: number, height: number, run: (page: Page) => Promise<void>) {
+async function shoot(name: string, width: number, height: number, run: (page: Page) => Promise<void>, token = me!.token) {
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: width < 600 ? 2 : 1 })
-  await context.addInitScript((token) => sessionStorage.setItem('tr.token', token), me!.token)
+  await context.addInitScript((value) => sessionStorage.setItem('tr.token', value), token)
   const page = await context.newPage()
   await run(page)
   await page.screenshot({ path: `${OUT}${name}.png` })
@@ -126,6 +126,43 @@ await shoot('tickets-phone', 390, 844, async (page) => {
   await page.locator('img.stub__qr').first().waitFor()
   await page.waitForTimeout(500)
 })
+
+// The organizer's console, on the on-sale event with part of the hall sold.
+const boss = await organizerToken()
+const [door] = await ticketCodesOf(buyers[0]!.token)
+
+await shoot('console-new', 1280, 1100, async (page) => {
+  await page.goto(`${WEB}/console/events/new`)
+  await page.getByLabel('Title').fill('Midnight Orchestra')
+  await page.getByLabel('Artist or company').fill('The Marais Collective')
+  await page.getByLabel('Venue', { exact: true }).selectOption('new')
+  await page.getByLabel('Venue name').fill('Théâtre Laurier')
+  await page.getByLabel('City').fill('Montreal')
+  await page.getByLabel('Style').selectOption('AURORA')
+  await page.getByLabel('First ink').fill('#5cf2b0')
+  await page.getByLabel('Second ink').fill('#3f6bff')
+  await page.getByLabel('Paper').fill('#101b3a')
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForTimeout(700)
+}, boss)
+
+await shoot('console-dashboard', 1280, 900, async (page) => {
+  await page.goto(`${WEB}/console/events/${onSale.id}`)
+  await page.getByText('Seats by section').waitFor()
+  await page.waitForTimeout(1200)
+}, boss)
+
+await shoot('console-scanner-phone', 390, 844, async (page) => {
+  await page.goto(`${WEB}/console/events/${onSale.id}/scan`)
+  const box = page.getByLabel('Ticket code')
+  await box.fill(door!)
+  await box.press('Enter')
+  await page.locator('.scanner__headline').waitFor()
+  await box.fill('NOTATICKET')
+  await box.press('Enter')
+  await page.locator('.scanner__scan').nth(1).waitFor()
+  await page.waitForTimeout(600)
+}, boss)
 
 // What going wrong looks like. Each failure is made on purpose in the browser, the backend is untouched.
 await shoot('error-load', 1280, 700, async (page) => {
