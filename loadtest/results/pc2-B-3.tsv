@@ -1,0 +1,2 @@
+run	hold_p95_ms	pay_p95_ms	join_p95_ms	place_p95_ms	seats_p95_ms	orders_paid	conflicts	seconds	pool_waiting_max	cpu_peak	conn_seconds	cpu_seconds	gc_pause_s	violations
+1	590.2	532.3	58.7	42.8	53.0	439	3396	42.5	54.0	0.819	46.709	36.148	0.685	0

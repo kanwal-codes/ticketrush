@@ -1,0 +1,8 @@
+Event 52 has a waiting room that is not open for sale yet. Joining with 5000 guests...
+Streams asked for       5000
+Opened                  5000 (failed 0)
+Time to first update    p50 1196 ms, p95 3591 ms, max 5136 ms
+Gap between updates     p50 2435 ms, p95 3582 ms, p99 4900 ms, max 7325 ms (sent every 1000 ms)
+Updates per stream      median 14 over about 30 s
+App while streams open  threads=32  heap=611 MB  cpu=28% of the container  db connections in use=0
+FAIL: fewer than 99% opened, or updates stopped arriving
