@@ -63,7 +63,7 @@ class LoadTestController {
 		for (int i = 0; i < count; i++) {
 			batch.add(new User("load-" + UUID.randomUUID() + "@example.org", unusablePasswordHash, "Load guest " + i, Role.GUEST));
 		}
-		return users.saveAll(batch).stream().map(u -> new LoadGuest(u.getId(), tokens.issue(u).value())).toList();
+		return users.saveAll(batch).stream().map(u -> new LoadGuest(u.getId(), tokens.issue(u, java.time.Instant.now()).value())).toList();
 	}
 
 	@GetMapping("/payments")
