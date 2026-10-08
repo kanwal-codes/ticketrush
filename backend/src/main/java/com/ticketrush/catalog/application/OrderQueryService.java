@@ -11,6 +11,7 @@ import com.ticketrush.catalog.domain.TicketOrder;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
 import com.ticketrush.catalog.domain.TicketRepository;
 import com.ticketrush.catalog.domain.TicketStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,8 +47,9 @@ public class OrderQueryService {
 
 	/** Money in cents. Ticket codes appear only once the order is paid. */
 	public record OrderView(long id, String reference, long eventId, OrderStatus status, long subtotalCents,
-			long feeCents, long totalCents, String currency, String failureReason, Instant createdAt, Instant paidAt,
-			List<OrderSeat> seats, List<TicketView> tickets) {
+			long feeCents, long totalCents, String currency, @Schema(nullable = true) String failureReason,
+			Instant createdAt, @Schema(nullable = true) Instant paidAt, List<OrderSeat> seats,
+			List<TicketView> tickets) {
 	}
 
 	public OrderView view(TicketOrder order) {

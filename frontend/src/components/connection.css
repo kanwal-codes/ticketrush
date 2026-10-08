@@ -1,0 +1,35 @@
+.connection {
+  /* In the page's flow, under the header: it pushes the page down rather than covering what the guest is reading. */
+  display: flex;
+  justify-content: center;
+}
+
+.connection__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  width: 100%;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--paper);
+  animation: slide-down-in var(--dur-base) var(--ease-out) both;
+}
+
+.connection__bar--bad {
+  background: #5c3d00;
+}
+
+.connection__bar--ok {
+  background: #14553a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection__bar {
+    animation: none;
+  }
+}
+
+.connection__bar svg {
+  flex: none;
+}

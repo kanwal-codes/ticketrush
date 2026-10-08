@@ -11,6 +11,7 @@ import com.ticketrush.catalog.domain.TicketOrder;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
 import com.ticketrush.catalog.domain.TicketRepository;
 import com.ticketrush.catalog.domain.TicketStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +49,8 @@ public class TicketService {
 	}
 
 	/** The seat is shown to the person at the door; usedAt only when the ticket was already accepted. */
-	public record ScanResult(ScanOutcome outcome, String seat, Instant usedAt) {
+	public record ScanResult(ScanOutcome outcome, @Schema(nullable = true) String seat,
+			@Schema(nullable = true) Instant usedAt) {
 	}
 
 	/** Every ticket the guest holds, newest order first. */

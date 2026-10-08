@@ -8,6 +8,7 @@ import com.ticketrush.queue.domain.QueueStatus;
 import com.ticketrush.queue.domain.RateLimiter;
 import com.ticketrush.queue.domain.SalePhase;
 import com.ticketrush.queue.domain.WaitingLine;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,9 +56,9 @@ public class QueueService {
 	 * What a guest sees. The numbers are exact. Only the wait time is an estimate, worked out from the
 	 * configured admission rate.
 	 */
-	public record QueueView(QueueState state, Long position, long aheadOfYou, long queueLength,
-			long estimatedWaitSeconds, String admissionToken, Instant admittedUntil, SalePhase saleState,
-			Instant serverTime) {
+	public record QueueView(QueueState state, @Schema(nullable = true) Long position, long aheadOfYou, long queueLength,
+			long estimatedWaitSeconds, @Schema(nullable = true) String admissionToken,
+			@Schema(nullable = true) Instant admittedUntil, SalePhase saleState, Instant serverTime) {
 	}
 
 	/** Joins the line. Safe to repeat: a guest who is already waiting keeps their place. */
