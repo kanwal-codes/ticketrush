@@ -6,6 +6,7 @@ import com.ticketrush.catalog.domain.PaymentGateway.ChargeResult;
 import com.ticketrush.catalog.domain.PaymentGateway.Outcome;
 import com.ticketrush.catalog.domain.TicketOrder;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -26,14 +27,16 @@ public class OrderReconciler {
 	private final PaymentGateway gateway;
 	private final Clock clock;
 	private final Duration after;
+	private final MeterRegistry meters;
 
 	public OrderReconciler(TicketOrderRepository orders, OrderService service, PaymentGateway gateway, Clock clock,
-			@Value("${ticketrush.payments.reconcile-after}") Duration after) {
+			@Value("${ticketrush.payments.reconcile-after}") Duration after, MeterRegistry meters) {
 		this.orders = orders;
 		this.service = service;
 		this.gateway = gateway;
 		this.clock = clock;
 		this.after = after;
+		this.meters = meters;
 	}
 
 	/** Returns how many orders were moved forward. */
@@ -51,6 +54,7 @@ public class OrderReconciler {
 			service.completeRefund(order.getId());
 			moved++;
 		}
+		meters.counter("ticketrush.reconciler.moved").increment(moved);
 		return moved;
 	}
 

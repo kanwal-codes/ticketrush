@@ -210,4 +210,37 @@ class HoldIntegrationTest extends AbstractIntegrationTest {
 				.andExpect(status().isForbidden());
 	}
 
+	@Test
+	void seatsThatAreAlreadyTakenAreRefusedWithoutWritingAnything() throws Exception {
+		setUpEvent();
+		List<Guest> guests = createGuests(2);
+		hold(guests.get(0).token(), eventId, seats.get(0)).andExpect(status().isCreated());
+		int holdsBefore = jdbc.sql("select count(*) from seat_hold where event_id = :e").param("e", eventId)
+				.query(Integer.class).single();
+
+		hold(guests.get(1).token(), eventId, seats.get(0), seats.get(1)).andExpect(status().isConflict())
+				.andExpect(jsonPath("$.unavailableSeatIds.length()").value(1))
+				.andExpect(jsonPath("$.unavailableSeatIds[0]").value(seats.get(0)));
+
+		// No hold row was created, and the free seat in the request was not touched either.
+		assertThat(jdbc.sql("select count(*) from seat_hold where event_id = :e").param("e", eventId)
+				.query(Integer.class).single()).isEqualTo(holdsBefore);
+		assertThat(seatStatus(seats.get(1))).isEqualTo("AVAILABLE");
+	}
+
+	@Test
+	void holdingSeatsYouAlreadyHoldReplacesYourHoldInsteadOfBeingRefused() throws Exception {
+		setUpEvent();
+		Guest guest = createGuests(1).get(0);
+		hold(guest.token(), eventId, seats.get(0), seats.get(1)).andExpect(status().isCreated());
+
+		// A refresh or a retry after a timeout sends the same seats again. They are yours, so this must work.
+		hold(guest.token(), eventId, seats.get(0), seats.get(1)).andExpect(status().isCreated());
+
+		assertThat(count("ACTIVE", guest.id())).isEqualTo(1);
+		assertThat(count("RELEASED", guest.id())).isEqualTo(1);
+		assertThat(seatStatus(seats.get(0))).isEqualTo("HELD");
+		assertThat(seatStatus(seats.get(1))).isEqualTo("HELD");
+	}
+
 }

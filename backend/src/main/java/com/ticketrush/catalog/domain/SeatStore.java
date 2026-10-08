@@ -38,6 +38,14 @@ public interface SeatStore {
 	/** Seat ids from the list that exist in this event. Used to explain a failed claim. */
 	List<Long> seatsInEvent(long eventId, List<Long> seatIds);
 
+	/**
+	 * Which of these seats this guest could not claim right now (sold, or held by someone else's live hold). Seats
+	 * the guest already holds count as available, because a new hold replaces their old one. A plain read that
+	 * takes no locks: it can be stale a moment later, so it may only be used to turn a request away early, never
+	 * to promise a seat.
+	 */
+	List<Long> unavailable(long eventId, List<Long> seatIds, Instant now, long userId);
+
 	/** Moves the hold time of the hold's seats out to at least this moment. Returns how many seats. */
 	int extendHold(long holdId, Instant until);
 

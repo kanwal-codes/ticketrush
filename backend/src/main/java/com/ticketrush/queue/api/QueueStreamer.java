@@ -3,6 +3,7 @@ package com.ticketrush.queue.api;
 import com.ticketrush.queue.application.QueueService;
 import com.ticketrush.queue.application.QueueService.QueueView;
 import com.ticketrush.queue.domain.QueueState;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -12,8 +13,14 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Live waiting-room updates over Server-Sent Events. Each open stream gets the guest's current status once per
@@ -30,6 +37,9 @@ class QueueStreamer {
 
 	private final Set<Subscriber> subscribers = ConcurrentHashMap.newKeySet();
 	private final QueueService queue;
+	// Each guest's update is independent, so a round is spread across virtual threads. One thread visiting every
+	// stream in turn took over a second per round at 5,000 streams, stretching a 1 second push to 2.4 seconds.
+	private final ExecutorService pushers = Executors.newVirtualThreadPerTaskExecutor();
 
 	QueueStreamer(QueueService queue) {
 		this.queue = queue;
@@ -51,17 +61,40 @@ class QueueStreamer {
 	@Scheduled(fixedDelayString = "${ticketrush.queue.push-interval}",
 			initialDelayString = "${ticketrush.queue.push-interval}")
 	void push() {
+		List<Future<?>> round = new ArrayList<>(subscribers.size());
 		for (Subscriber subscriber : subscribers) {
+			round.add(pushers.submit(() -> pushTo(subscriber)));
+		}
+		// Wait for the round to finish, so rounds never overlap and the delay is counted from its end.
+		for (Future<?> sent : round) {
 			try {
-				send(subscriber, queue.streamStatus(subscriber.userId(), subscriber.eventId()));
+				sent.get();
 			}
-			catch (RuntimeException e) {
-				// For example the event ended or was cancelled. Closing makes the client ask again.
-				log.debug("Closing stream for guest {}: {}", subscriber.userId(), e.getMessage());
-				subscribers.remove(subscriber);
-				subscriber.emitter().complete();
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+			catch (ExecutionException e) {
+				log.warn("A stream update failed", e.getCause());
 			}
 		}
+	}
+
+	private void pushTo(Subscriber subscriber) {
+		try {
+			send(subscriber, queue.streamStatus(subscriber.userId(), subscriber.eventId()));
+		}
+		catch (RuntimeException e) {
+			// For example the event ended or was cancelled. Closing makes the client ask again.
+			log.debug("Closing stream for guest {}: {}", subscriber.userId(), e.getMessage());
+			subscribers.remove(subscriber);
+			subscriber.emitter().complete();
+		}
+	}
+
+	@PreDestroy
+	void stop() {
+		pushers.shutdownNow();
 	}
 
 	int openStreams() {

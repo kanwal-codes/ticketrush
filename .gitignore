@@ -20,3 +20,7 @@ test-results/
 *.iml
 .vscode/
 .DS_Store
+loadtest/results/guests.json
+loadtest/results/*.log
+loadtest/results/*-summary.json
+loadtest/results/*.done
