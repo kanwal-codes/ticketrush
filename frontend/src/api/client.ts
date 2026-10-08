@@ -1,4 +1,5 @@
 import createClient, { type Middleware } from 'openapi-fetch'
+import { renewIfNeeded } from '../auth/renew'
 import { clearToken, getToken } from '../auth/session'
 import { reportReachable, reportUnreachable } from './connection'
 import { networkError, problemToError, type Problem } from './errors'
@@ -6,7 +7,9 @@ import type { paths } from './schema'
 
 /** Sends the sign-in token with every call and forgets it when the server says it is no longer good. */
 const auth: Middleware = {
-  onRequest({ request }) {
+  async onRequest({ request }) {
+    // Signing in, signing up and renewing are the ways to get a token, so none of them waits for one.
+    if (!new URL(request.url).pathname.startsWith('/api/auth/')) await renewIfNeeded()
     const token = getToken()
     if (token) request.headers.set('Authorization', `Bearer ${token}`)
     return request

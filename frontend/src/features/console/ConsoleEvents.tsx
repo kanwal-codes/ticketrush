@@ -14,7 +14,8 @@ const STATUS: Record<EventRow['status'], string> = { DRAFT: 'Draft', PUBLISHED: 
 /** The organizer's own events, drafts included, newest event first. */
 export function ConsoleEvents() {
   useTitle('Console · TicketRush')
-  const { data, isPending, error, refetch } = useMyEvents()
+  const { data, isPending, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useMyEvents()
+  const events = data?.pages.flatMap((page) => page.items) ?? []
 
   return (
     <div className="page console">
@@ -39,7 +40,7 @@ export function ConsoleEvents() {
             </Notice>
           )
         })()
-      ) : data.length === 0 ? (
+      ) : events.length === 0 ? (
         <div className="console__empty">
           <h2>No events yet</h2>
           <p>Create one, check how its poster looks, then publish it when it is ready. Nothing is visible to guests until you do.</p>
@@ -49,7 +50,7 @@ export function ConsoleEvents() {
         </div>
       ) : (
         <ul className="console__events">
-          {data.map((event, i) => (
+          {events.map((event, i) => (
             <li key={event.id} className="console__event enter" style={{ '--i': i } as React.CSSProperties}>
               <Link to={`/console/events/${event.id}`} viewTransition>
                 <span className={`chip chip--${event.status.toLowerCase()}`}>{STATUS[event.status]}</span>
@@ -70,6 +71,13 @@ export function ConsoleEvents() {
             </li>
           ))}
         </ul>
+      )}
+      {hasNextPage && (
+        <p className="console__more">
+          <button type="button" className="btn btn--quiet" onClick={() => void fetchNextPage()} disabled={isFetchingNextPage}>
+            {isFetchingNextPage ? 'Loading…' : 'Show more events'}
+          </button>
+        </p>
       )}
     </div>
   )

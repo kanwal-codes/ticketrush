@@ -42,7 +42,7 @@ function Board({ id }: { id: number }) {
     try {
       await (kind === 'publish' ? publishEvent(id) : cancelEvent(id))
       void queryClient.invalidateQueries({ queryKey: ['console'] })
-      toast({ tone: 'success', title: kind === 'publish' ? 'Published' : 'Cancelled', message: kind === 'publish' ? 'Guests can see the event now.' : 'The event is off sale. Tickets already sold have not been refunded.' })
+      toast({ tone: 'success', title: kind === 'publish' ? 'Published' : 'Cancelled', message: kind === 'publish' ? 'Guests can see the event now.' : 'The event is off sale and buyers are being refunded.' })
       setConfirming(null)
     } catch (error) {
       setFailure(describeError(error))
@@ -71,7 +71,10 @@ function Board({ id }: { id: number }) {
             </>
           )}
           {s.status === 'DRAFT' && (
-            <button type="button" className="btn" onClick={() => setConfirming('publish')} disabled={busy}>Publish</button>
+            <>
+              <button type="button" className="btn" onClick={() => setConfirming('publish')} disabled={busy}>Publish</button>
+              <Link to={`/console/events/${id}/edit`} className="btn btn--quiet" viewTransition>Edit</Link>
+            </>
           )}
           {s.status === 'PUBLISHED' && (
             <button type="button" className="btn btn--quiet" onClick={() => setConfirming('cancel')} disabled={busy}>Cancel event</button>
@@ -86,7 +89,7 @@ function Board({ id }: { id: number }) {
       )}
       {confirming === 'cancel' && (
         <Notice tone="warning" title="Cancel this event?" actions={<Confirm busy={busy} label="Cancel the event" onYes={() => void change('cancel')} onNo={() => setConfirming(null)} />}>
-          Guests will not be able to buy tickets. <strong>Tickets already sold are not refunded automatically.</strong>
+          Guests will not be able to buy tickets. <strong>Everyone who has already bought is refunded automatically</strong> and their tickets stop working. Anyone already scanned in at the door is not refunded.
         </Notice>
       )}
       {failure && <Notice tone={failure.tone} title={failure.title}>{failure.message}</Notice>}
