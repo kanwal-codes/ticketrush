@@ -35,19 +35,23 @@ class LoadTestController {
 	private final TokenIssuer tokens;
 	private final PasswordEncoder encoder;
 	private final MockPaymentGateway gateway;
+	private final String unusablePasswordHash;
 
 	LoadTestController(UserRepository users, TokenIssuer tokens, PasswordEncoder encoder, MockPaymentGateway gateway) {
 		this.users = users;
 		this.tokens = tokens;
 		this.encoder = encoder;
 		this.gateway = gateway;
+		// Nobody can sign in as these guests: the password is random and thrown away. Hashed once, because
+		// hashing is slow on purpose and one guest per request would make setup the bottleneck.
+		this.unusablePasswordHash = encoder.encode(UUID.randomUUID().toString());
 	}
 
 	record LoadGuest(long id, String token) {
 	}
 
 	/** What the payment provider actually did, to compare with what the database says happened. */
-	record PaymentStats(int charges, long chargedCents, int refunds) {
+	record PaymentStats(int charges, long chargedCents, int refunds, List<String> chargedKeys) {
 	}
 
 	@PostMapping("/guests")
@@ -55,11 +59,9 @@ class LoadTestController {
 		if (count < 1 || count > MAX_GUESTS) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "count must be 1 to " + MAX_GUESTS);
 		}
-		// Nobody can sign in as these guests: the password is random and thrown away.
-		String hash = encoder.encode(UUID.randomUUID().toString());
 		List<User> batch = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
-			batch.add(new User("load-" + UUID.randomUUID() + "@example.org", hash, "Load guest " + i, Role.GUEST));
+			batch.add(new User("load-" + UUID.randomUUID() + "@example.org", unusablePasswordHash, "Load guest " + i, Role.GUEST));
 		}
 		return users.saveAll(batch).stream().map(u -> new LoadGuest(u.getId(), tokens.issue(u).value())).toList();
 	}
@@ -68,7 +70,7 @@ class LoadTestController {
 	PaymentStats payments() {
 		var charges = gateway.successfulCharges();
 		return new PaymentStats(charges.size(), charges.values().stream().mapToLong(Long::longValue).sum(),
-				gateway.refundedKeys().size());
+				gateway.refundedKeys().size(), List.copyOf(charges.keySet()));
 	}
 
 }
