@@ -208,6 +208,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/organizer/venues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["venues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizer/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizer/events/{id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizer/events/{id}/scans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["scans"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/organizer/events/{eventId}/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["depth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/{id}": {
         parameters: {
             query?: never;
@@ -551,6 +631,80 @@ export interface components {
             number: number;
             /** @enum {string} */
             status: "ISSUED" | "USED" | "VOID";
+        };
+        EventRow: {
+            /** Format: int64 */
+            id: number;
+            title: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+            /** Format: date-time */
+            startsAt: string;
+            venueName: string;
+            city: string;
+            /** Format: int32 */
+            capacity: number;
+            /** Format: int32 */
+            sold: number;
+            /** Format: int64 */
+            grossCents: number;
+        };
+        Door: {
+            /** Format: int64 */
+            issued: number;
+            /** Format: int64 */
+            checkedIn: number;
+        };
+        Revenue: {
+            /** Format: int64 */
+            paidOrders: number;
+            /** Format: int64 */
+            subtotalCents: number;
+            /** Format: int64 */
+            feeCents: number;
+            /** Format: int64 */
+            totalCents: number;
+        };
+        SalesSummary: {
+            /** Format: int64 */
+            eventId: number;
+            title: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+            tiers: components["schemas"]["TierRow"][];
+            revenue: components["schemas"]["Revenue"];
+            ordersByStatus: {
+                [key: string]: number;
+            };
+            door: components["schemas"]["Door"];
+        };
+        TierRow: {
+            /** Format: int64 */
+            sectionId: number;
+            name: string;
+            /** Format: int32 */
+            priceCents?: number | null;
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            sold: number;
+            /** Format: int32 */
+            held: number;
+            /** Format: int32 */
+            available: number;
+        };
+        ScanRow: {
+            code: string;
+            outcome: string;
+            seat?: string | null;
+            /** Format: date-time */
+            at: string;
+        };
+        Depth: {
+            /** Format: int64 */
+            waiting: number;
+            /** Format: int64 */
+            inside: number;
         };
         EventSummary: {
             /** Format: int64 */
@@ -1052,6 +1206,114 @@ export interface operations {
                 };
                 content: {
                     "image/svg+xml": string;
+                };
+            };
+        };
+    };
+    venues: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VenueView"][];
+                };
+            };
+        };
+    };
+    events: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EventRow"][];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SalesSummary"];
+                };
+            };
+        };
+    };
+    scans: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ScanRow"][];
+                };
+            };
+        };
+    };
+    depth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Depth"];
                 };
             };
         };

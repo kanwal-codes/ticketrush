@@ -27,6 +27,12 @@ public interface WaitingLine {
 	/** Stops tracking the event when nobody is waiting. */
 	void forgetIfEmpty(long eventId);
 
+	/** How many are waiting and how many are inside right now. For the organizer's dashboard. */
+	Depth depth(long eventId, Instant now);
+
+	record Depth(long waiting, long inside) {
+	}
+
 	/** Several app instances share one admission tick per interval. A zero interval always says yes. */
 	boolean claimTick(long eventId, Duration interval);
 

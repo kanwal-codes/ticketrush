@@ -33,6 +33,7 @@ export function Layout() {
             </NavLink>
             <HoldTimer />
             <NavLink to="/tickets" viewTransition>My tickets</NavLink>
+            {me?.role === 'ORGANIZER' && <NavLink to="/console" viewTransition>Console</NavLink>}
             {token ? (
               <>
                 {me && <span className="site-nav__who">{me.displayName}</span>}

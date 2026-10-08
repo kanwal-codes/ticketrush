@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { createGuest } from './backend'
+import AxeBuilder from '@axe-core/playwright'
+import { createGuest, organizerToken } from './backend'
 
 export { expect, test }
 
@@ -41,4 +42,21 @@ export async function settle(page: Page) {
       await Promise.allSettled(running.map((a) => a.finished))
     }
   })
+}
+
+/** Signs the demo organizer in by giving the page a token, as a guest is signed in above. */
+export async function signInAsOrganizer(page: Page): Promise<void> {
+  const token = await organizerToken()
+  await page.addInitScript((value) => sessionStorage.setItem('tr.token', value), token)
+}
+
+/** Serious and critical accessibility problems fail the test, each listed with where it is. */
+export async function expectAccessible(page: Page, where: string) {
+  await settle(page)
+  const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
+  const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+  expect(
+    serious.map((v) => `${v.id} (${v.impact}): ${v.help} - ${v.nodes.slice(0, 3).map((n) => `${n.target.join(' ')} ${n.html.slice(0, 110)}`).join(' | ')}`),
+    `Accessibility problems on ${where}`,
+  ).toEqual([])
 }

@@ -1,0 +1,28 @@
+# The web app: nginx serving the built files and forwarding /api to the API over Fly's private network.
+# Deploy from this folder:  fly deploy
+# App names are global on Fly. If "ticketrush-web" is taken, rename it here.
+app = "ticketrush-web"
+primary_region = "yyz"
+
+[env]
+  # The API app's private address (see backend/fly.toml), and Fly's private DNS server that resolves it.
+  BACKEND = "http://ticketrush-api.internal:8080"
+  RESOLVER = "[fdaa::3]"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  # Kept running: the demo should answer straight away, and an idle nginx costs almost nothing.
+  auto_stop_machines = "off"
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "15s"
+    timeout = "3s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
