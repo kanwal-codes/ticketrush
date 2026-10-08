@@ -228,4 +228,19 @@ class HoldIntegrationTest extends AbstractIntegrationTest {
 		assertThat(seatStatus(seats.get(1))).isEqualTo("AVAILABLE");
 	}
 
+	@Test
+	void holdingSeatsYouAlreadyHoldReplacesYourHoldInsteadOfBeingRefused() throws Exception {
+		setUpEvent();
+		Guest guest = createGuests(1).get(0);
+		hold(guest.token(), eventId, seats.get(0), seats.get(1)).andExpect(status().isCreated());
+
+		// A refresh or a retry after a timeout sends the same seats again. They are yours, so this must work.
+		hold(guest.token(), eventId, seats.get(0), seats.get(1)).andExpect(status().isCreated());
+
+		assertThat(count("ACTIVE", guest.id())).isEqualTo(1);
+		assertThat(count("RELEASED", guest.id())).isEqualTo(1);
+		assertThat(seatStatus(seats.get(0))).isEqualTo("HELD");
+		assertThat(seatStatus(seats.get(1))).isEqualTo("HELD");
+	}
+
 }

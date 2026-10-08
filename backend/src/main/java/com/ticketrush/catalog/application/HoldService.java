@@ -113,8 +113,9 @@ public class HoldService {
 		}
 		// On a drop most requests lose: the seats were taken a moment ago. A plain read turns those away without
 		// opening a transaction, taking a lock or writing anything. It can be out of date, which is harmless,
-		// because the claim below is still the only thing that decides who gets a seat.
-		List<Long> taken = seats.unavailable(eventId, seatIds, now);
+		// because the claim below is still the only thing that decides who gets a seat. A guest's own held seats
+		// are not "taken": holding them again replaces their hold.
+		List<Long> taken = seats.unavailable(eventId, seatIds, now, userId);
 		if (!taken.isEmpty()) {
 			throw new SeatsUnavailableException(taken);
 		}
