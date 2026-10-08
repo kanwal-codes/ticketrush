@@ -216,3 +216,19 @@ jobs:
         if: failure()
         run: tail -n 200 app.log
 
+  # The two production images are built here, so a Dockerfile that stops working is found on the pull request and not
+  # on deploy day. The web image's nginx is started with both resolvers it is deployed with, just to read its config.
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the API image
+        run: docker build -t ticketrush-api backend
+      - name: Build the web image
+        run: docker build -t ticketrush-web frontend
+      - name: The web image's nginx configuration is valid
+        run: |
+          docker run --rm -e BACKEND=http://app:8080 -e RESOLVER=127.0.0.11 ticketrush-web nginx -t
+          docker run --rm -e BACKEND=http://ticketrush-api.internal:8080 -e RESOLVER='[fdaa::3]' ticketrush-web nginx -t
