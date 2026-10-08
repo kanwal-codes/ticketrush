@@ -4,13 +4,13 @@ import { useQrImage } from './api'
 import { formatCode } from './format'
 
 /** A ticket as the design draws it: the event's own colors, a perforation, the QR code and the code as text. */
-export function TicketStub({ ticket, event }: { ticket: MyTicket; event: EventDetail }) {
+export function TicketStub({ ticket, event, index = 0 }: { ticket: MyTicket; event: EventDetail; index?: number }) {
   const qr = useQrImage(ticket.id)
   const seat = `${ticket.section}, row ${ticket.row}, seat ${ticket.number}`
   const used = ticket.status !== 'ISSUED'
 
   return (
-    <li className={`stub${used ? ' stub--used' : ''}`}>
+    <li className={`stub${used ? ' stub--used' : ''}`} style={{ '--i': index } as React.CSSProperties}>
       <div className="stub__main">
         <p className="label stub__label">{ticket.orderReference}</p>
         <h3 className="stub__seat">{seat}</h3>

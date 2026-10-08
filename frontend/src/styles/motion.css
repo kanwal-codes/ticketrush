@@ -231,3 +231,85 @@ main > * {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ---- Screen polish: small movements that say "that registered" ---- */
+
+/* A number that has just changed rolls up into place. Keyed on its text, so only a real change replays it. */
+@keyframes roll-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.roll {
+  display: inline-block;
+  animation: roll-in var(--dur-base) var(--ease-out) both;
+}
+
+/* Seats: lift on hover, pop when chosen. */
+.seat {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+button.seat--available:hover {
+  transform: translateY(-2px);
+}
+
+button.seat--selected {
+  animation: pop-in var(--dur-base) var(--ease-spring) both;
+}
+
+/* The hold clock arrives with a slide, and below a minute it breathes so it is hard to miss. */
+.site-nav .hold-timer {
+  animation: slide-down-in var(--dur-base) var(--ease-out) both;
+}
+
+.site-nav .hold-timer--urgent {
+  animation: pulse-soft 1.4s var(--ease-in-out) infinite;
+}
+
+/* Cards lift with a hard offset shadow, square like everything else here. */
+.card__link .card__poster {
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.card__link:hover .card__poster,
+.card__link:focus-visible .card__poster {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+/* Tickets are printed one after another. */
+.stubs > .stub {
+  animation: ticket-in var(--dur-slow) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+/* A payment we are still waiting on: a ring that breathes. Calm, not alarming. */
+.checkout__ring {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin-block: var(--space-4);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  animation: breathe 2.4s var(--ease-in-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav .hold-timer--urgent,
+  .checkout__ring {
+    animation: none;
+  }
+}

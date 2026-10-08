@@ -193,6 +193,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
     return (
       <div className="page checkout" style={eventTheme(event.poster)}>
         <h1>Confirming your payment</h1>
+        <span className="checkout__ring" aria-hidden="true" />
         <p className="checkout__lead" role="status">
           Your payment is taking longer than usual. <strong>Please do not pay again.</strong> Your seats are being kept for you, and this page updates by itself as soon as we hear back.
         </p>

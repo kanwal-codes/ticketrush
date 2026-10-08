@@ -69,8 +69,8 @@ export function TicketsPage() {
               )}
               {event ? (
                 <ul className="stubs">
-                  {list.map((t) => (
-                    <TicketStub key={t.id} ticket={t} event={event} />
+                  {list.map((t, i) => (
+                    <TicketStub key={t.id} ticket={t} event={event} index={i} />
                   ))}
                 </ul>
               ) : (

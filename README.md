@@ -55,7 +55,8 @@ cd frontend && npm run e2e                       # web app: a real browser again
 The end-to-end tests drive Chromium against the real backend and database, so start the backend with
 `SPRING_PROFILES_ACTIVE=dev,loadtest` and give the tests the demo organizer's password
 (`ORGANIZER_PASSWORD=...`). They cover the whole purchase, a declined card, an unknown payment outcome, two guests
-racing for the same seats, refreshing mid-queue, the whole purchase by keyboard, accessibility scans of every
+racing for the same seats, refreshing mid-queue, the whole purchase by keyboard, failures made on purpose (a failing server, a
+missing page, a rate limit, going offline), reduced motion, layout shift, accessibility scans of every
 screen, and that no screen scrolls sideways on a phone.
 
 Integration tests start real Postgres and Redis containers with Testcontainers, so Docker must be running. The build also writes a JaCoCo coverage report and fails if line coverage drops below 93% or branch coverage below 82%.
@@ -70,13 +71,19 @@ Integration tests start real Postgres and Redis containers with Testcontainers, 
 | The seat map, with the same totals the order will have | Checkout: the final price, and a retry that cannot charge twice |
 
 <p>
+<img src="docs/img/screens/error-load.png" alt="The events could not load" width="49%">
+<img src="docs/img/screens/error-not-found.png" alt="A page that does not exist" width="49%">
+</p>
+
+<p>
 <img src="docs/img/screens/tickets.png" alt="Tickets" width="49%">
 <img src="docs/img/screens/tickets-phone.png" alt="Tickets on a phone" width="22%">
 <img src="docs/img/screens/queue-phone.png" alt="The waiting room on a phone" width="22%">
+<img src="docs/img/screens/error-offline-phone.png" alt="Offline, with the place in line kept" width="22%">
 </p>
 
-Posters are generated from each event's data, in six styles. The design decisions, and what testing in a real browser
-found, are in [the decision record](docs/adr/0005-web-app.md). The screenshots come from `npm run screenshots`.
+Posters are generated from each event's data, in six styles. Pages glide into each other (the poster travels from the card to the event page), and when something goes wrong the guest is told what happened, whether their place, seats or money are affected, and what to do next. The design decisions, and what testing in a real browser
+found, are in [the web app decision record](docs/adr/0005-web-app.md) and [the motion and errors record](docs/adr/0006-motion-and-errors.md). The screenshots come from `npm run screenshots`.
 
 ## Proof
 

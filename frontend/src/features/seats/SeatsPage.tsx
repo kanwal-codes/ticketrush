@@ -1,3 +1,4 @@
+import { RollingNumber } from '../../components/RollingNumber'
 import { Notice } from '../../components/Notice'
 import { useToast } from '../../components/Toast'
 import { describeError, type Tone } from '../../lib/errorCopy'
@@ -185,9 +186,9 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
                 ))}
               </ul>
               <dl className="panel__totals">
-                <div><dt>Tickets</dt><dd className="num">{formatMoney(subtotal)}</dd></div>
+                <div><dt>Tickets</dt><dd className="num"><RollingNumber value={formatMoney(subtotal)} /></dd></div>
                 <div><dt>Fees</dt><dd className="num">{formatMoney(fees)}</dd></div>
-                <div className="panel__total"><dt>Total</dt><dd className="num">{formatMoney(total)}</dd></div>
+                <div className="panel__total"><dt>Total</dt><dd className="num"><RollingNumber value={formatMoney(total)} /></dd></div>
               </dl>
             </>
           )}
