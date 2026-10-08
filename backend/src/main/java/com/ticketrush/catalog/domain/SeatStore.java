@@ -58,6 +58,9 @@ public interface SeatStore {
 	/** Frees the seats still held under this hold. Returns how many. */
 	int releaseHold(long holdId);
 
+	/** Puts the seats of an order's tickets back on the shelf (SOLD to AVAILABLE). Returns how many. */
+	int freeSoldSeatsOf(long orderId);
+
 	List<HeldSeat> heldSeats(long holdId);
 
 	/** Housekeeping: frees seats whose hold ran out and marks those holds EXPIRED. */
