@@ -8,9 +8,10 @@ import { check, sleep } from 'k6';
 import { Counter, Trend } from 'k6/metrics';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.4/index.js';
 import http from 'k6/http';
-import { call, createEvent, createGuest, idempotencyKey, jitter, organizerLogin, pickSeats, serverErrors, summaryFiles } from './lib.js';
+import { call, createEvent, idempotencyKey, jitter, organizerLogin, pickSeats, serverErrors, sharedGuests, summaryFiles } from './lib.js';
 
 const GUESTS = Number(__ENV.GUESTS || 1500);
+const guests = sharedGuests();
 const ROWS = Number(__ENV.ROWS || 25);
 const PER_ROW = Number(__ENV.PER_ROW || 40);
 const SALE_OPENS_IN_MS = 25000;
@@ -55,7 +56,7 @@ export function setup() {
 }
 
 export default function (data) {
-  const guest = createGuest(data.token);
+  const guest = guests[__VU - 1];
   sleep(Math.random() * ARRIVE_OVER_SECONDS);
 
   // 1. Join the waiting room.

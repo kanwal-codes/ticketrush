@@ -19,6 +19,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -49,6 +50,7 @@ public class HoldService {
 	private final Duration ttl;
 	private final int maxSeats;
 	private final MeterRegistry meters;
+	private final TransactionTemplate tx;
 
 	/** Orders in these states are using the hold's seats, so the hold must not be replaced or released. */
 	private static final Set<OrderStatus> USING_THE_HOLD = EnumSet.of(OrderStatus.PENDING_PAYMENT, OrderStatus.PAID,
@@ -57,7 +59,7 @@ public class HoldService {
 	public HoldService(EventRepository events, SeatHoldRepository holds, TicketOrderRepository orders,
 			EventPriceRepository prices,
 			SeatStore seats, AdmissionCheck admission, Clock clock, @Value("${ticketrush.holds.ttl}") Duration ttl,
-			@Value("${ticketrush.holds.max-seats}") int maxSeats, MeterRegistry meters) {
+			@Value("${ticketrush.holds.max-seats}") int maxSeats, MeterRegistry meters, TransactionTemplate tx) {
 		this.events = events;
 		this.holds = holds;
 		this.orders = orders;
@@ -68,6 +70,7 @@ public class HoldService {
 		this.ttl = ttl;
 		this.maxSeats = maxSeats;
 		this.meters = meters;
+		this.tx = tx;
 	}
 
 	public record HoldSeatView(long seatId, String section, String row, int number, long faceCents) {
@@ -82,7 +85,6 @@ public class HoldService {
 	 * Holds the seats for the guest, replacing any hold they already have for this event. All or nothing: if any
 	 * seat is not free, nothing changes, and the guest keeps their previous hold.
 	 */
-	@Transactional
 	public HoldView hold(long userId, long eventId, List<Long> seatIds, String admissionToken) {
 		try {
 			HoldView view = tryHold(userId, eventId, seatIds, admissionToken);
@@ -109,7 +111,17 @@ public class HoldService {
 			// Checked before touching any seat, so a guest who skipped the line costs the database nothing.
 			admission.require(userId, eventId, admissionToken);
 		}
+		// On a drop most requests lose: the seats were taken a moment ago. A plain read turns those away without
+		// opening a transaction, taking a lock or writing anything. It can be out of date, which is harmless,
+		// because the claim below is still the only thing that decides who gets a seat.
+		List<Long> taken = seats.unavailable(eventId, seatIds, now);
+		if (!taken.isEmpty()) {
+			throw new SeatsUnavailableException(taken);
+		}
+		return tx.execute(status -> claimInTransaction(userId, eventId, seatIds, now));
+	}
 
+	private HoldView claimInTransaction(long userId, long eventId, List<Long> seatIds, Instant now) {
 		// One guest's requests for one event run one after the other, so a retry cannot fight itself.
 		seats.lockUserEvent(userId, eventId);
 		holds.findByEventIdAndUserIdAndStatus(eventId, userId, HoldStatus.ACTIVE).ifPresent(old -> {

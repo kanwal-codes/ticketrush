@@ -3,9 +3,10 @@
 import { check, sleep } from 'k6';
 import { Counter } from 'k6/metrics';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.4/index.js';
-import { call, createEvent, createGuest, organizerLogin, serverErrors, summaryFiles } from './lib.js';
+import { call, createEvent, organizerLogin, serverErrors, sharedGuests, summaryFiles } from './lib.js';
 
 const GUESTS = Number(__ENV.GUESTS || 1000);
+const guests = sharedGuests();
 const PAIRS = __ENV.MODE === 'pairs';
 const won = new Counter('holds_won');
 const lost = new Counter('holds_lost');
@@ -28,12 +29,12 @@ export function setup() {
   const map = call('GET', '/api/events/' + event.id + '/seats', { name: 'setup' }).json();
   const ids = [];
   for (const section of map.sections) for (const row of section.rows) for (const seat of row.seats) ids.push(seat.id);
-  // Everyone starts together: each guest is created first, then waits for this moment.
-  return { token, eventId: event.id, seatIds: ids, goAt: Date.now() + 20000 };
+  // Everyone starts together: every virtual user waits for this moment.
+  return { token, eventId: event.id, seatIds: ids, goAt: Date.now() + 10000 };
 }
 
 export default function (data) {
-  const guest = createGuest(data.token);
+  const guest = guests[__VU - 1];
   const wait = (data.goAt - Date.now()) / 1000;
   if (wait > 0) sleep(wait);
 
