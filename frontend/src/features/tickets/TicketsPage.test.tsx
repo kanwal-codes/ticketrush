@@ -111,4 +111,19 @@ describe('TicketsPage', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/signin'))
     expect(getToken()).toBeNull()
   })
+
+  it('says so, with the voided tickets, when the event was cancelled', async () => {
+    mockApi({
+      'GET /api/tickets': () => json([ticket(1, 1, { status: 'VOID' }), ticket(2, 2, { status: 'VOID' })]),
+      'GET /api/events/7': () => json(eventDetail({ cancelled: true, saleState: 'ENDED' })),
+      'GET /api/tickets/1/qr.svg': svg,
+      'GET /api/tickets/2/qr.svg': svg,
+    })
+    renderRoute('/tickets')
+
+    const section = await screen.findByRole('region', { name: 'Afterlight Tour' })
+    expect(within(section).getByText('This event was cancelled')).toBeInTheDocument()
+    expect(within(section).getByText(/Your money is being returned/)).toBeInTheDocument()
+    expect(within(section).getAllByText('Cancelled')).toHaveLength(2)
+  })
 })

@@ -61,11 +61,14 @@ public class OrderQueryService {
 			return new OrderSeat(s.seatId(), s.sectionName(), s.row(), s.number(), face, FeePolicy.fee(face));
 		}).toList();
 
+		// An order has tickets once paid, and keeps them (void) if the event is cancelled and it is refunded. The seats
+		// are read from the tickets themselves, because a cancelled event's seats are no longer held under the order.
+		List<Ticket> issued = tickets.findByOrderIdOrderById(order.getId());
 		List<TicketView> ticketViews = List.of();
-		if (order.getStatus() == OrderStatus.PAID) {
-			Map<Long, HeldSeat> seatById = held.stream().collect(Collectors.toMap(HeldSeat::seatId, Function.identity()));
-			ticketViews = tickets.findByOrderIdOrderById(order.getId()).stream().map(t -> ticketView(t, seatById.get(t.getSeatId())))
-					.toList();
+		if (!issued.isEmpty()) {
+			Map<Long, HeldSeat> seatById = seats.ticketSeats(order.getId()).stream()
+					.collect(Collectors.toMap(HeldSeat::seatId, Function.identity()));
+			ticketViews = issued.stream().map(t -> ticketView(t, seatById.get(t.getSeatId()))).toList();
 		}
 		return new OrderView(order.getId(), order.getPublicRef(), order.getEventId(), order.getStatus(),
 				order.getSubtotalCents(), order.getFeeCents(), order.getTotalCents(), order.getCurrency(),

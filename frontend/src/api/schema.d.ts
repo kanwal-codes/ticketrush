@@ -842,6 +842,7 @@ export interface components {
             /** Format: int32 */
             availableSeats: number;
             waitingRoom: boolean;
+            cancelled: boolean;
         };
         TierView: {
             /** Format: int64 */

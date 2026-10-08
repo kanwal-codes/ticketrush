@@ -4,6 +4,7 @@ import { useEventsById } from '../../api/queries'
 import type { MyTicket } from '../../api/types'
 import { WalletSkeleton } from '../../components/PageSkeletons'
 import { eventTheme } from '../../lib/eventTheme'
+import { Notice } from '../../components/Notice'
 import { formatMoney } from '../../lib/money'
 import { useTitle } from '../../lib/useTitle'
 import { useTickets } from './api'
@@ -65,6 +66,11 @@ export function TicketsPage() {
               {event && (
                 <header>
                   <h2 className="tickets__title">{event.title}</h2>
+                  {event.cancelled && (
+                    <Notice tone="warning" title="This event was cancelled" compact>
+                      These tickets no longer work. Your money is being returned to your card automatically.
+                    </Notice>
+                  )}
                 </header>
               )}
               {event ? (

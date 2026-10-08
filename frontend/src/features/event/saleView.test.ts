@@ -20,6 +20,7 @@ const event: EventDetail = {
   totalSeats: 2000,
   availableSeats: 1500,
   waitingRoom: true,
+  cancelled: false,
 }
 
 describe('saleView', () => {
@@ -53,5 +54,12 @@ describe('saleView', () => {
   it('offers nothing when sold out or over', () => {
     expect(saleView({ ...event, availableSeats: 0 })).toMatchObject({ headline: 'Sold out', cta: { kind: 'none' } })
     expect(saleView({ ...event, saleState: 'ENDED' })).toMatchObject({ headline: 'This event has started', cta: { kind: 'none' } })
+  })
+
+  it('says an event was cancelled, with no way to buy, whatever its dates say', () => {
+    const view = saleView({ ...event, cancelled: true, saleState: 'ENDED' })
+    expect(view.headline).toBe('This event was cancelled')
+    expect(view.note).toMatch(/refunded automatically/)
+    expect(view.cta).toEqual({ kind: 'none' })
   })
 })

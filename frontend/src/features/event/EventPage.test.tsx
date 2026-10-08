@@ -26,6 +26,7 @@ const event: EventDetail = {
   totalSeats: 2000,
   availableSeats: 1500,
   waitingRoom: true,
+  cancelled: false,
 }
 
 beforeEach(() => resetServerTime())
