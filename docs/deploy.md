@@ -61,8 +61,8 @@ For a real organizer without demo data, leave `demo` out of `SPRING_PROFILES_ACT
 ## 4. Deploy
 
 ```bash
-cd backend  && fly deploy --no-public-ips     # the API first; wait for its health check
-cd ../frontend && fly deploy                   # then the web app
+cd backend  && fly deploy --no-public-ips --ha=false   # the API first; wait for its health check
+cd ../frontend && fly deploy --ha=false                 # then the web app
 ```
 
 Or from GitHub: Actions, Deploy, Run workflow (needs a `FLY_API_TOKEN` secret from `fly tokens create deploy`, and
@@ -78,11 +78,28 @@ It checks that the site and the events API work, that the security headers are s
 `/dev` are not served, that a guest is refused the organizer tools, that the organizer can sign in, and that guessing
 passwords is rate limited. It creates one throwaway guest account. Then buy tickets on the live site once by hand.
 
+## What the live demo runs on
+
+The demo at https://ticketrush-web.fly.dev was set up with these choices, for the lowest steady cost that never goes to sleep:
+
+- **Postgres: Supabase** (a project of its own, `ticketrush`, in `ca-central-1`). The app logs in as a dedicated `ticketrush`
+  role (created with `create role ticketrush with login password '...'`, then `grant usage, create on schema public to
+  ticketrush`), through the **session pooler**: host `aws-1-ca-central-1.pooler.supabase.com`, port 5432, and the user name
+  has the project reference appended (`ticketrush.<project-ref>`). `DB_POOL_SIZE=10` keeps it inside the pooler's limits.
+  The whole backend suite passes on Postgres 17, which Supabase runs. **On Supabase's free plan a project with no traffic is
+  paused after a week**, and a paused database means the live site shows errors until it is restored in the Supabase
+  dashboard. Keep it active, or move to a paid plan.
+- **Redis: Fly's Upstash**, pay as you go ($0.20 per 100,000 commands; the waiting room's admission timer alone is a few
+  dollars a month). `fly redis update` can move it to a fixed-price plan.
+- **One machine per app.** Fly starts two by default for availability; `--ha=false` (and `fly scale count 1`) keeps one,
+  which is the shape the load numbers were measured on.
+
 ## Day to day
 
 | To | Run |
 |---|---|
 | See logs | `fly logs -a ticketrush-api` |
+| Check what is running | `fly status -a ticketrush-api` and `fly status -a ticketrush-web` |
 | Roll back | `fly releases -a ticketrush-api`, then `fly deploy --image <the previous image>` |
 | Sign everyone out (rotate the token key) | `fly secrets set -a ticketrush-api JWT_SECRET="$(openssl rand -base64 48)"` |
 | Change the waiting room pace | `fly secrets set -a ticketrush-api TICKETRUSH_QUEUE_ADMIT_PER_SECOND=20` |
