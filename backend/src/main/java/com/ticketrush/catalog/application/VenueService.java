@@ -41,7 +41,7 @@ public class VenueService {
 
 	/** Creates a venue and generates every seat (rows A, B, ... with numbered seats) in one transaction. */
 	@Transactional
-	public VenueView create(String name, String city, List<SectionSpec> specs) {
+	public VenueView create(long ownerId, String name, String city, List<SectionSpec> specs) {
 		int total = specs.stream().mapToInt(s -> s.rows() * s.seatsPerRow()).sum();
 		if (total > MAX_SEATS) {
 			throw new RuleViolationException(
@@ -54,7 +54,7 @@ public class VenueService {
 			}
 		}
 
-		Venue venue = venues.save(new Venue(name.strip(), city.strip()));
+		Venue venue = venues.save(new Venue(ownerId, name.strip(), city.strip()));
 		for (int i = 0; i < specs.size(); i++) {
 			SectionSpec spec = specs.get(i);
 			VenueSection section = sections.save(new VenueSection(venue.getId(), spec.name().strip(), i));
@@ -63,6 +63,12 @@ public class VenueService {
 			}
 		}
 		return get(venue.getId());
+	}
+
+	/** The organizer's own venues, A to Z. */
+	@Transactional(readOnly = true)
+	public List<VenueView> ownedBy(long ownerId) {
+		return venues.findByOwnerIdOrderByNameAsc(ownerId).stream().map(v -> get(v.getId())).toList();
 	}
 
 	@Transactional(readOnly = true)

@@ -1,0 +1,128 @@
+.skip-link {
+  position: absolute;
+  left: var(--space-3);
+  top: -100px;
+  z-index: 10;
+  padding: var(--space-2) var(--space-4);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.skip-link:focus {
+  top: var(--space-3);
+}
+
+.site-header {
+  /* A name of its own, so it stays still while the rest of the page changes (see motion.css). */
+  view-transition-name: site-header;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.site-header__inner {
+  width: min(100% - 2 * var(--gutter), var(--page));
+  margin-inline: auto;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.brand {
+  font-weight: 900;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  font-variation-settings: 'wdth' 125;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  font-size: 0.95rem;
+}
+
+.site-nav a,
+.site-nav__button {
+  text-decoration: none;
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-in-out);
+}
+
+.site-nav__who {
+  color: var(--muted);
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-nav a[aria-current='page'] {
+  border-bottom-color: var(--ink);
+}
+
+.site-nav a:hover,
+.site-nav__button:hover {
+  border-bottom-color: var(--muted);
+}
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  padding-block: var(--space-5);
+  text-align: center;
+}
+
+.site-footer p {
+  margin-inline: auto;
+}
+
+@media (max-width: 560px) {
+  .site-nav__who {
+    display: none;
+  }
+
+  /* With a hold running there are more items than fit in one row, so the nav wraps under the brand. */
+  .site-header__inner {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+    padding-block: var(--space-2);
+  }
+
+  .site-nav {
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .site-nav {
+    gap: var(--space-4);
+    font-size: 0.875rem;
+  }
+}
+
+.site-nav .hold-timer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.site-nav .hold-timer .label {
+  color: var(--paper);
+}
+
+.site-nav .hold-timer:hover {
+  background: var(--muted);
+}

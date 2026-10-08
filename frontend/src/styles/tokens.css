@@ -1,0 +1,33 @@
+/* The design system from the approved canvas: one paper, one ink, square corners, hairline rules.
+   Each event brings its own two inks and paper, set as --ev, --ev-accent and --ev-paper on its page. */
+:root {
+  --paper: #f6f6f3;
+  --ink: #121212;
+  --muted: #686862;
+  --rule: #d9d9d3;
+  --white: #ffffff;
+  --danger: #b3261e;
+  --ok: #1c7a4d;
+
+  /* Overridden per event by <EventTheme>. These are the canvas defaults ("Afterlight"). */
+  --ev: #2b2fd9;
+  --ev-accent: #ff5a36;
+  --ev-paper: #ffd9c4;
+  --on-ev: #ffffff;
+
+  --font-ui: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+
+  --measure: 62ch;
+  --page: 1180px;
+  --gutter: clamp(16px, 4vw, 40px);
+}

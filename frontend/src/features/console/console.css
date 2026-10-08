@@ -1,0 +1,108 @@
+.console {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.console__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.console h2 {
+  font-size: 1.15rem;
+}
+
+.chip {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chip--published {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: var(--white);
+}
+
+.chip--cancelled {
+  color: var(--muted);
+  border-color: var(--rule);
+}
+
+.console__empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  max-width: 52ch;
+  padding: var(--space-6) 0;
+}
+
+.console__events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-4);
+}
+
+.console__event a {
+  display: grid;
+  gap: var(--space-2);
+  min-height: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--rule);
+  background: var(--white);
+  text-decoration: none;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.console__event a:hover,
+.console__event a:focus-visible {
+  border-color: var(--ink);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.console__event a > .chip {
+  justify-self: start;
+}
+
+.console__meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.console__numbers {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 0.9rem;
+}
+
+/* A bar that fills by scaling, never by changing its width. */
+.console__bar {
+  display: block;
+  height: 6px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.console__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+  transition: transform var(--dur-page) var(--ease-out);
+}
