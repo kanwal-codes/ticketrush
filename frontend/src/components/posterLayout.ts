@@ -60,7 +60,13 @@ export function layoutTitle(title: string, o: Options): TitleLayout {
   return { lines, size }
 }
 
-/** Set only when a line would overflow, so short lines keep their natural proportions. */
+/**
+ * The factor is an average over the alphabet, so a word of wide capitals (ORCHESTRA) runs wider than estimated.
+ * A line within this much of the width is pinned to it rather than trusted to fit.
+ */
+const WIDE_LETTERS = 1.12
+
+/** Set only when a line might overflow, so short lines keep their natural proportions. */
 export function fitAttrs(text: string, size: number, factor: number, width: number): { textLength?: number; lengthAdjust?: 'spacingAndGlyphs' } {
-  return text.length * size * factor > width ? { textLength: width, lengthAdjust: 'spacingAndGlyphs' } : {}
+  return text.length * size * factor * WIDE_LETTERS > width ? { textLength: width, lengthAdjust: 'spacingAndGlyphs' } : {}
 }

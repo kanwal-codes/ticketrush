@@ -101,7 +101,7 @@ function Door({ id }: { id: number }) {
             autoCapitalize="characters"
             spellCheck={false}
             inputMode="text"
-            placeholder="Scan or type the code"
+            placeholder="Scan or type"
           />
           <button type="submit" className="btn" disabled={busy || !code.trim()}>
             {busy ? 'Checking…' : 'Check'}
