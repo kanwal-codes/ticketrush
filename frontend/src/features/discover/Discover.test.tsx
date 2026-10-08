@@ -67,7 +67,7 @@ describe('Discover', () => {
     let failing = true
     mockApi({ 'GET /api/events': () => (failing ? json({ title: 'Server error', detail: 'The server is having a bad day' }, 503) : json(page([make(1, 'Afterlight Tour', 'ON_SALE')]))) })
     renderRoute('/')
-    expect(await screen.findByRole('alert')).toHaveTextContent('The server is having a bad day')
+    expect(await screen.findByRole('alert')).toHaveTextContent('We could not load the events')
 
     failing = false
     await userEvent.click(screen.getByRole('button', { name: 'Try again' }))

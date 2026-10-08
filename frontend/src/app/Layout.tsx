@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Link, NavLink, Outlet } from 'react-router'
 import { clearToken, useToken } from '../auth/session'
 import { useMe } from '../features/auth/api'
+import { ConnectionBar } from '../components/ConnectionBar'
 import { HoldTimer } from '../features/seats/HoldTimer'
 import { RouteEffects } from './RouteEffects'
 import './layout.css'
@@ -45,6 +46,7 @@ export function Layout() {
           </nav>
         </div>
       </header>
+      <ConnectionBar />
       <RouteEffects />
       <main id="main" tabIndex={-1}>
         <Outlet />

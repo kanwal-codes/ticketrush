@@ -48,7 +48,7 @@ describe('sign in', () => {
     await userEvent.type(screen.getByLabelText('Password'), 'wrong-password')
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('That email and password do not match')
+    expect(await screen.findByRole('alert')).toHaveTextContent('do not match an account')
     expect(getToken()).toBeNull()
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeEnabled()
   })

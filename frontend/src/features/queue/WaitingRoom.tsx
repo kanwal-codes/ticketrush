@@ -1,3 +1,4 @@
+import { ErrorScreen } from '../../components/ErrorScreen'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router'
@@ -73,21 +74,16 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
   }
 
   if (room.phase === 'closed' || room.phase === 'error') {
+    const closed = room.phase === 'closed'
     return shell(
-      <>
-        <h1>{room.phase === 'closed' ? 'The waiting room is closed' : 'We could not put you in the queue'}</h1>
-        <p className="queue__lead" role="alert">
-          {room.error?.message}
-        </p>
-        <p className="queue__actions">
-          {room.phase === 'error' && (
-            <button type="button" className="btn" onClick={onRejoin}>
-              Try again
-            </button>
-          )}
-          <BackLink id={event.id} />
-        </p>
-      </>,
+      <ErrorScreen
+        eyebrow={closed ? 'Queue closed' : 'Could not join'}
+        title={closed ? 'The waiting room is closed' : 'We could not put you in the queue'}
+        primary={closed ? { label: 'Back to the event', to: `/events/${event.id}` } : { label: 'Try again', onClick: onRejoin }}
+        secondary={closed ? undefined : { label: 'Back to the event', to: `/events/${event.id}` }}
+      >
+        <p>{room.error?.message}</p>
+      </ErrorScreen>,
     )
   }
 

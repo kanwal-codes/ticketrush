@@ -1,36 +1,39 @@
-import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
-import { ApiError } from '../api/errors'
+import { isRouteErrorResponse, useLocation, useRouteError } from 'react-router'
+import { ErrorScreen, type ErrorAction } from '../components/ErrorScreen'
+import { describeError } from '../lib/errorCopy'
 
 export function NotFound() {
-  return <Notice heading="We could not find that page" detail="The link may be old, or the event may have ended." />
+  const { pathname } = useLocation()
+  return (
+    <ErrorScreen eyebrow="404" title="We could not find that page" primary={{ label: 'See what is on', to: '/' }} details={{ status: 404, path: pathname }}>
+      <p>The link may be old, or the event may have ended.</p>
+    </ErrorScreen>
+  )
 }
 
-/** Shown when a page throws. Says what happened in plain words and offers a way out. */
+/** Shown when a page throws. Says what happened in plain words and offers the one next step that fits. */
 export function RouteError() {
   const error = useRouteError()
-  let heading = 'Something went wrong'
-  let detail = 'Try again, and if it keeps happening, come back in a few minutes.'
+  const { pathname } = useLocation()
 
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    return <NotFound />
+  if (isRouteErrorResponse(error) && error.status === 404) return <NotFound />
+
+  const d = describeError(error)
+  const retry: ErrorAction = { label: 'Try again', onClick: () => location.reload() }
+  const action: Record<typeof d.recovery, ErrorAction | undefined> = {
+    retry,
+    wait: retry,
+    signin: { label: 'Sign in', to: '/signin' },
+    rejoin: { label: 'See what is on', to: '/' },
+    home: { label: 'See what is on', to: '/' },
+    none: undefined,
   }
-  if (error instanceof ApiError) {
-    heading = error.isNetwork ? 'No connection' : error.title || heading
-    detail = error.message
-  }
+  const primary = action[d.recovery]
+  const eyebrow = d.kind === 'network' ? 'Offline' : d.status ? `Error ${d.status}` : 'Error'
 
-  return <Notice heading={heading} detail={detail} />
-}
-
-function Notice({ heading, detail }: { heading: string; detail: string }) {
   return (
-    <div className="page" role="alert">
-      <p className="label">Error</p>
-      <h1>{heading}</h1>
-      <p style={{ marginTop: 'var(--space-4)' }}>{detail}</p>
-      <p style={{ marginTop: 'var(--space-5)' }}>
-        <Link to="/">See what is on</Link>
-      </p>
-    </div>
+    <ErrorScreen eyebrow={eyebrow} title={d.title} primary={primary} secondary={primary?.to === '/' ? undefined : { label: 'See what is on', to: '/' }} details={{ status: d.status, code: d.code, path: pathname }}>
+      <p>{d.message}</p>
+    </ErrorScreen>
   )
 }

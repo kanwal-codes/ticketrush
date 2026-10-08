@@ -66,7 +66,7 @@ describe('SeatsPage', () => {
     await screen.findByRole('heading', { name: 'Floor' })
     for (let n = 1; n <= 7; n++) await userEvent.click(seat(n))
 
-    expect(screen.getByRole('status')).toHaveTextContent('You can hold up to 6 seats at once.')
+    expect(screen.getByText('You can hold up to 6 seats at once.')).toBeInTheDocument()
     expect(seat(7)).toHaveAttribute('aria-pressed', 'false')
     expect(seat(6)).toHaveAttribute('aria-pressed', 'true')
   })

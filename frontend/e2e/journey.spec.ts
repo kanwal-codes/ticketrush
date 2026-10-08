@@ -112,7 +112,7 @@ test('two guests go for the same seats: one holds them, the other is told and pi
 
   // B tries for the same two seats a moment later: none are held, and B is told which were taken.
   await pageB.getByRole('button', { name: 'Hold these 2 seats' }).click()
-  await expect(pageB.getByRole('status')).toContainText('A1 and A2 were just taken')
+  await expect(pageB.getByRole('alert')).toContainText('A1 and A2 were just taken')
   await expect(pageB.getByRole('button', { name: /Stalls row A seat 1,/ })).toHaveAttribute('aria-disabled', 'true')
 
   await pageB.getByRole('button', { name: /Stalls row A seat 3,/ }).click()

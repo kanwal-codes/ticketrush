@@ -1,3 +1,6 @@
+import { Notice } from '../../components/Notice'
+import { useToast } from '../../components/Toast'
+import { describeError, type Tone } from '../../lib/errorCopy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router'
@@ -42,11 +45,13 @@ const sameSeats = (a: number[], b: number[]) => a.length === b.length && a.every
 function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData; hold: HoldView | null }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const toast = useToast()
   useTitle(`Choose seats · ${event.title}`)
 
   const heldIds = useMemo(() => hold?.seats.map((s) => s.seatId) ?? [], [hold])
   const [selected, setSelected] = useState<number[]>(heldIds)
-  const [message, setMessage] = useState('')
+  const [notice, setNotice] = useState<{ tone: Tone; title: string; text: string } | null>(null)
+  const setMessage = (text: string, tone: Tone = 'info', title = '') => setNotice(text ? { tone, title, text } : null)
   const [busy, setBusy] = useState(false)
 
   const seats = useMemo(() => flattenSeats(map), [map])
@@ -68,12 +73,13 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
     const timer = setTimeout(() => {
       clearActiveHold()
       setSelected([])
-      setMessage('Your hold ended and the seats are back on sale. Choose again if they are still free.')
+      setMessage('Your hold ended and the seats are back on sale. Choose again if they are still free.', 'warning', 'Your hold ended')
+      toast({ tone: 'warning', title: 'Your hold ended' })
       void queryClient.invalidateQueries({ queryKey: seatKeys.hold(event.id) })
       void queryClient.invalidateQueries({ queryKey: seatKeys.seats(event.id) })
     }, Math.max(0, ms))
     return () => clearTimeout(timer)
-  }, [hold, event.id, queryClient])
+  }, [hold, event.id, queryClient, toast])
 
   function toggle(seatId: number) {
     setMessage('')
@@ -92,12 +98,12 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
       void navigate(`/events/${event.id}/checkout`, { viewTransition: true })
     } catch (e) {
       setBusy(false)
-      if (!(e instanceof ApiError)) return setMessage('Something went wrong. Try again.')
+      if (!(e instanceof ApiError)) return setMessage(describeError(e).message, 'error', describeError(e).title)
       if (e.unavailableSeatIds.length > 0) {
         // All or nothing: none were held. Drop the ones that are gone and keep the rest.
         const labels = e.unavailableSeatIds.map((id) => seatLabel(seats.get(id) ?? { row: '?', number: 0 }))
         setSelected(effective.filter((id) => !e.unavailableSeatIds.includes(id)))
-        setMessage(`${listSeats(labels)} ${labels.length === 1 ? 'was' : 'were'} just taken, so none of your seats are held yet. Pick another and continue.`)
+        setMessage(`${listSeats(labels)} ${labels.length === 1 ? 'was' : 'were'} just taken, so none of your seats are held yet. Pick another and continue.`, 'warning', 'Someone got there first')
         void queryClient.invalidateQueries({ queryKey: seatKeys.seats(event.id) })
       } else if (e.code === 'ADMISSION_REQUIRED') {
         clearAdmission(event.id)
@@ -105,9 +111,10 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
       } else if (e.isUnauthorized) {
         clearToken()
       } else if (e.isNetwork) {
-        setMessage('We could not reach the server, so your seats are not held yet. Check your connection and try again.')
+        setMessage('We could not reach the server, so your seats are not held yet. Check your connection and try again.', 'warning', 'No connection')
       } else {
-        setMessage(e.message)
+        const d = describeError(e)
+        setMessage(d.message, d.tone, d.title)
       }
     }
   }
@@ -118,11 +125,12 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
     try {
       await releaseHold(hold.id)
       setSelected([])
-      setMessage('Your seats are released.')
+      setMessage('Your seats are released.', 'success', 'Released')
       void queryClient.invalidateQueries({ queryKey: seatKeys.hold(event.id) })
       void queryClient.invalidateQueries({ queryKey: seatKeys.seats(event.id) })
     } catch (e) {
-      setMessage(e instanceof ApiError ? e.message : 'Something went wrong. Try again.')
+      const d = describeError(e)
+      setMessage(d.message, d.tone, d.title)
     } finally {
       setBusy(false)
     }
@@ -156,9 +164,13 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
 
         <aside className="panel" aria-labelledby="panel-heading">
           <h2 id="panel-heading">Your tickets</h2>
-          <p className="panel__message" role="status" aria-live="polite">
-            {message || goneMessage}
-          </p>
+          {notice ? (
+            <Notice tone={notice.tone} title={notice.title || (notice.tone === 'success' ? 'Done' : 'Note')} compact onDismiss={() => setNotice(null)}>
+              {notice.text}
+            </Notice>
+          ) : (
+            goneMessage && <Notice tone="warning" title="Someone got there first" compact>{goneMessage}</Notice>
+          )}
 
           {effective.length === 0 ? (
             <p className="panel__empty">Choose up to {MAX_SEATS} seats on the map.</p>
