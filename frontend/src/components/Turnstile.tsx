@@ -8,6 +8,7 @@ interface TurnstileApi {
     options: {
       sitekey: string
       appearance: 'interaction-only'
+      theme: 'light'
       callback: (token: string) => void
       'expired-callback': () => void
       'error-callback': () => void
@@ -74,6 +75,8 @@ export function Turnstile({ onToken, onError, resetKey }: Props) {
         widget.current = turnstile.render(box.current, {
           sitekey: turnstileSiteKey(),
           appearance: 'interaction-only',
+          // Cloudflare's own widget defaults to a dark badge, which sat oddly on this light form.
+          theme: 'light',
           callback: (token) => callback.current(token),
           'expired-callback': () => callback.current(null),
           'error-callback': () => {
