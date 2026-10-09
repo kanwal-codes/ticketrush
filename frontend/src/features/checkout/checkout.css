@@ -172,3 +172,11 @@
 .checkout__summary .label {
   color: inherit;
 }
+
+/* Stripe's card form is drawn in its own frame, so this only gives it the look of the fields beside it. */
+.stripe-card {
+  padding: var(--space-3);
+  background: var(--paper, #fff);
+  border: 1px solid var(--ink);
+  min-height: 44px;
+}

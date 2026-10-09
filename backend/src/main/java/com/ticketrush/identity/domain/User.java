@@ -42,6 +42,9 @@ public class User {
 	@Column(name = "password_changed_at")
 	private Instant passwordChangedAt;
 
+	@Column(name = "deleted_at")
+	private Instant deletedAt;
+
 	protected User() {
 	}
 
@@ -56,6 +59,19 @@ public class User {
 	public User(String email, String passwordHash, String displayName, Role role, boolean emailVerified) {
 		this(email, passwordHash, displayName, role);
 		this.emailVerified = emailVerified;
+	}
+
+	/** What closing an account leaves: no name, no address, no way in. The row stays so orders keep their records. */
+	public void anonymize(String unusablePasswordHash, Instant now) {
+		this.email = "deleted-" + id + "@deleted.invalid";
+		this.displayName = "Deleted account";
+		this.passwordHash = unusablePasswordHash;
+		this.emailVerified = false;
+		this.deletedAt = now;
+	}
+
+	public boolean isDeleted() {
+		return deletedAt != null;
 	}
 
 	public void markEmailVerified() {

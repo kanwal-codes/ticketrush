@@ -1,8 +1,11 @@
 package com.ticketrush.catalog.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,5 +21,13 @@ public interface SentEmailRepository extends JpaRepository<SentEmail, Long> {
 	/** Locks one unsent message. One another relay is working on is skipped, so relays never block each other. */
 	@Query(value = "select * from sent_email where id = :id and sent_at is null for update skip locked", nativeQuery = true)
 	Optional<SentEmail> lockUnsent(long id);
+
+	List<SentEmail> findByOrderIdInOrderById(Collection<Long> orderIds);
+
+	/** Closing an account removes the address and the words addressed to it, and stops anything still waiting to be sent. */
+	@Modifying
+	@Query("update SentEmail e set e.toEmail = 'deleted@deleted.invalid', e.body = '(removed when the account was closed)', "
+			+ "e.sentAt = coalesce(e.sentAt, :now) where e.orderId in :orderIds")
+	int scrub(Collection<Long> orderIds, Instant now);
 
 }

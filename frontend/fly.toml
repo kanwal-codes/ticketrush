@@ -7,6 +7,10 @@ primary_region = "yyz"
 [build.args]
   # The public Turnstile site key (not a secret). Empty until the Cloudflare widget exists.
   VITE_TURNSTILE_SITE_KEY = "0x4AAAAAAFPuXNF460Lcsn-S"
+  # The public Stripe test key (pk_test_...), not a secret. Empty means the checkout uses the built-in test cards.
+  VITE_STRIPE_PUBLISHABLE_KEY = ""
+  # The address shown on the contact page. Empty: the page points to the project's issue tracker instead.
+  VITE_SUPPORT_EMAIL = ""
 
 [env]
   # The API app's private address (see backend/fly.toml), and Fly's private DNS server that resolves it.
@@ -14,7 +18,7 @@ primary_region = "yyz"
   RESOLVER = "[fdaa::3]"
 
 [http_service]
-  internal_port = 80
+  internal_port = 8080
   force_https = true
   # Kept running: the demo should answer straight away, and an idle nginx costs almost nothing.
   auto_stop_machines = "off"

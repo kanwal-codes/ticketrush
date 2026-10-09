@@ -10,7 +10,10 @@ RUN ./mvnw -q -B package -DskipTests \
 
 # Run stage: just a JRE, running as a normal user.
 FROM eclipse-temurin:25-jre
-RUN useradd --system --uid 10001 ticketrush
+RUN useradd --system --uid 10001 ticketrush \
+ # The base image ships Pebble, a service supervisor written in Go. This container runs java directly and never uses it,
+ # and an unused program is only something to keep patched (a scan found two high findings in its Go libraries).
+ && rm -f /usr/bin/pebble
 WORKDIR /app
 COPY --from=build /build/out/lib ./lib
 COPY --from=build /build/out/*.jar ./app.jar
