@@ -19,10 +19,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class DevDataSeederIntegrationTest extends AbstractIntegrationTest {
 
 	@Test
-	void seedsFivePublishedEventsAndTheDemoOrganizerCanSignIn() throws Exception {
+	void seedsThePublishedDemoEventsAndTheDemoOrganizerCanSignIn() throws Exception {
+		// Thirteen in all: nine in Montreal, two in Toronto, two in Quebec City.
+		mvc.perform(get("/api/events")).andExpect(jsonPath("$.totalItems").value(13));
+		mvc.perform(get("/api/events").param("city", "Toronto")).andExpect(jsonPath("$.totalItems").value(2));
 		String list = mvc.perform(get("/api/events").param("city", "Montreal"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.totalItems").value(5))
+				.andExpect(jsonPath("$.totalItems").value(9))
 				.andReturn().getResponse().getContentAsString();
 		int afterlight = JsonPath.<java.util.List<Integer>>read(list, "$.items[?(@.title=='Afterlight Tour')].id").get(0);
 
