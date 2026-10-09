@@ -67,7 +67,7 @@ describe('the sign-up bot check', () => {
     await fillIn()
 
     await waitFor(() => expect(api.render).toHaveBeenCalledOnce())
-    expect(state.options).toMatchObject({ sitekey: 'site-key-123', appearance: 'interaction-only' })
+    expect(state.options).toMatchObject({ sitekey: 'site-key-123', appearance: 'interaction-only', theme: 'light' })
     const button = screen.getByRole('button', { name: 'Checking that you are a person…' })
     expect(button).toBeDisabled()
 
