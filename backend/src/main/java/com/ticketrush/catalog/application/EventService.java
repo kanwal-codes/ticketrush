@@ -7,6 +7,8 @@ import com.ticketrush.catalog.domain.EventRepository;
 import com.ticketrush.catalog.domain.EventStatus;
 import com.ticketrush.catalog.domain.PosterStyle;
 import com.ticketrush.catalog.domain.SeatStore;
+import com.ticketrush.catalog.domain.SentEmail;
+import com.ticketrush.catalog.domain.SentEmailRepository;
 import com.ticketrush.catalog.domain.TicketOrder;
 import com.ticketrush.catalog.domain.TicketOrderRepository;
 import com.ticketrush.catalog.domain.TicketRepository;
@@ -14,6 +16,8 @@ import com.ticketrush.catalog.domain.Venue;
 import com.ticketrush.catalog.domain.VenueRepository;
 import com.ticketrush.catalog.domain.VenueSection;
 import com.ticketrush.catalog.domain.VenueSectionRepository;
+import com.ticketrush.identity.domain.User;
+import com.ticketrush.identity.domain.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,12 +46,15 @@ public class EventService {
 	private final TicketOrderRepository orderRows;
 	private final TicketRepository tickets;
 	private final OrderService orders;
+	private final SentEmailRepository emails;
+	private final UserRepository users;
 	private final TransactionTemplate tx;
 	private final Clock clock;
 
 	public EventService(EventRepository events, EventPriceRepository prices, VenueRepository venues,
 			VenueSectionRepository sections, SeatStore seats, TicketOrderRepository orderRows,
-			TicketRepository tickets, OrderService orders, TransactionTemplate tx, Clock clock) {
+			TicketRepository tickets, OrderService orders, SentEmailRepository emails, UserRepository users,
+			TransactionTemplate tx, Clock clock) {
 		this.events = events;
 		this.prices = prices;
 		this.venues = venues;
@@ -55,6 +63,8 @@ public class EventService {
 		this.orderRows = orderRows;
 		this.tickets = tickets;
 		this.orders = orders;
+		this.emails = emails;
+		this.users = users;
 		this.tx = tx;
 		this.clock = clock;
 	}
@@ -210,8 +220,24 @@ public class EventService {
 			tickets.voidIssued(order.getId());
 			order.markRefunding(order.getPaymentRef(), "The event was cancelled. You are being refunded.");
 			refunds.add(order.getId());
+			tellGuest(event, order);
 		}
 		return new Cancelled(ref(event), refunds);
+	}
+
+	/** Leaves the guest a message, to be sent by the email relay, that the event is off and the money is coming back. */
+	private void tellGuest(Event event, TicketOrder order) {
+		if (emails.existsByOrderIdAndKind(order.getId(), SentEmail.CANCELLATION)) {
+			return;
+		}
+		User guest = users.findById(order.getUserId()).orElseThrow();
+		String body = "Hi %s, %s was cancelled by the organizer. Order %s, %s in total, is being refunded to the card you paid with. "
+				+ "Refunds usually show up within a few business days.";
+		emails.save(new SentEmail(order.getId(), SentEmail.CANCELLATION, guest.getEmail(),
+				event.getTitle() + " was cancelled, order " + order.getPublicRef(),
+				body.formatted(guest.getDisplayName(), event.getTitle(), order.getPublicRef(),
+						String.format(Locale.CANADA, "$%,.2f", order.getTotalCents() / 100.0)),
+				clock.instant()));
 	}
 
 	private Event lockOwned(long organizerId, long eventId) {

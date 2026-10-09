@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -34,7 +35,8 @@ class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(a -> a
-						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/forgot-password",
+								"/api/auth/reset-password", "/api/auth/verify-email").permitAll()
 						// Actuator lives on the management port (see application.properties), which is not published.
 						.requestMatchers("/actuator/health/**", "/actuator/prometheus", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						// Holding seats needs a sign-in but not the organizer role. These come before the broader rules below.
@@ -55,7 +57,8 @@ class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER")
 						.requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ORGANIZER")
 						.anyRequest().authenticated())
-				.oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(rolesFromClaim())));
+				.oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(rolesFromClaim())))
+				.addFilterAfter(new VerifiedEmailFilter(), BearerTokenAuthenticationFilter.class);
 		return http.build();
 	}
 

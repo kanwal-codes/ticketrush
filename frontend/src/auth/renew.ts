@@ -48,3 +48,13 @@ export async function renewIfNeeded(): Promise<void> {
   })
   await renewing
 }
+
+/** Renews the token right now, whatever it has left. Used when something it says about the account has changed. */
+export async function renewNow(): Promise<void> {
+  const token = getToken()
+  if (!token) return
+  renewing ??= renew(token).finally(() => {
+    renewing = null
+  })
+  await renewing
+}

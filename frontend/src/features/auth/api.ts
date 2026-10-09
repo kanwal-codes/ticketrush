@@ -25,3 +25,21 @@ export async function register(details: { displayName: string; email: string; pa
   await unwrap(api.POST('/api/auth/register', { body: details }))
   await signIn(details.email, details.password)
 }
+
+/** Asks for a reset link. The server answers the same whether or not the address has an account. */
+export async function forgotPassword(email: string): Promise<void> {
+  await unwrap(api.POST('/api/auth/forgot-password', { body: { email } }))
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+  await unwrap(api.POST('/api/auth/reset-password', { body: { token, password } }))
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  await unwrap(api.POST('/api/auth/verify-email', { body: { token } }))
+}
+
+/** A new confirmation link for the signed-in guest. */
+export async function resendVerification(): Promise<void> {
+  await unwrap(api.POST('/api/auth/verify-email/resend'))
+}
