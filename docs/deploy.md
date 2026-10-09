@@ -125,6 +125,25 @@ From then on new guests must confirm their address before they can join a queue,
 with a button to send the link again); accounts that already exist count as confirmed. `PUBLIC_URL` in
 `backend/fly.toml` is where the links point. To turn email off again: `fly secrets unset -a ticketrush-api RESEND_API_KEY`.
 
+## Taking test payments with Stripe
+
+By default checkout uses the built-in mock provider, with its five test cards. To use Stripe's **test mode** instead
+(a real card form, real API calls, no real money):
+
+1. In the Stripe dashboard, switch to **Test mode** and copy the publishable key (`pk_test_...`) and the secret key
+   (`sk_test_...`).
+2. Put the secret on the API: `fly secrets set -a ticketrush-api STRIPE_SECRET_KEY='sk_test_...'`. The API refuses to
+   start with any key that is not a test key, on purpose.
+3. Put the publishable key in `frontend/fly.toml` under `[build.args]` (`VITE_STRIPE_PUBLISHABLE_KEY`), merge, and redeploy
+   the web app: `cd frontend && fly deploy --ha=false`. It is built into the page, so set both keys or neither.
+4. Pay for a seat with `4242 4242 4242 4242`, any future date, any code. `4000 0000 0000 0002` is declined and
+   `4000 0000 0000 9995` has no funds. Cancel the event and watch the refund appear in the dashboard.
+
+A payment that gets no answer is looked up again by the reconciler (Stripe's search finds it by the order's key); it can
+take a minute for a new payment to be searchable. Cards that demand extra authentication (3-D Secure) are declined,
+because this app has no step to complete one. To go back to the mock provider: `fly secrets unset -a ticketrush-api
+STRIPE_SECRET_KEY` and redeploy the web app with the key emptied.
+
 ## Watching the live site
 
 `.github/workflows/uptime.yml` checks `/healthz`, the home page and `/api/events` (which reads the database) every two
