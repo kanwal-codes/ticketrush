@@ -46,3 +46,20 @@ the ones written by hand. This record covers four steps toward real use. What is
   for live use in some regions.
 - Not tested against Stripe itself in CI (that needs keys): the adapter is tested against recorded answers, and the
   browser tests use a stand-in for Stripe.js.
+
+## Trust pages and account controls
+- **Terms, privacy, refunds and contact**, written to match what the app really does (what is stored, who handles it, what a
+  cancellation refunds, that tickets are final otherwise) and linked from every footer and the sign-up form. They say
+  plainly that payments are in test mode, which is true and is enforced (live Stripe keys are refused). They are a
+  plain-language draft and **have not been reviewed by a lawyer**; that must happen, and the pages must change, before any real money is taken.
+- **A copy of your data** (`GET /api/me/export`): the account, orders with their tickets, and the messages sent, as one JSON file.
+- **Closing an account** (`POST /api/me/close`, password required again, rate limited like sign-in). The user row is kept but
+  loses its name, address and password, so orders and tickets keep their records and the organizer's sales still add up;
+  the emails written to the guest are scrubbed and any still waiting are stopped; reset and confirmation links are
+  deleted; the address can be used to sign up again. Refused for organizers (they own events), while a guest holds a
+  ticket for an event that has not happened (it would be stranded), and while a payment or refund is settling.
+  A token issued before closing keeps working until it expires (at most 30 minutes) but cannot be renewed.
+- **The contact page** shows `VITE_SUPPORT_EMAIL` when the build has one and the project's issue tracker otherwise; a
+  public service needs a real mailbox there.
+- Not done: retention schedules for old order records, deleting the records after a statutory period, cookie consent
+  (there are no cookies), and the legal review above.

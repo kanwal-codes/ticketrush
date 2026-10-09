@@ -140,6 +140,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
             page or try another browser, then try again.
           </Notice>
         )}
+        {isRegister && (
+          <p className="field__hint">
+            By creating an account you agree to the <Link to="/terms">Terms of use</Link> and the <Link to="/privacy">Privacy</Link> page.
+          </p>
+        )}
         <button type="submit" className="btn auth__submit" disabled={busy || waitSeconds > 0 || (checked && answer === null)}>
           {busy ? 'One moment…' : waitSeconds > 0 ? `Try again in ${waitSeconds} s` : checked && answer === null ? 'Checking that you are a person…' : isRegister ? 'Create account' : 'Sign in'}
         </button>
