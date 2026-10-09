@@ -96,6 +96,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
           hint={isRegister ? 'At least 8 characters.' : undefined}
           autoComplete={isRegister ? 'new-password' : 'current-password'}
         />
+        {!isRegister && (
+          <p className="auth__forgot">
+            <Link to="/forgot-password">Forgot your password?</Link>
+          </p>
+        )}
         {formError && (
           <Notice tone={formError.tone} title={formError.title} compact>
             {formError.message}

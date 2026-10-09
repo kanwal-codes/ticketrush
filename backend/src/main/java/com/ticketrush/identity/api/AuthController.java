@@ -54,6 +54,31 @@ class AuthController {
 		return TokenResponse.of(auth.refresh(Long.parseLong(jwt.getSubject()), authTime));
 	}
 
+	@PostMapping("/auth/verify-email")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void verifyEmail(@Valid @RequestBody LinkRequest request) {
+		auth.verifyEmail(request.token());
+	}
+
+	@PostMapping("/auth/verify-email/resend")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void resendVerification(@AuthenticationPrincipal Jwt jwt) {
+		auth.resendVerification(Long.parseLong(jwt.getSubject()));
+	}
+
+	/** Always 202, whether or not the address has an account. */
+	@PostMapping("/auth/forgot-password")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+		auth.forgotPassword(request.email());
+	}
+
+	@PostMapping("/auth/reset-password")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+		auth.resetPassword(request.token(), request.password());
+	}
+
 	@GetMapping("/me")
 	UserResponse me(@AuthenticationPrincipal Jwt jwt) {
 		return UserResponse.of(auth.get(Long.parseLong(jwt.getSubject())));
@@ -68,6 +93,15 @@ class AuthController {
 			@Schema(nullable = true) @Size(max = 2048) String turnstileToken) {
 	}
 
+	record LinkRequest(@NotBlank @Size(max = 200) String token) {
+	}
+
+	record ForgotPasswordRequest(@NotBlank @Email @Size(max = 254) String email) {
+	}
+
+	record ResetPasswordRequest(@NotBlank @Size(max = 200) String token, @NotBlank @Size(min = 8, max = 72) String password) {
+	}
+
 	record LoginRequest(@NotBlank String email, @NotBlank String password) {
 	}
 
@@ -79,10 +113,10 @@ class AuthController {
 
 	}
 
-	record UserResponse(long id, String email, String displayName, String role) {
+	record UserResponse(long id, String email, String displayName, String role, boolean emailVerified) {
 
 		static UserResponse of(User user) {
-			return new UserResponse(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole().name());
+			return new UserResponse(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole().name(), user.isEmailVerified());
 		}
 
 	}

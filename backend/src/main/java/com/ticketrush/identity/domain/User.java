@@ -35,6 +35,13 @@ public class User {
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt = Instant.now();
 
+	@Column(name = "email_verified", nullable = false)
+	private boolean emailVerified = true;
+
+	/** When the password last changed. A sign-in older than this can no longer be renewed. */
+	@Column(name = "password_changed_at")
+	private Instant passwordChangedAt;
+
 	protected User() {
 	}
 
@@ -43,6 +50,29 @@ public class User {
 		this.passwordHash = passwordHash;
 		this.displayName = displayName;
 		this.role = role;
+	}
+
+	/** A new guest account whose address may still need confirming. */
+	public User(String email, String passwordHash, String displayName, Role role, boolean emailVerified) {
+		this(email, passwordHash, displayName, role);
+		this.emailVerified = emailVerified;
+	}
+
+	public void markEmailVerified() {
+		this.emailVerified = true;
+	}
+
+	public void changePassword(String newHash, Instant now) {
+		this.passwordHash = newHash;
+		this.passwordChangedAt = now;
+	}
+
+	public boolean isEmailVerified() {
+		return emailVerified;
+	}
+
+	public Instant getPasswordChangedAt() {
+		return passwordChangedAt;
 	}
 
 	public Long getId() {

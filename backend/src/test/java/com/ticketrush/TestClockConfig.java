@@ -13,4 +13,10 @@ public class TestClockConfig {
 		return new MutableClock();
 	}
 
+	@Bean
+	@Primary
+	RecordingMailer testMailer() {
+		return new RecordingMailer();
+	}
+
 }
