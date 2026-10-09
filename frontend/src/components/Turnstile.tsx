@@ -46,6 +46,8 @@ function loadScript(): Promise<TurnstileApi> {
 interface Props {
   /** The answer, or null when it has expired, failed or been used. */
   onToken: (token: string | null) => void
+  /** The check could not run at all: its script did not load, or Cloudflare reported an error. */
+  onError: () => void
   /** Change this to ask for a new answer (each is good for one sign-up). */
   resetKey: number
 }
@@ -54,12 +56,14 @@ interface Props {
  * Cloudflare's bot check, in its quiet mode: nothing shows unless Cloudflare wants the person to click. The script is
  * loaded here, on the sign-up page only. If it cannot load, the person is told and sign-up stays closed rather than open.
  */
-export function Turnstile({ onToken, resetKey }: Props) {
+export function Turnstile({ onToken, onError, resetKey }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const widget = useRef<string | null>(null)
   const callback = useRef(onToken)
+  const failed = useRef(onError)
   useEffect(() => {
     callback.current = onToken
+    failed.current = onError
   })
 
   useEffect(() => {
@@ -72,10 +76,16 @@ export function Turnstile({ onToken, resetKey }: Props) {
           appearance: 'interaction-only',
           callback: (token) => callback.current(token),
           'expired-callback': () => callback.current(null),
-          'error-callback': () => callback.current(null),
+          'error-callback': () => {
+            callback.current(null)
+            failed.current()
+          },
         })
       })
-      .catch(() => callback.current(null))
+      .catch(() => {
+        callback.current(null)
+        failed.current()
+      })
     return () => {
       gone = true
       if (widget.current) window.turnstile?.remove(widget.current)
