@@ -63,3 +63,22 @@ the ones written by hand. This record covers four steps toward real use. What is
   public service needs a real mailbox there.
 - Not done: retention schedules for old order records, deleting the records after a statutory period, cookie consent
   (there are no cookies), and the legal review above.
+
+## Automated security checks
+- **Who may call what, for every endpoint.** One test lists each endpoint the app has as open, for any signed-in guest, or for organizers,
+  then calls all of them as an anonymous caller, a guest and an organizer and checks the security rules agree. An endpoint with no entry
+  fails the test, so adding one means deciding who may use it. (It found an endpoint nobody had listed on its first run: the guest's own order list.)
+- **A scan on every pull request and every Monday** (`.github/workflows/security.yml`): `npm audit` on what the web app ships; Trivy on both built
+  images (the dependencies inside them and their base layers; HIGH and CRITICAL with a fix available fail the run); Trivy on the
+  repository for committed secrets and risky container settings; and a passive ZAP baseline scan of the running app in its production shape.
+  Findings the baseline reports are either failures or listed with a reason in `.zap/rules.tsv`.
+- **What the first run found, and what changed.** The API image carried Tomcat 11.0.24 (three critical bypass issues) and Jackson 2 and 3
+  releases with denial-of-service issues: the versions are overridden in the pom until Spring Boot ships them. The web image had 44 high findings in
+  Alpine packages: it now upgrades them at build time. It also ran nginx as root: it is now the unprivileged build, on port 8080 (Fly's
+  `internal_port` and the compose mapping moved with it). nginx stopped announcing its version and the app now sends a Permissions-Policy
+  and Cross-Origin-Opener-Policy.
+- **Not done, and why.** An independent penetration test (needs a person outside this project). CodeQL (the repository is private, and
+  code scanning on private repositories is a paid GitHub feature). An authenticated active scan of the API (a passive scan and the endpoint
+  matrix cover the public surface and the access rules; deeper testing wants a dedicated environment). Cross-Origin-Embedder-Policy
+  (it would block the Stripe and Cloudflare frames the app embeds). Third-party script integrity (Stripe's and Cloudflare's scripts
+  must be loaded from their hosts and cannot be pinned).

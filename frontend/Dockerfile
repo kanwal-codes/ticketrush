@@ -16,11 +16,16 @@ ENV VITE_SUPPORT_EMAIL=$VITE_SUPPORT_EMAIL
 RUN npx vite build
 
 # Run stage: nginx serves the files and forwards /api to the backend.
-FROM nginx:1.31-alpine
+# The unprivileged build of nginx: it runs as a normal user and listens on 8080, so a flaw in nginx is not a flaw in root.
+FROM nginxinc/nginx-unprivileged:1.31-alpine
+# The base image is rebuilt only now and then; this brings its packages up to date, closing what a scan would find.
+USER root
+RUN apk upgrade --no-cache
+USER nginx
 # BACKEND is where /api goes, RESOLVER the DNS server that finds it. The defaults are docker compose's; Fly sets both.
 ENV BACKEND=http://app:8080
 ENV RESOLVER=127.0.0.11
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY nginx-security-headers.conf /etc/nginx/security-headers.conf
 COPY --from=build /build/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
