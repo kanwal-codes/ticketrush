@@ -1,4 +1,6 @@
 .hero {
+  position: relative; /* the title's link stretches over the whole banner */
+  cursor: pointer;
   display: grid;
   grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
   gap: var(--space-6);
@@ -28,6 +30,40 @@
   font-weight: 900;
   font-variation-settings: 'wdth' 100;
   color: var(--ev-text);
+}
+
+/* One link, stretched over the banner: a click anywhere opens the event. The button below is above it and goes to the
+   same place. */
+.hero__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.hero__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero .btn {
+  position: relative;
+  z-index: 2;
+}
+
+.hero:hover .hero__link {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
+
+.hero:has(.hero__link:focus-visible) {
+  outline: 3px solid var(--ev-text);
+  outline-offset: 8px;
+}
+
+.hero__link:focus-visible {
+  outline: none;
 }
 
 .hero__artist {
@@ -115,6 +151,10 @@
 .card__link:hover .card__poster,
 .card__link:focus-visible .card__poster {
   border-color: var(--ink);
+}
+
+.card__body .chip {
+  align-self: flex-start; /* keeps its own height when a long title makes the text column tall */
 }
 
 .card__body {

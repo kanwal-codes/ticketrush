@@ -15,7 +15,7 @@
   font-size: 1.15rem;
 }
 
-.chip {
+.status {
   display: inline-block;
   padding: 2px var(--space-2);
   border: 1px solid var(--ink);
@@ -25,13 +25,13 @@
   text-transform: uppercase;
 }
 
-.chip--published {
+.status--published {
   background: var(--ok);
   border-color: var(--ok);
   color: var(--white);
 }
 
-.chip--cancelled {
+.status--cancelled {
   color: var(--muted);
   border-color: var(--rule);
 }
@@ -79,7 +79,7 @@
   box-shadow: 4px 4px 0 var(--ink);
 }
 
-.console__event a > .chip {
+.console__event a > .status {
   justify-self: start;
 }
 

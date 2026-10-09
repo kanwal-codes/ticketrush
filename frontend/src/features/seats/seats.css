@@ -235,3 +235,24 @@ span.seat {
     grid-auto-columns: 1fr;
   }
 }
+
+/* A wide row scrolls sideways inside the map on a phone. Say so, and shade the edge that still has seats beyond it. */
+.seats__hint {
+  display: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .seats__hint {
+    display: block;
+  }
+
+  .seatmap__rows {
+    background:
+      linear-gradient(to right, var(--paper) 30%, transparent) left center / 40px 100% no-repeat local,
+      linear-gradient(to left, var(--paper) 30%, transparent) right center / 40px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.2), transparent) left center / 12px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.2), transparent) right center / 12px 100% no-repeat scroll;
+  }
+}

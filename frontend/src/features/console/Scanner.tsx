@@ -1,8 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import type { ScanResult } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
+import { BackBar } from '../../components/BackBar'
 import { ConsoleSkeleton } from '../../components/PageSkeletons'
 import { Notice } from '../../components/Notice'
 import { describeError, type ErrorDescription } from '../../lib/errorCopy'
@@ -79,10 +80,9 @@ function Door({ id }: { id: number }) {
 
   return (
     <div className="page console scanner">
+      <BackBar to={`/console/events/${id}`}>{title}</BackBar>
       <header>
-        <p className="label">
-          <Link to={`/console/events/${id}`} viewTransition>{title}</Link> / Door
-        </p>
+        <p className="label">Door</p>
         <h1>
           <span className="num">{door.checkedIn.toLocaleString('en-CA')}</span> of <span className="num">{door.issued.toLocaleString('en-CA')}</span> in
         </h1>

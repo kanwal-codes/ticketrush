@@ -53,7 +53,7 @@ export function ConsoleEvents() {
           {events.map((event, i) => (
             <li key={event.id} className="console__event enter" style={{ '--i': i } as React.CSSProperties}>
               <Link to={`/console/events/${event.id}`} viewTransition>
-                <span className={`chip chip--${event.status.toLowerCase()}`}>{STATUS[event.status]}</span>
+                <span className={`status status--${event.status.toLowerCase()}`}>{STATUS[event.status]}</span>
                 <h2>{event.title}</h2>
                 <p className="console__meta">
                   {formatDate(event.startsAt)} · {event.venueName}, {event.city}

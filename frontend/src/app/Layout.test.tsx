@@ -21,9 +21,16 @@ describe('app shell', () => {
     renderAt('/')
     expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /ticketrush, home/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'My tickets' })).toBeInTheDocument()
+    // Tickets belong to an account, so the link is only offered to someone signed in.
+    expect(screen.queryByRole('link', { name: 'My tickets' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main')
+  })
+
+  it('offers My tickets once signed in', async () => {
+    setToken('abc')
+    renderAt('/')
+    expect(await screen.findByRole('link', { name: 'My tickets' })).toBeInTheDocument()
   })
 
   it('offers to sign out when signed in, and signing out clears the token', async () => {

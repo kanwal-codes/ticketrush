@@ -6,6 +6,19 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Things scrolled into view (a focused field, a jump to a seat) must not end up under the sticky header and back bar. */
+  scroll-padding-top: calc(var(--header-h, 61px) + 64px);
+}
+
+/* The page is at least as tall as the window, so a short page keeps its footer at the bottom. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+#root > main {
+  flex: 1 0 auto;
 }
 
 body {

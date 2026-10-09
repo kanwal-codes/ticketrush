@@ -38,7 +38,7 @@ describe('EventPage', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Afterlight Tour' })).toBeInTheDocument()
     expect(screen.getByText('Halden Hall, Montreal')).toBeInTheDocument()
-    expect(screen.getByText('2,000, all reserved')).toBeInTheDocument()
+    expect(screen.getByText('2,000 reserved seats')).toBeInTheDocument()
 
     const tiers = screen.getAllByRole('listitem')
     expect(within(tiers[0]!).getByText('Floor')).toBeInTheDocument()
@@ -89,5 +89,23 @@ describe('EventPage', () => {
     renderRoute('/events/abc')
     expect(await screen.findByRole('heading', { name: /could not find that page/i })).toBeInTheDocument()
     expect(calls).toHaveLength(0)
+  })
+
+  it('says an event was cancelled and shows nothing to buy: no prices, no seats left', async () => {
+    mockApi({ 'GET /api/events/7': () => json({ ...event, cancelled: true, saleState: 'ENDED' }) })
+    renderRoute('/events/7')
+    expect(await screen.findByRole('heading', { name: 'This event was cancelled' })).toBeInTheDocument()
+    expect(screen.getByText(/refunded automatically/)).toBeInTheDocument()
+    expect(screen.queryByText(/with fees/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/left$/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Choose seats|Join the waiting room/ })).not.toBeInTheDocument()
+  })
+
+  it('says the same thing once, not twice, before the sale: the button gives the time, the note says what it is for', async () => {
+    mockApi({ 'GET /api/events/7': () => json({ ...event, saleState: 'UPCOMING', serverTime: '2026-10-09T13:00:00Z' }) })
+    renderRoute('/events/7')
+    await screen.findByRole('heading', { name: 'Tickets go on sale in' })
+    expect(screen.getAllByText(/waiting room opens/i)).toHaveLength(1)
+    expect(document.body.textContent).not.toMatch(/\.\./)
   })
 })

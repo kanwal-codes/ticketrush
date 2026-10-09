@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { readFileSync } from 'node:fs'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -71,7 +73,8 @@ describe('Discover', () => {
 
     failing = false
     await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
-    expect(await screen.findByRole('link', { name: /Afterlight Tour/ })).toBeInTheDocument()
+    // The banner and the card both open the event.
+    expect((await screen.findAllByRole('link', { name: /Afterlight Tour/ })).length).toBeGreaterThanOrEqual(2)
   })
 
   it('shows more events a page at a time', async () => {
@@ -86,6 +89,17 @@ describe('Discover', () => {
     expect(await screen.findByRole('link', { name: /Second/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument()
     expect(calls.some((c) => new URL(c.url).searchParams.get('page') === '1')).toBe(true)
+  })
+
+  it('opens the event from the banner: its title is a link, stretched over the whole banner, and so is the button', async () => {
+    mockApi({ 'GET /api/events': () => json(page([make(1, 'Afterlight Tour', 'ON_SALE')])) })
+    renderRoute('/')
+    const banner = await screen.findByRole('region', { name: 'Afterlight Tour' })
+    const links = within(banner).getAllByRole('link')
+    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/events/1', '/events/1'])
+    expect(within(banner).getByRole('heading', { name: 'Afterlight Tour' }).querySelector('a')).not.toBeNull()
+    // The stretch itself is CSS: the title link's ::after covers the banner (checked in the browser tests).
+    expect(readFileSync(`${process.cwd()}/src/features/discover/discover.css`, 'utf8')).toMatch(/\.hero__link::after\s*{[^}]*inset:\s*0/)
   })
 })
 

@@ -1,3 +1,4 @@
+import { BackBar } from '../../components/BackBar'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { Notice } from '../../components/Notice'
 import type { Tone } from '../../lib/errorCopy'
@@ -211,9 +212,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
   const total = formatMoney(hold.totalCents)
   return (
     <div className="page checkout" style={eventTheme(event.poster)}>
-      <p>
-        <Link to={`/events/${event.id}/seats`} className="event__back">← Change seats</Link>
-      </p>
+      <BackBar to={`/events/${event.id}/seats`}>Change seats</BackBar>
       <h1>Checkout</h1>
 
       <div className="checkout__layout">

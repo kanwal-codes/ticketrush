@@ -40,12 +40,25 @@ function balanced(words: string[], n: number): string[] {
 }
 
 export function layoutTitle(title: string, o: Options): TitleLayout {
-  const words = title.toUpperCase().trim().split(/\s+/).filter(Boolean)
-  if (words.length === 0) return { lines: [], size: o.minSize }
-  // How large the longest line could be set to fill the width, before any limits. Comparing these (not the
-  // clamped sizes) is what shows that a long title on one line would overflow.
-  const fit = (lines: string[]) => o.width / (longest(lines) * o.factor)
+  const all = title.toUpperCase().trim().split(/\s+/).filter(Boolean)
+  if (all.length === 0) return { lines: [], size: o.minSize }
+  // A title too long for its lines even at the smallest allowed size loses words from the end, with an ellipsis,
+  // instead of being squeezed into something nobody can read.
+  for (let count = all.length; count >= 1; count--) {
+    const cut = count < all.length
+    // The ellipsis takes room too, so it is part of what is measured.
+    const words = cut ? [...all.slice(0, count - 1), `${all[count - 1]}…`] : all
+    const { lines, best } = arrange(words, o)
+    // A line may be squeezed a little below the smallest size (fitAttrs does it) before words are cut.
+    if (best >= o.minSize * 0.8 || count === 1) return { lines, size: Math.min(o.maxSize, Math.max(o.minSize, best)) }
+  }
+  return { lines: all, size: o.minSize }
+}
 
+/** The best way to set these words, and how large the longest line could be before any limits. */
+function arrange(words: string[], o: Options): { lines: string[]; best: number } {
+  // Comparing these unclamped (not the clamped sizes) is what shows that a long title on one line would overflow.
+  const fit = (lines: string[]) => o.width / (longest(lines) * o.factor)
   let lines = [words.join(' ')]
   let best = fit(lines)
   for (let n = 2; n <= Math.min(o.maxLines, words.length); n++) {
@@ -56,8 +69,7 @@ export function layoutTitle(title: string, o: Options): TitleLayout {
       best = fit(candidate)
     }
   }
-  const size = Math.min(o.maxSize, Math.max(o.minSize, best))
-  return { lines, size }
+  return { lines, best }
 }
 
 /**

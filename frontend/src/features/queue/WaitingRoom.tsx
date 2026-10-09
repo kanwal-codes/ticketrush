@@ -1,8 +1,9 @@
 import { RollingNumber } from '../../components/RollingNumber'
+import { BackBar } from '../../components/BackBar'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Navigate, useNavigate, useParams } from 'react-router'
 import { keys, useEvent } from '../../api/queries'
 import type { EventDetail } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
@@ -48,7 +49,8 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
 
   const shell = (children: React.ReactNode) => (
     <div className="page queue" style={eventTheme(event.poster)}>
-      <p className="label queue__event">{event.title}</p>
+      <BackBar to={`/events/${event.id}`}>{event.title}</BackBar>
+      <p className="label queue__event">Waiting room</p>
       {children}
     </div>
   )
@@ -58,7 +60,6 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
       <>
         <h1>This event has started</h1>
         <p className="queue__lead">The waiting room is closed.</p>
-        <BackLink id={event.id} />
       </>,
     )
   }
@@ -69,7 +70,6 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
         <h1>The waiting room is not open yet</h1>
         <p className="queue__lead">It opens at {formatTime(event.dropOpensAt)}. Joining then keeps you in line by arrival time.</p>
         <Countdown to={event.dropOpensAt} className="queue__clock" onDone={refresh} />
-        <BackLink id={event.id} />
       </>,
     )
   }
@@ -97,7 +97,6 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
           <button type="button" className="btn" onClick={onRejoin}>
             Join the queue
           </button>
-          <BackLink id={event.id} />
         </p>
       </>,
     )
@@ -207,6 +206,3 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
   )
 }
 
-function BackLink({ id }: { id: number }) {
-  return <Link to={`/events/${id}`}>Back to the event</Link>
-}

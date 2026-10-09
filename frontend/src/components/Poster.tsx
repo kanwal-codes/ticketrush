@@ -80,6 +80,11 @@ function Mono(p: { x: number; y: number; anchor?: 'start' | 'end'; fill: string;
   )
 }
 
+/** A long name must not run into the date beside it on the poster's top line. */
+function clip(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text
+}
+
 function dateLabel(iso: string): string {
   const d = new Date(iso)
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -90,7 +95,7 @@ type Face = 'condensed' | 'wide' | 'lightWide' | 'lightCondensed'
 // Chromium (letter-spacing included). Using the widest means a line never overflows.
 const FACTOR: Record<Face, number> = { condensed: 0.46, wide: 0.86, lightWide: 0.85, lightCondensed: 0.42 }
 
-function Lines(p: { lines: string[]; size: number; face: Face; x: number; firstBaseline: number; leading: number; fills: string[]; width?: number; anchor?: 'start' | 'middle' }) {
+function Lines(p: { lines: string[]; size: number; face: Face; x: number; firstBaseline: number; leading: number; fills: string[]; width?: number; anchor?: 'start' | 'middle'; halo?: string }) {
   const width = p.width ?? MAX_WIDTH
   return (
     <>
@@ -102,7 +107,8 @@ function Lines(p: { lines: string[]; size: number; face: Face; x: number; firstB
           className={`poster__${p.face}`}
           textAnchor={p.anchor ?? 'start'}
           fill={p.fills[Math.min(i, p.fills.length - 1)]}
-          style={{ fontSize: p.size }}
+          // A halo in the paper colour keeps letters readable where they cross a shape of their own colour.
+          style={p.halo ? { fontSize: p.size, stroke: p.halo, strokeWidth: 5, strokeLinejoin: 'round', paintOrder: 'stroke' } : { fontSize: p.size }}
           {...fitAttrs(line, p.size, FACTOR[p.face], width)}
         >
           {line}
@@ -113,10 +119,10 @@ function Lines(p: { lines: string[]; size: number; face: Face; x: number; firstB
 }
 
 /** A title set at the bottom of the poster, last baseline on `bottom`. */
-function BottomTitle(p: { title: string; face: Face; maxLines: number; maxSize: number; minSize: number; bottom: number; leadingRatio: number; fills: string[]; x?: number; width?: number }) {
+function BottomTitle(p: { title: string; face: Face; maxLines: number; maxSize: number; minSize: number; bottom: number; leadingRatio: number; fills: string[]; x?: number; width?: number; halo?: string }) {
   const { lines, size } = layoutTitle(p.title, { maxLines: p.maxLines, width: p.width ?? MAX_WIDTH, factor: FACTOR[p.face], maxSize: p.maxSize, minSize: p.minSize })
   const leading = size * p.leadingRatio
-  return <Lines lines={lines} size={size} face={p.face} x={p.x ?? MARGIN} firstBaseline={p.bottom - (lines.length - 1) * leading} leading={leading} fills={p.fills} width={p.width} />
+  return <Lines lines={lines} size={size} face={p.face} x={p.x ?? MARGIN} firstBaseline={p.bottom - (lines.length - 1) * leading} leading={leading} fills={p.fills} width={p.width} halo={p.halo} />
 }
 
 /* ---------- the six styles ---------- */
@@ -134,8 +140,8 @@ const DRAW: Record<PosterStyle, Draw> = {
           <circle cx="122" cy="196" r="100" fill={p.inkOne} style={{ mixBlendMode: 'multiply' }} />
           <Halftone x={176} y={18} w={114} h={120} step={9} maxR={3.6} dir="down" fill={p.inkOne} />
         </g>
-        <BottomTitle title={p.title} face="condensed" maxLines={2} maxSize={112} minSize={44} bottom={392} leadingRatio={0.68} fills={[ink]} />
-        <Mono x={14} y={22} fill={ink}>{p.artist.toUpperCase()}</Mono>
+        <BottomTitle title={p.title} face="condensed" maxLines={2} maxSize={112} minSize={44} bottom={392} leadingRatio={0.8} fills={[ink]} halo={p.paperColor} />
+        <Mono x={14} y={22} fill={ink}>{clip(p.artist.toUpperCase(), 24)}</Mono>
         <Mono x={286} y={22} anchor="end" fill={ink}>{dateLabel(p.startsAt)}</Mono>
       </>
     )
@@ -151,7 +157,7 @@ const DRAW: Record<PosterStyle, Draw> = {
         <circle cx="224" cy="196" r="46" fill={p.inkTwo} style={{ mixBlendMode: 'multiply' }} />
         <path d="M-30 420 A190 190 0 0 1 330 420 Z" fill={p.inkOne} />
         <Lines lines={lines} size={size} face="wide" x={MARGIN} firstBaseline={20 + size} leading={size * 0.92} fills={[ink]} />
-        <BottomTitle title={p.artist} face="wide" maxLines={1} maxSize={60} minSize={22} bottom={372} leadingRatio={1} fills={[onArc]} x={150} width={240} />
+        <BottomTitle title={p.artist} face="wide" maxLines={2} maxSize={40} minSize={14} bottom={372} leadingRatio={1.02} fills={[onArc]} x={150} width={136} />
         <Mono x={14} y={20} fill={ink}>{p.city.toUpperCase()}</Mono>
         <Mono x={286} y={20} anchor="end" fill={ink}>{dateLabel(p.startsAt)}</Mono>
       </>
@@ -191,8 +197,8 @@ const DRAW: Record<PosterStyle, Draw> = {
           ))}
         </g>
         <Halftone x={0} y={236} w={300} h={60} step={9} maxR={3.4} dir="up" fill={p.inkTwo} />
-        <BottomTitle title={p.title} face="lightCondensed" maxLines={2} maxSize={78} minSize={36} bottom={392} leadingRatio={0.69} fills={[first, last]} />
-        <Mono x={14} y={20} fill={last}>{p.artist.toUpperCase()}</Mono>
+        <BottomTitle title={p.title} face="lightCondensed" maxLines={2} maxSize={78} minSize={36} bottom={392} leadingRatio={0.8} fills={[first, last]} />
+        <Mono x={14} y={20} fill={last}>{clip(p.artist.toUpperCase(), 24)}</Mono>
         <Mono x={286} y={20} anchor="end" fill={last}>{dateLabel(p.startsAt)}</Mono>
       </>
     )
@@ -235,8 +241,8 @@ const DRAW: Record<PosterStyle, Draw> = {
         ))}
         <circle cx="150" cy="168" r="42" fill={p.inkOne} />
         <circle cx="150" cy="168" r="5" fill={p.paperColor} />
-        <BottomTitle title={p.title} face="condensed" maxLines={2} maxSize={84} minSize={40} bottom={392} leadingRatio={0.72} fills={[ink]} />
-        <Mono x={14} y={20} fill={mono}>{p.artist.toUpperCase()}</Mono>
+        <BottomTitle title={p.title} face="condensed" maxLines={2} maxSize={84} minSize={40} bottom={392} leadingRatio={0.8} fills={[ink]} />
+        <Mono x={14} y={20} fill={mono}>{clip(p.artist.toUpperCase(), 24)}</Mono>
         <Mono x={286} y={20} anchor="end" fill={mono}>{dateLabel(p.startsAt)}</Mono>
       </>
     )
