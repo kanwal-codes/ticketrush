@@ -51,8 +51,9 @@
   font-size: 0.95rem;
 }
 
-.site-nav a,
-.site-nav__button {
+/* A direct child, not just any descendant: the account menu also nests links (its own panel), which are styled on
+   their own terms in accountMenu.css and must not pick up the top-level items' underline treatment. */
+.site-nav > a {
   text-decoration: none;
   padding: var(--space-2) 0;
   border: 0;
@@ -62,20 +63,11 @@
   transition: border-color var(--dur-fast) var(--ease-in-out);
 }
 
-.site-nav__who {
-  color: var(--muted);
-  max-width: 14ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.site-nav a[aria-current='page'] {
+.site-nav > a[aria-current='page'] {
   border-bottom-color: var(--ink);
 }
 
-.site-nav a:hover,
-.site-nav__button:hover {
+.site-nav > a:hover {
   border-bottom-color: var(--muted);
 }
 
@@ -94,10 +86,6 @@
 }
 
 @media (max-width: 560px) {
-  .site-nav__who {
-    display: none;
-  }
-
   /* With a hold running there are more items than fit in one row, so the nav wraps under the brand. */
   .site-header__inner {
     flex-wrap: wrap;

@@ -6,6 +6,7 @@ import { useMe } from '../features/auth/api'
 import { VerifyEmailBanner } from '../features/auth/VerifyEmailBanner'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { HoldTimer } from '../features/seats/HoldTimer'
+import { AccountMenu } from './AccountMenu'
 import { RouteEffects } from './RouteEffects'
 import './layout.css'
 
@@ -46,19 +47,8 @@ export function Layout() {
               Events
             </NavLink>
             <HoldTimer />
-            {token && <NavLink to="/tickets" viewTransition>My tickets</NavLink>}
-            {token && <NavLink to="/account" viewTransition>Account</NavLink>}
             {me?.role === 'ORGANIZER' && <NavLink to="/console" viewTransition>Console</NavLink>}
-            {token ? (
-              <>
-                {me && <span className="site-nav__who">{me.displayName}</span>}
-                <button type="button" className="site-nav__button" onClick={signOut}>
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <NavLink to="/signin" viewTransition>Sign in</NavLink>
-            )}
+            {token ? <AccountMenu me={me} onSignOut={signOut} /> : <NavLink to="/signin" viewTransition>Sign in</NavLink>}
           </nav>
         </div>
       </header>

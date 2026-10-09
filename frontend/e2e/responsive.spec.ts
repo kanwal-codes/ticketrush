@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { createEvent } from './support/backend'
-import { chooseAndHold, expect, payWith, signInAsNewGuest, test } from './support/fixtures'
+import { chooseAndHold, expect, payWith, signInAsNewGuest, signInAsOrganizer, test } from './support/fixtures'
 
 const widths = [
   { name: 'phone', width: 390, height: 844 },
@@ -63,20 +63,32 @@ test('no screen of the purchase scrolls sideways at phone, tablet or laptop widt
 /**
  * Between the full desktop layout and the 560px phone layout, there is not always room for every nav item on one
  * line. The nav must wrap as whole items onto a second line there, never split a single link's own words in two
- * (found at 600px: "My tickets" and "Sign out" each broke across two lines).
+ * (found at 600px, back when "My tickets", "Account" and "Sign out" each sat loose in the nav: they broke across
+ * two lines). The account menu collapses those into one badge now, but the underlying CSS (white-space: nowrap on
+ * links, flex-wrap: wrap on the row) is still what keeps whatever is left in the nav — "Events", "Console" for an
+ * organizer, the account badge — from doing the same thing if the row ever gets tight again.
  */
 test('a nav item never splits its own words across lines, at any width between phone and desktop', async ({ page }) => {
-  await signInAsNewGuest(page)
+  await signInAsOrganizer(page) // the widest case: "Events" and "Console" both in the row alongside the badge
   await page.goto('/')
-  await expect(page.getByRole('link', { name: 'My tickets' })).toBeVisible()
+  const trigger = page.getByRole('button', { name: /account menu/i })
+  await expect(trigger).toBeVisible()
 
   for (const width of [561, 600, 650, 700, 750, 850, 1024]) {
     await page.setViewportSize({ width, height: 700 })
     // "Events" is one word: it can never wrap, so its height is what a genuine single line looks like here.
     const oneLine = (await page.getByRole('link', { name: 'Events' }).boundingBox())!.height
-    for (const label of ['My tickets', 'Sign out']) {
-      const box = await page.getByRole('link', { name: label }).or(page.getByRole('button', { name: label })).boundingBox()
-      expect(box?.height, `"${label}" at ${width}px wide (height ${box?.height}, one line is ${oneLine})`).toBeLessThanOrEqual(oneLine + 1)
-    }
+    const box = await page.getByRole('link', { name: 'Console' }).boundingBox()
+    expect(box?.height, `"Console" at ${width}px wide (height ${box?.height}, one line is ${oneLine})`).toBeLessThanOrEqual(oneLine + 1)
+  }
+
+  // Open, the panel's own items (a fixed-width column) never need to wrap either.
+  await page.setViewportSize({ width: 375, height: 700 })
+  await trigger.click()
+  const panel = page.locator('#account-menu-panel')
+  const oneLine = (await panel.getByRole('link', { name: 'My tickets' }).boundingBox())!.height
+  for (const label of ['Account', 'Sign out']) {
+    const box = await panel.getByRole('link', { name: label, exact: true }).or(panel.getByRole('button', { name: label, exact: true })).boundingBox()
+    expect(box?.height, `"${label}" in the open panel (height ${box?.height}, one line is ${oneLine})`).toBeLessThanOrEqual(oneLine + 1)
   }
 })
