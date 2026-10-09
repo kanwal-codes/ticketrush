@@ -21,9 +21,12 @@ creates the race on purpose rather than by reasoning about it after the fact:
 | **A confirmation is never lost, never duplicated** | Paying writes an outbox row in the same transaction as the payment. A relay delivers each row to idempotent listeners and retries what fails, instead of sending the email inline and hoping | Killing the relay mid-delivery and restarting it delivers each confirmation exactly once. [ADR 0003](docs/adr/0003-checkout-and-payments.md) |
 
 That reasoning, and what changed after a 1,500-guest load test found it wanting, is written down as it happened in
-[docs/adr](docs/adr) — nine decision records, each with the alternatives considered and why they lost. The
-[load test results](docs/performance.md) are below, and the [security record](docs/adr/0009-ready-for-the-public.md)
-covers what a scan of both images, the repository and the running app found and how it was fixed.
+[docs/adr](docs/adr) — nine decision records, each with the alternatives considered and why they lost. The four rows
+above are the headline problems; the longer, harder-to-skim list — every declined card, timeout, dropped connection,
+expired token and race condition the app is tested against, each pointing at the test that proves it — is in
+[**docs/edge-cases.md**](docs/edge-cases.md). The [load test results](docs/performance.md) are below, and the
+[security record](docs/adr/0009-ready-for-the-public.md) covers what a scan of both images, the repository and the
+running app found and how it was fixed.
 
 ## Stack
 
