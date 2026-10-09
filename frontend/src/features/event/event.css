@@ -16,7 +16,7 @@
   border: 1px solid var(--rule);
   overflow: hidden;
   position: sticky;
-  top: 84px;
+  top: var(--sticky-top);
 }
 
 .event__main {
@@ -123,11 +123,24 @@
 
   .event__poster {
     position: static;
-    max-width: 280px;
+    max-width: 200px;
+  }
+
+  /* The way to buy comes straight after the title, not after four rows of facts. */
+  .event__main > .facts {
+    order: 1;
+  }
+
+  .event__main > [aria-labelledby='tiers-heading'] {
+    order: 2;
+  }
+
+  .event__about {
+    order: 3;
   }
 }
 
-/* The sale box is on the event's own paper colour, so a muted grey label can fall below readable contrast. */
+/* Same on the sale box: it is on the event's paper colour, so a muted grey label can fall below readable contrast. */
 .sale .label {
   color: inherit;
 }

@@ -30,4 +30,8 @@
   --measure: 62ch;
   --page: 1180px;
   --gutter: clamp(16px, 4vw, 40px);
+
+  /* Where a sticky side block (poster, seat summary, order summary) comes to rest: under the header (whose height the
+     layout publishes) and the 44px back bar, plus a gap. Hardcoding this slid the blocks under the back bar. */
+  --sticky-top: calc(var(--header-h, 61px) + 44px + var(--space-4));
 }

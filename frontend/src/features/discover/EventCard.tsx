@@ -31,7 +31,7 @@ export function EventCard({ event, index = 0, sharedPoster = true }: Props) {
               {event.venueName}, {event.city}
             </p>
             <p className="card__price">
-              <span className="num">From {formatMoney(event.fromAllInCents)}</span> <span className="label">with fees</span>
+              <span className="num">From {formatMoney(event.fromAllInCents)}</span>
             </p>
           </div>
         </div>
