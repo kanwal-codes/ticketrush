@@ -41,6 +41,9 @@ public abstract class AbstractIntegrationTest {
 	protected MutableClock clock;
 
 	@Autowired
+	protected RecordingMailer mailer;
+
+	@Autowired
 	private UserRepository users;
 
 	@Autowired
@@ -70,8 +73,9 @@ public abstract class AbstractIntegrationTest {
 	}
 
 	@AfterEach
-	void resetClock() {
+	void resetClockAndMail() {
 		clock.reset();
+		mailer.reset();
 	}
 
 	/** Bearer token for a brand new organizer. */

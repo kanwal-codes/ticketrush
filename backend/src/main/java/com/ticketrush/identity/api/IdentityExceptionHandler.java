@@ -4,7 +4,9 @@ import com.ticketrush.identity.application.BotCheckFailedException;
 import com.ticketrush.identity.application.BotCheckUnavailableException;
 import com.ticketrush.identity.application.DuplicateEmailException;
 import com.ticketrush.identity.application.InvalidCredentialsException;
+import com.ticketrush.identity.application.InvalidLinkException;
 import com.ticketrush.identity.application.SessionExpiredException;
+import com.ticketrush.identity.application.TooSoonException;
 import com.ticketrush.identity.application.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -37,6 +39,16 @@ class IdentityExceptionHandler {
 	@ExceptionHandler(BotCheckUnavailableException.class)
 	ProblemDetail botCheckUnavailable(BotCheckUnavailableException e) {
 		return problem(HttpStatus.SERVICE_UNAVAILABLE, "Check unavailable", e.getMessage());
+	}
+
+	@ExceptionHandler(InvalidLinkException.class)
+	ProblemDetail invalidLink(InvalidLinkException e) {
+		return problem(HttpStatus.BAD_REQUEST, "Link not valid", e.getMessage());
+	}
+
+	@ExceptionHandler(TooSoonException.class)
+	ProblemDetail tooSoon(TooSoonException e) {
+		return problem(HttpStatus.TOO_MANY_REQUESTS, "Slow down", e.getMessage());
 	}
 
 	@ExceptionHandler(UserNotFoundException.class)

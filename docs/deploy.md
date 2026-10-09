@@ -53,8 +53,8 @@ fly secrets set -a ticketrush-api \
 ```
 
 The API runs with profiles `prod,demo` (see `backend/fly.toml`): `prod` turns the API docs off, trusts the proxy's
-forwarded headers and reads `REDIS_URL`; `demo` creates the demo organizer (`organizer@ticketrush.dev`), four venues
-and five published events on an empty database. **Payments are the mock provider's**, so this is a demo, not a shop.
+forwarded headers and reads `REDIS_URL`; `demo` creates the demo organizer (`organizer@ticketrush.dev`), eight venues
+and thirteen published events on an empty database (a database that already has the first five gets the other eight once). **Payments are the mock provider's**, so this is a demo, not a shop.
 For a real organizer without demo data, leave `demo` out of `SPRING_PROFILES_ACTIVE` and set
 `TICKETRUSH_BOOTSTRAP_ORGANIZER_EMAIL` and `TICKETRUSH_BOOTSTRAP_ORGANIZER_PASSWORD` (12+ characters) instead.
 
@@ -109,6 +109,21 @@ changes while it is off.
 Only sign-up is checked (bots need accounts to join a queue); signing in is protected by the per-address limit. If
 Cloudflare cannot be reached, sign-up is refused with a message to try again, and people who already have accounts are
 not affected. To turn it off: `fly secrets unset -a ticketrush-api TURNSTILE_SECRET`.
+
+## Turning on email (Resend)
+
+Email carries the links for a forgotten password and for confirming an address, plus order confirmations and cancellation
+notices. Without a key the app only logs messages and nobody is asked to confirm an address, so nothing else changes.
+
+1. Create a Resend account and **add and verify a domain you own** (DNS records, a few minutes). Without a verified
+   domain Resend only delivers to your own address, which is enough to try it but not to open sign-up to the public.
+2. Create an API key (sending access) and set it, with the sender, on the API: `fly secrets set -a ticketrush-api
+   RESEND_API_KEY='re_...' MAIL_FROM='TicketRush <tickets@your-domain>'`. This restarts the API.
+3. Check: sign up with a real address, open the link in the email, then try "Forgot your password?".
+
+From then on new guests must confirm their address before they can join a queue, hold seats or pay (the page tells them,
+with a button to send the link again); accounts that already exist count as confirmed. `PUBLIC_URL` in
+`backend/fly.toml` is where the links point. To turn email off again: `fly secrets unset -a ticketrush-api RESEND_API_KEY`.
 
 ## Watching the live site
 

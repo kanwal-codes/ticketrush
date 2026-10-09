@@ -17,7 +17,7 @@ import java.time.Duration;
 import java.util.Set;
 
 /**
- * Limits sign-in and sign-up attempts per client address, so a password cannot be guessed at full speed and sign-ups
+ * Limits sign-in, sign-up and account-recovery attempts per client address, so a password cannot be guessed at full speed and sign-ups
  * cannot be spammed. A fixed one-minute window, one INCR per request. If Redis is unavailable it lets the request
  * through rather than locking everyone out (the password check is still the gate).
  */
@@ -25,7 +25,8 @@ import java.util.Set;
 class AuthRateLimitFilter extends OncePerRequestFilter {
 
 	private static final Logger log = LoggerFactory.getLogger(AuthRateLimitFilter.class);
-	private static final Set<String> PATHS = Set.of("/api/auth/login", "/api/auth/register");
+	private static final Set<String> PATHS = Set.of("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password",
+			"/api/auth/reset-password", "/api/auth/verify-email");
 
 	private final StringRedisTemplate redis;
 	private final Clock clock;

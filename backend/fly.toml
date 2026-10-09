@@ -9,6 +9,8 @@ primary_region = "yyz"
   # prod: docs off, forwarded headers trusted, Redis from REDIS_URL. demo: the demo organizer's events (mock payments).
   SPRING_PROFILES_ACTIVE = "prod,demo"
   MANAGEMENT_PORT = "8081"
+  # Where links in emails point. Email itself is switched on by the RESEND_API_KEY secret (and MAIL_FROM).
+  PUBLIC_URL = "https://ticketrush-web.fly.dev"
 
 # Reachable only from other apps on the private network: there is deliberately no [[services.ports]] block.
 [[services]]

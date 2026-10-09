@@ -126,3 +126,8 @@
     max-width: 280px;
   }
 }
+
+/* The sale box is on the event's own paper colour, so a muted grey label can fall below readable contrast. */
+.sale .label {
+  color: inherit;
+}

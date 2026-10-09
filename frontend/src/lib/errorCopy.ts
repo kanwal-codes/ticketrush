@@ -61,6 +61,9 @@ export function describeError(error: unknown, subject?: string): ErrorDescriptio
   }
 
   if (error.status === 403) {
+    if (error.code === 'EMAIL_NOT_VERIFIED') {
+      return { ...base, kind: 'forbidden', tone: 'info', title: 'Confirm your email first', message: 'Open the link we emailed you, then try again. Nothing is lost: you can ask for a new link at the top of the page.', recovery: 'none' }
+    }
     return error.code === 'ADMISSION_REQUIRED'
       ? { ...base, kind: 'forbidden', tone: 'info', title: 'Rejoin the queue', message: 'Your turn to choose seats has ended. Join the waiting room again to get back in.', recovery: 'rejoin' }
       : { ...base, kind: 'forbidden', tone: 'error', title: 'This is not yours to open', message: 'It belongs to another account. If you think that is wrong, sign in with the account you bought with.', recovery: 'home' }
