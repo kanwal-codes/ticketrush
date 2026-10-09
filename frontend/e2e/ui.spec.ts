@@ -55,10 +55,10 @@ test('the way back stays in view while a long page scrolls, on a laptop and on a
   await expect(page.getByRole('heading', { name: 'On now' })).toBeVisible()
 })
 
-test('what is on screen depends on who is looking: no tickets link when signed out, a footer at the bottom of short pages', async ({ page }) => {
+test('what is on screen depends on who is looking: no account menu when signed out, a footer at the bottom of short pages', async ({ page }) => {
   await page.goto('/signin')
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'My tickets' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /account menu/i })).toHaveCount(0)
   const footer = page.locator('footer.site-footer')
   const viewport = page.viewportSize()!
   const box = (await footer.boundingBox())!
@@ -66,5 +66,6 @@ test('what is on screen depends on who is looking: no tickets link when signed o
 
   await signInAsNewGuest(page)
   await page.goto('/')
+  await page.getByRole('button', { name: /account menu/i }).click()
   await expect(page.getByRole('link', { name: 'My tickets' })).toBeVisible()
 })

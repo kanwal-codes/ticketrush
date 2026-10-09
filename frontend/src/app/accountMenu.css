@@ -1,0 +1,92 @@
+.account-menu {
+  position: relative;
+}
+
+.account-menu__trigger {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.account-menu__trigger:hover,
+.account-menu__trigger[aria-expanded='true'] {
+  background: var(--muted);
+  border-color: var(--muted);
+}
+
+.account-menu__panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 6;
+  display: grid;
+  min-width: 220px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  animation: account-menu-in var(--dur-fast) var(--ease-out) both;
+}
+
+@keyframes account-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.account-menu__who {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+.account-menu__who strong {
+  font-weight: 700;
+}
+
+.account-menu__who span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.account-menu__panel a,
+.account-menu__panel button {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  text-decoration: none;
+  color: var(--ink);
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.account-menu__panel a:hover,
+.account-menu__panel a:focus-visible,
+.account-menu__panel button:hover,
+.account-menu__panel button:focus-visible {
+  background: var(--rule);
+}
+
+.account-menu__signout {
+  border-top: 1px solid var(--rule);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-menu__panel {
+    animation: none;
+  }
+}

@@ -152,7 +152,7 @@ describe('the confirm-your-email banner', () => {
     setToken('jwt')
     mockApi({ 'GET /api/me': () => json({ ...unconfirmed, emailVerified: true }), 'GET /api/events': () => json(emptyPage) })
     renderRoute('/')
-    await screen.findByText('Ana')
+    await screen.findByRole('button', { name: /account menu/i })
     expect(screen.queryByText('Confirm your email to join queues and buy tickets')).not.toBeInTheDocument()
   })
 })

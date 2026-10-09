@@ -10,7 +10,7 @@ test('a guest signs up, waits in the queue, picks seats, pays and gets tickets w
   await page.getByLabel('Email').fill(`journey-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.org`)
   await page.getByLabel('Password').fill('correct-horse-battery')
   await page.getByRole('button', { name: 'Create account' }).click()
-  await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /account menu/i })).toBeVisible()
 
   // The event page leads to the waiting room, which lets the guest in and goes to the seats.
   await page.goto(`/events/${event.id}`)
