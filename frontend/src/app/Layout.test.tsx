@@ -28,31 +28,55 @@ describe('app shell', () => {
     renderAt('/')
     expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /ticketrush, home/i })).toBeInTheDocument()
-    // Tickets belong to an account, so the link is only offered to someone signed in.
-    expect(screen.queryByRole('link', { name: 'My tickets' })).not.toBeInTheDocument()
+    // Signed out, there is no account menu at all: tickets and an account belong to someone signed in.
+    expect(screen.queryByRole('button', { name: /account menu/i })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main')
   })
 
-  it('offers My tickets once signed in', async () => {
-    setToken('abc')
-    renderAt('/')
-    expect(await screen.findByRole('link', { name: 'My tickets' })).toBeInTheDocument()
-  })
-
-  it('offers to sign out when signed in, and signing out clears the token', async () => {
-    setToken('abc')
-    renderAt('/')
-    await userEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
-    expect(getToken()).toBeNull()
-    expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument()
-  })
-
-  it('greets a signed-in guest by name', async () => {
+  it('keeps My tickets, Account and Sign out inside one menu, not loose in the header', async () => {
     setToken('abc')
     mockApi({ 'GET /api/me': () => json({ id: 1, email: 'a@b.co', displayName: 'Ana', role: 'GUEST' }), 'GET /api/events': () => json({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 1 }) })
     renderAt('/')
-    expect(await screen.findByText('Ana')).toBeInTheDocument()
+    const trigger = await screen.findByRole('button', { name: 'Account menu, signed in as Ana' })
+    // Closed by default: nothing of the account is loose in the header, just the initial as a badge.
+    expect(screen.queryByRole('link', { name: 'My tickets' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()
+    expect(trigger.querySelector('[aria-hidden]')).toHaveTextContent('A')
+
+    await userEvent.click(trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText('Ana')).toBeInTheDocument()
+    expect(screen.getByText('a@b.co')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'My tickets' })).toHaveAttribute('href', '/tickets')
+    expect(screen.getByRole('link', { name: 'Account' })).toHaveAttribute('href', '/account')
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument()
+  })
+
+  it('closes the menu with Escape, returning focus to the trigger, and on an outside click', async () => {
+    setToken('abc')
+    renderAt('/')
+    const trigger = await screen.findByRole('button', { name: /account menu/i })
+
+    await userEvent.click(trigger)
+    expect(screen.getByRole('link', { name: 'Account' })).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('link', { name: 'Account' })).not.toBeInTheDocument()
+    expect(trigger).toHaveFocus()
+
+    await userEvent.click(trigger)
+    expect(screen.getByRole('link', { name: 'Account' })).toBeInTheDocument()
+    await userEvent.click(document.body)
+    expect(screen.queryByRole('link', { name: 'Account' })).not.toBeInTheDocument()
+  })
+
+  it('offers to sign out from the menu, and signing out clears the token and closes it', async () => {
+    setToken('abc')
+    renderAt('/')
+    await userEvent.click(await screen.findByRole('button', { name: /account menu/i }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
+    expect(getToken()).toBeNull()
+    expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument()
   })
 
   it('says plainly when a page does not exist', async () => {

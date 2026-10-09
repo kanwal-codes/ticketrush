@@ -25,6 +25,7 @@ describe('account page', () => {
   it('shows who is signed in and is reached from the header', async () => {
     mockApi({ 'GET /api/me': () => json(me), ...events })
     renderRoute('/')
+    await userEvent.click(await screen.findByRole('button', { name: /account menu/i }))
     await userEvent.click(await screen.findByRole('link', { name: 'Account' }))
     expect(await screen.findByRole('heading', { level: 1, name: 'Your account' })).toBeInTheDocument()
     expect(screen.getByText('Ana, ana@example.org')).toBeInTheDocument()
