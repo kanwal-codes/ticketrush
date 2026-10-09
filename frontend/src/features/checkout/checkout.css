@@ -91,13 +91,39 @@
 
 .checkout__summary {
   position: sticky;
-  top: 84px;
+  top: var(--sticky-top);
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5);
   background: var(--ev-paper);
   color: var(--on-ev-paper);
   border: 1px solid var(--ink);
+}
+
+.hold-clock {
+  display: grid;
+  gap: var(--space-1);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid currentColor;
+}
+
+.hold-clock__time {
+  justify-self: start; /* a box of its own, so the last-minute pulse can scale it from the left */
+  transform-origin: left;
+  font-size: 2.25rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.hold-clock__note {
+  font-size: 0.9rem;
+}
+
+/* The last minute: the numbers get a heavy underline as well as pulsing, so urgency never rests on motion or colour. */
+.hold-clock--urgent .hold-clock__time {
+  text-decoration: underline;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 6px;
 }
 
 .checkout__summary h2 {
@@ -140,4 +166,9 @@
     position: static;
     order: -1;
   }
+}
+
+/* The summary sits on the event's own paper colour, which can be anything: its labels take the readable ink chosen for it. */
+.checkout__summary .label {
+  color: inherit;
 }

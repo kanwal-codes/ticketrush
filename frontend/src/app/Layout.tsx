@@ -67,9 +67,8 @@ export function Layout() {
       <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
-      <footer className="site-footer">
-        <p className="label">Final prices, a fair queue, and a seat is never sold twice.</p>
-      </footer>
+      {/* Only the closing hairline and some air: the promises it used to repeat are stated on the pages where they apply. */}
+      <footer className="site-footer" />
     </>
   )
 }

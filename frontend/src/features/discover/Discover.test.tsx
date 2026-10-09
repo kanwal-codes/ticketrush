@@ -40,7 +40,7 @@ describe('Discover', () => {
     expect(cards).toHaveLength(2)
     expect(within(cards[1]!).getByRole('link')).toHaveAttribute('href', '/events/2')
     expect(within(cards[1]!).getByText('From $21.50')).toBeInTheDocument()
-    expect(within(cards[1]!).getByText('with fees')).toBeInTheDocument()
+    expect(within(cards[1]!).getByText(/^From \$/)).toBeInTheDocument()
   })
 
   it('searches as you type and keeps the search in the address', async () => {
@@ -91,15 +91,19 @@ describe('Discover', () => {
     expect(calls.some((c) => new URL(c.url).searchParams.get('page') === '1')).toBe(true)
   })
 
-  it('opens the event from the banner: its title is a link, stretched over the whole banner, and so is the button', async () => {
+  it('opens the event from the banner: the poster, the title and the button are each a link, and nothing is laid over the banner', async () => {
     mockApi({ 'GET /api/events': () => json(page([make(1, 'Afterlight Tour', 'ON_SALE')])) })
     renderRoute('/')
     const banner = await screen.findByRole('region', { name: 'Afterlight Tour' })
-    const links = within(banner).getAllByRole('link')
-    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/events/1', '/events/1'])
+    // A keyboard or screen reader meets two links (title and button); the poster's is for the pointer and hidden from them.
+    expect(within(banner).getAllByRole('link').map((l) => l.getAttribute('href'))).toEqual(['/events/1', '/events/1'])
     expect(within(banner).getByRole('heading', { name: 'Afterlight Tour' }).querySelector('a')).not.toBeNull()
-    // The stretch itself is CSS: the title link's ::after covers the banner (checked in the browser tests).
-    expect(readFileSync(`${process.cwd()}/src/features/discover/discover.css`, 'utf8')).toMatch(/\.hero__link::after\s*{[^}]*inset:\s*0/)
+    const poster = banner.querySelector('a.hero__posterlink')
+    expect(poster?.getAttribute('href')).toBe('/events/1')
+    expect(poster?.getAttribute('aria-hidden')).toBe('true')
+    expect(poster?.getAttribute('tabindex')).toBe('-1')
+    // An invisible layer over the banner is what made the text unselectable; it must not come back.
+    expect(readFileSync(`${process.cwd()}/src/features/discover/discover.css`, 'utf8')).not.toMatch(/\.hero__link::after/)
   })
 })
 

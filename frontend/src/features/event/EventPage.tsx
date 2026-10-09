@@ -123,7 +123,7 @@ function Tier({ tier }: { tier: TierView }) {
         <p className="label">{soldOut ? 'Sold out' : `${tier.availableSeats.toLocaleString('en-CA')} left`}</p>
       </div>
       <p className="tier__price">
-        <span className="num">{formatMoney(tier.allInCents)}</span> <span className="label">with fees</span>
+        <span className="num">{formatMoney(tier.allInCents)}</span>
       </p>
     </li>
   )

@@ -61,6 +61,21 @@
   color: var(--paper);
 }
 
+/* For the one button that cannot be undone, so it never looks like its harmless neighbours. */
+.btn--danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn--danger::before {
+  background: var(--danger);
+}
+
+.btn--danger:hover:not([aria-disabled='true']):not(:disabled) {
+  color: var(--white);
+}
+
 .btn[aria-disabled='true'],
 .btn:disabled {
   background: transparent;

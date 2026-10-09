@@ -79,7 +79,7 @@ function Board({ id }: { id: number }) {
             </>
           )}
           {s.status === 'PUBLISHED' && (
-            <button type="button" className="btn btn--quiet" onClick={() => setConfirming('cancel')} disabled={busy}>Cancel event</button>
+            <button type="button" className="btn btn--danger" onClick={() => setConfirming('cancel')} disabled={busy}>Cancel event</button>
           )}
         </p>
       </header>
