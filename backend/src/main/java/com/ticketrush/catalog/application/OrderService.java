@@ -3,6 +3,8 @@ package com.ticketrush.catalog.application;
 import com.ticketrush.catalog.application.OrderQueryService.OrderView;
 import com.ticketrush.catalog.domain.EventPrice;
 import com.ticketrush.catalog.domain.EventPriceRepository;
+import com.ticketrush.catalog.domain.EventRepository;
+import com.ticketrush.catalog.domain.EventStatus;
 import com.ticketrush.catalog.domain.FeePolicy;
 import com.ticketrush.catalog.domain.HoldStatus;
 import com.ticketrush.catalog.domain.IdempotencyRecord;
@@ -62,6 +64,7 @@ public class OrderService {
 	private final TicketRepository tickets;
 	private final OutboxEventRepository outbox;
 	private final EventPriceRepository prices;
+	private final EventRepository events;
 	private final SeatStore seats;
 	private final PaymentGateway gateway;
 	private final OrderQueryService views;
@@ -73,7 +76,7 @@ public class OrderService {
 
 	public OrderService(TicketOrderRepository orders, IdempotencyRecordRepository idempotency,
 			SeatHoldRepository holds, TicketRepository tickets, OutboxEventRepository outbox,
-			EventPriceRepository prices, SeatStore seats, PaymentGateway gateway, OrderQueryService views,
+			EventPriceRepository prices, EventRepository events, SeatStore seats, PaymentGateway gateway, OrderQueryService views,
 			TransactionTemplate tx, Clock clock, @Value("${ticketrush.payments.checkout-window}") Duration checkoutWindow, MeterRegistry meters) {
 		this.orders = orders;
 		this.idempotency = idempotency;
@@ -81,6 +84,7 @@ public class OrderService {
 		this.tickets = tickets;
 		this.outbox = outbox;
 		this.prices = prices;
+		this.events = events;
 		this.seats = seats;
 		this.gateway = gateway;
 		this.views = views;
@@ -231,6 +235,11 @@ public class OrderService {
 	}
 
 	private boolean fulfil(TicketOrder order, String paymentRef) {
+		// The organizer cancelled while the payment was in flight: nothing is sold, the money goes back.
+		if (events.findById(order.getEventId()).filter(e -> e.getStatus() == EventStatus.CANCELLED).isPresent()) {
+			order.markRefunding(paymentRef, "The event was cancelled before the payment finished. You have been refunded.");
+			return true;
+		}
 		SeatHold hold = holds.findById(order.getHoldId()).orElseThrow();
 		// Only seats still held under this hold can be sold. Anything else means someone took them in the meantime.
 		if (seats.lockHeldSeats(hold.getId()).size() != hold.getSeatCount()) {

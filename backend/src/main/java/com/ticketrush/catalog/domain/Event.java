@@ -99,6 +99,25 @@ public class Event {
 		return this.organizerId == organizerId;
 	}
 
+	/** Replaces everything an organizer sets while the event is a draft. */
+	public void revise(Venue venue, String title, String artist, String description, Instant startsAt, Instant doorsAt,
+			Instant dropOpensAt, Instant onSaleAt, PosterStyle posterStyle, String inkOne, String inkTwo,
+			String paperColor, boolean queueEnabled) {
+		this.venue = venue;
+		this.title = title;
+		this.artist = artist;
+		this.description = description;
+		this.startsAt = startsAt;
+		this.doorsAt = doorsAt;
+		this.dropOpensAt = dropOpensAt;
+		this.onSaleAt = onSaleAt;
+		this.posterStyle = posterStyle;
+		this.inkOne = inkOne;
+		this.inkTwo = inkTwo;
+		this.paperColor = paperColor;
+		this.queueEnabled = queueEnabled;
+	}
+
 	public void markPublished() {
 		this.status = EventStatus.PUBLISHED;
 	}

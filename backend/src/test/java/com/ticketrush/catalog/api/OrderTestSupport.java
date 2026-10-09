@@ -147,8 +147,9 @@ public abstract class OrderTestSupport extends AbstractIntegrationTest {
 		assertThat(count("select count(*) from ticket_order o where o.status = 'PAID' and o.total_cents <> "
 				+ "(select coalesce(sum(face_cents + fee_cents), 0) from ticket where order_id = o.id)"))
 				.as("paid orders whose tickets do not add up to the total").isZero();
+		// A cancelled event's tickets are void, and stay on their refunded order as the record of what was sold.
 		assertThat(count("select count(*) from ticket t join ticket_order o on o.id = t.order_id "
-				+ "where o.status <> 'PAID'")).as("tickets on orders that are not paid").isZero();
+				+ "where o.status <> 'PAID' and t.status <> 'VOID'")).as("live tickets on orders that are not paid").isZero();
 		assertThat(count("select count(*) from event_seat es where es.status = 'SOLD' and exists "
 				+ "(select 1 from ticket_order o where o.event_id = es.event_id) and not exists "
 				+ "(select 1 from ticket t where t.event_id = es.event_id and t.seat_id = es.seat_id "

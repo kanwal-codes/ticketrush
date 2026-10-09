@@ -19,6 +19,7 @@ export function eventDetail(overrides: Partial<EventDetail> = {}): EventDetail {
     totalSeats: 2000,
     availableSeats: 1500,
     waitingRoom: true,
+    cancelled: false,
     ...overrides,
   }
 }

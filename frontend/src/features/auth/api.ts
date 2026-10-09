@@ -21,7 +21,7 @@ export async function signIn(email: string, password: string): Promise<void> {
 }
 
 /** Creates the account, then signs in with the same details. */
-export async function register(details: { displayName: string; email: string; password: string }): Promise<void> {
+export async function register(details: { displayName: string; email: string; password: string; turnstileToken?: string }): Promise<void> {
   await unwrap(api.POST('/api/auth/register', { body: details }))
   await signIn(details.email, details.password)
 }

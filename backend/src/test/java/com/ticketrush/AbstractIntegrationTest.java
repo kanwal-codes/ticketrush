@@ -64,7 +64,7 @@ public abstract class AbstractIntegrationTest {
 		}
 		List<Guest> guests = new ArrayList<>();
 		for (User user : users.saveAll(batch)) {
-			guests.add(new Guest(user.getId(), tokenIssuer.issue(user).value()));
+			guests.add(new Guest(user.getId(), tokenIssuer.issue(user, java.time.Instant.now()).value()));
 		}
 		return guests;
 	}

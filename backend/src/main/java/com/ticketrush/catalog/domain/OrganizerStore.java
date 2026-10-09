@@ -12,7 +12,10 @@ import java.util.Map;
  */
 public interface OrganizerStore {
 
-	List<EventRow> eventsOf(long organizerId);
+	/** One page of the organizer's events, newest first, and how many there are in all. */
+	List<EventRow> eventsOf(long organizerId, int limit, int offset);
+
+	long countEventsOf(long organizerId);
 
 	List<TierRow> tiers(long eventId, Instant now);
 

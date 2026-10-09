@@ -111,4 +111,21 @@ describe('TicketsPage', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/signin'))
     expect(getToken()).toBeNull()
   })
+
+  it('says so, with the voided tickets, when the event was cancelled', async () => {
+    const { calls } = mockApi({
+      'GET /api/tickets': () => json([ticket(1, 1, { status: 'VOID' }), ticket(2, 2, { status: 'VOID' })]),
+      'GET /api/events/7': () => json(eventDetail({ cancelled: true, saleState: 'ENDED' })),
+    })
+    renderRoute('/tickets')
+
+    const section = await screen.findByRole('region', { name: 'Afterlight Tour' })
+    expect(within(section).getByText('This event was cancelled')).toBeInTheDocument()
+    expect(within(section).getByText(/Your money is being returned/)).toBeInTheDocument()
+    expect(within(section).getAllByText('Cancelled')).toHaveLength(2)
+    // Nothing to scan: no QR code is fetched or shown for a cancelled ticket.
+    expect(within(section).queryByRole('img')).not.toBeInTheDocument()
+    expect(within(section).getAllByText(/no longer works at the door/)).toHaveLength(2)
+    expect(calls.some((c) => c.url.includes('qr.svg'))).toBe(false)
+  })
 })

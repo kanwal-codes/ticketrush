@@ -20,6 +20,8 @@ const row = (overrides: Partial<EventRow> = {}): EventRow => ({
   ...overrides,
 })
 
+const pageOf = (items: EventRow[], page = 0, totalPages = 1) => ({ items, page, size: 20, totalItems: items.length, totalPages })
+
 const venue: VenueView = { id: 5, name: 'Halden Hall', city: 'Montreal', totalSeats: 300, sections: [{ id: 11, name: 'Floor', seats: 100 }, { id: 12, name: 'Balcony', seats: 200 }] }
 
 beforeEach(() => setToken('abc'))
@@ -43,7 +45,7 @@ describe('the console is for organizers', () => {
   it('shows an organizer their events, with the Console link in the header', async () => {
     mockApi({
       'GET /api/me': () => json(organizer),
-      'GET /api/organizer/events': () => json([row(), row({ id: 8, title: 'Draft Show', status: 'DRAFT', sold: 0, grossCents: 0 })]),
+      'GET /api/organizer/events': () => json(pageOf([row(), row({ id: 8, title: 'Draft Show', status: 'DRAFT', sold: 0, grossCents: 0 })])),
     })
     renderRoute('/console')
 
@@ -55,7 +57,7 @@ describe('the console is for organizers', () => {
   })
 
   it('invites a new organizer to make their first event', async () => {
-    mockApi({ 'GET /api/me': () => json(organizer), 'GET /api/organizer/events': () => json([]) })
+    mockApi({ 'GET /api/me': () => json(organizer), 'GET /api/organizer/events': () => json(pageOf([], 0, 0)) })
     renderRoute('/console')
     expect(await screen.findByRole('heading', { name: 'No events yet' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Create your first event' })).toHaveAttribute('href', '/console/events/new')
@@ -65,13 +67,111 @@ describe('the console is for organizers', () => {
     let failing = true
     mockApi({
       'GET /api/me': () => json(organizer),
-      'GET /api/organizer/events': () => (failing ? json({ title: 'Down' }, 503) : json([row()])),
+      'GET /api/organizer/events': () => (failing ? json({ title: 'Down' }, 503) : json(pageOf([row()]))),
     })
     renderRoute('/console')
     expect(await screen.findByRole('alert')).toHaveTextContent('We could not load your events')
     failing = false
     await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(await screen.findByRole('link', { name: /Afterlight Tour/ })).toBeInTheDocument()
+  })
+})
+
+describe('a long list of events', () => {
+  it('shows a page at a time and fetches the next when asked', async () => {
+    const pages: Record<string, ReturnType<typeof pageOf>> = {
+      '0': pageOf([row({ id: 1, title: 'First Show' })], 0, 2),
+      '1': pageOf([row({ id: 2, title: 'Second Show' })], 1, 2),
+    }
+    const { calls } = mockApi({
+      'GET /api/me': () => json(organizer),
+      'GET /api/organizer/events': (request) => json(pages[new URL(request.url).searchParams.get('page') ?? '0']),
+    })
+    renderRoute('/console')
+
+    expect(await screen.findByRole('link', { name: /First Show/ })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Second Show/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Show more events' }))
+    expect(await screen.findByRole('link', { name: /Second Show/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /First Show/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Show more events' })).not.toBeInTheDocument()
+    expect(calls.filter((c) => c.url.includes('/api/organizer/events?')).map((c) => new URL(c.url).searchParams.get('page'))).toEqual(['0', '1'])
+  })
+})
+
+describe('editing a draft', () => {
+  const draftEvent = {
+    id: 7,
+    status: 'DRAFT' as const,
+    title: 'Old Title',
+    artist: 'Old Artist',
+    description: 'About it.',
+    venueId: 5,
+    startsAt: '2027-03-10T01:00:00Z',
+    doorsAt: '2027-03-10T00:00:00Z',
+    dropOpensAt: '2027-02-01T14:30:00Z',
+    onSaleAt: '2027-02-01T15:00:00Z',
+    poster: { style: 'SUN' as const, inkOne: '#121212', inkTwo: '#e5322d', paperColor: '#ffc20e' },
+    prices: [{ sectionId: 11, priceCents: 9600 }, { sectionId: 12, priceCents: 6450 }],
+    waitingRoom: true,
+  }
+  const sources = {
+    'GET /api/me': () => json(organizer),
+    'GET /api/organizer/events/7': () => json(draftEvent),
+    'GET /api/venues/5': () => json(venue),
+    'GET /api/organizer/events/7/summary': () => json(summary({ status: 'DRAFT' })),
+    'GET /api/organizer/events/7/queue': () => json({ waiting: 0, inside: 0 }),
+  }
+
+  it('starts from what is saved, keeps the venue fixed, and sends the changes as a replacement', async () => {
+    let saved = false
+    const { calls } = mockApi({ ...sources, 'PUT /api/events/7': () => ((saved = true), json({ id: 7, status: 'DRAFT' })) })
+    renderRoute('/console/events/7/edit')
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Edit event' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Title')).toHaveValue('Old Title')
+    expect(screen.getByLabelText('Artist or company')).toHaveValue('Old Artist')
+    expect(screen.getByLabelText(/^Floor/)).toHaveValue('96.00')
+    expect(screen.getByLabelText(/^Balcony/)).toHaveValue('64.50')
+    expect(screen.getByLabelText('Venue', { exact: true })).toBeDisabled()
+    expect(screen.getByLabelText('Style')).toHaveValue('SUN')
+    expect(screen.getByRole('checkbox')).toBeChecked()
+
+    await userEvent.clear(screen.getByLabelText('Title'))
+    await userEvent.type(screen.getByLabelText('Title'), 'New Title')
+    await userEvent.clear(screen.getByLabelText(/^Floor/))
+    await userEvent.type(screen.getByLabelText(/^Floor/), '100')
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Afterlight Tour' })).toBeInTheDocument() // back on the dashboard
+    expect(saved).toBe(true)
+    const sent = (await calls.find((c) => c.method === 'PUT')!.json()) as Record<string, unknown>
+    expect(sent).toMatchObject({ title: 'New Title', venueId: 5, waitingRoom: true })
+    expect(sent.prices).toEqual([{ sectionId: 11, priceCents: 10000 }, { sectionId: 12, priceCents: 6450 }])
+    expect(sessionStorage.getItem('tr.console.draft')).toBeNull() // editing never touches the create draft
+  })
+
+  it('says plainly when the event is no longer a draft', async () => {
+    mockApi({ ...sources, 'PUT /api/events/7': () => json({ title: 'Cannot be changed', detail: 'Only a draft can be edited. Cancel this event and create a new one instead.' }, 409) })
+    renderRoute('/console/events/7/edit')
+    await userEvent.click(await screen.findByRole('button', { name: 'Save changes' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Cancel this event and create a new one instead.')
+  })
+
+  it('is reached from the Edit button on a draft, and not offered on a published event', async () => {
+    mockApi({ ...sources })
+    const first = renderRoute('/console/events/7')
+    expect(await screen.findByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/console/events/7/edit')
+    first.unmount()
+
+    mockApi({
+      'GET /api/me': () => json(organizer),
+      'GET /api/organizer/events/7/summary': () => json(summary()),
+      'GET /api/organizer/events/7/queue': () => json({ waiting: 0, inside: 0 }),
+    })
+    renderRoute('/console/events/7')
+    await screen.findByRole('link', { name: 'Door scanner' })
+    expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
   })
 })
 
@@ -212,7 +312,7 @@ describe('the dashboard', () => {
     mockApi(live())
     renderRoute('/console/events/7')
     await userEvent.click(await screen.findByRole('button', { name: 'Cancel event' }))
-    expect(screen.getByText(/not refunded automatically/)).toBeInTheDocument()
+    expect(screen.getByText(/refunded automatically/)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Go back' }))
     expect(screen.queryByText('Cancel this event?')).not.toBeInTheDocument()
   })

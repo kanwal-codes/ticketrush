@@ -16,6 +16,9 @@ export interface SaleView {
 
 /** What the sale panel says and offers, for each state an event can be in. */
 export function saleView(event: EventDetail): SaleView {
+  if (event.cancelled) {
+    return { headline: 'This event was cancelled', note: 'Tickets are no longer on sale. Anyone who bought tickets is refunded automatically.', cta: { kind: 'none' } }
+  }
   const queue: Cta = { kind: 'link', label: 'Join the waiting room', to: `/events/${event.id}/queue` }
   switch (event.saleState) {
     case 'UPCOMING':

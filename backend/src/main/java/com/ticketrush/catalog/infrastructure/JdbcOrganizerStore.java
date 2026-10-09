@@ -21,7 +21,13 @@ class JdbcOrganizerStore implements OrganizerStore {
 	}
 
 	@Override
-	public List<EventRow> eventsOf(long organizerId) {
+	public long countEventsOf(long organizerId) {
+		return jdbc.sql("select count(*) from event where organizer_id = :organizer").param("organizer", organizerId)
+				.query(Long.class).single();
+	}
+
+	@Override
+	public List<EventRow> eventsOf(long organizerId, int limit, int offset) {
 		// A draft has no seat inventory yet, so its capacity is the venue's.
 		return jdbc.sql("select e.id, e.title, e.status, e.starts_at, v.name as venue_name, v.city, "
 				+ "case when e.status = 'DRAFT' then (select count(*) from venue_seat vs "
@@ -31,8 +37,10 @@ class JdbcOrganizerStore implements OrganizerStore {
 				+ "(select coalesce(sum(o.total_cents), 0) from ticket_order o "
 				+ "where o.event_id = e.id and o.status = 'PAID') as gross "
 				+ "from event e join venue v on v.id = e.venue_id where e.organizer_id = :organizer "
-				+ "order by e.starts_at desc, e.id desc")
+				+ "order by e.starts_at desc, e.id desc limit :limit offset :offset")
 				.param("organizer", organizerId)
+				.param("limit", limit)
+				.param("offset", offset)
 				.query((rs, i) -> new EventRow(rs.getLong("id"), rs.getString("title"),
 						EventStatus.valueOf(rs.getString("status")), rs.getTimestamp("starts_at").toInstant(),
 						rs.getString("venue_name"), rs.getString("city"), rs.getInt("capacity"), rs.getInt("sold"),

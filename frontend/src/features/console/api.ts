@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { api, unwrap } from '../../api/client'
 import type { CreateEventRequest, CreateVenueRequest } from '../../api/types'
 
@@ -13,7 +13,30 @@ export const consoleKeys = {
 
 const LIVE = 5_000
 
-export const useMyEvents = () => useQuery({ queryKey: consoleKeys.events, queryFn: () => unwrap(api.GET('/api/organizer/events')) })
+const EVENTS_PAGE = 20
+
+/** The organizer's events, a page at a time, newest first. */
+export const useMyEvents = () =>
+  useInfiniteQuery({
+    queryKey: consoleKeys.events,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => unwrap(api.GET('/api/organizer/events', { params: { query: { page: pageParam, size: EVENTS_PAGE } } })),
+    getNextPageParam: (last) => (last.page + 1 < last.totalPages ? last.page + 1 : undefined),
+  })
+
+/** One event as the form edits it, with its venue (which may not be one of the organizer's own listed venues). */
+export const useEventToEdit = (id: number) =>
+  useQuery({
+    queryKey: ['console', 'edit', id] as const,
+    queryFn: async () => {
+      const event = await unwrap(api.GET('/api/organizer/events/{id}', { params: { path: { id } } }))
+      const venue = await unwrap(api.GET('/api/venues/{id}', { params: { path: { id: event.venueId } } }))
+      return { event, venue }
+    },
+    // Fetched fresh each time the form opens, and not while it is being typed in.
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  })
 
 export const useMyVenues = () => useQuery({ queryKey: consoleKeys.venues, queryFn: () => unwrap(api.GET('/api/organizer/venues')) })
 
@@ -40,6 +63,9 @@ export const useScans = (id: number, limit = 20) =>
 export const createVenue = (body: CreateVenueRequest) => unwrap(api.POST('/api/venues', { body }))
 
 export const createEvent = (body: CreateEventRequest) => unwrap(api.POST('/api/events', { body }))
+
+export const updateEvent = (id: number, body: CreateEventRequest) =>
+  unwrap(api.PUT('/api/events/{id}', { params: { path: { id } }, body }))
 
 export const publishEvent = (id: number) => unwrap(api.POST('/api/events/{id}/publish', { params: { path: { id } } }))
 

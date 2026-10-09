@@ -99,7 +99,7 @@ class EventQueryIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	void draftsCancelledAndUnknownEventsAreNotFound() throws Exception {
+	void draftsAndUnknownEventsAreNotFoundAndACancelledOneCanBeReadButHasNoSeats() throws Exception {
 		CatalogFixtures fx = new CatalogFixtures(mvc, organizerToken());
 		Venue venue = fx.createVenue(uniqueCity());
 		int draft = fx.createDraft(venue, "Draft", "Artist", in(2), in(30));
@@ -107,9 +107,14 @@ class EventQueryIntegrationTest extends AbstractIntegrationTest {
 		fx.send("/api/events/" + cancelled + "/cancel", null).andExpect(status().isOk());
 
 		for (int id : new int[] { draft, cancelled, 999999 }) {
-			mvc.perform(get("/api/events/" + id)).andExpect(status().isNotFound());
+			if (id != cancelled) {
+				mvc.perform(get("/api/events/" + id)).andExpect(status().isNotFound());
+			}
 			mvc.perform(get("/api/events/" + id + "/seats")).andExpect(status().isNotFound());
 		}
+		// Someone who bought can still see what was cancelled, marked as such and never on sale.
+		mvc.perform(get("/api/events/" + cancelled)).andExpect(status().isOk()).andExpect(jsonPath("$.cancelled").value(true))
+				.andExpect(jsonPath("$.saleState").value("ENDED"));
 	}
 
 	@Test

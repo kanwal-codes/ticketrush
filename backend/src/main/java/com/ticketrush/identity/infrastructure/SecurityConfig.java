@@ -53,6 +53,7 @@ class SecurityConfig {
 						// Only exists with the "loadtest" profile; organizers only even then.
 						.requestMatchers("/dev/**").hasRole("ORGANIZER")
 						.requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER")
+						.requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ORGANIZER")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(rolesFromClaim())));
 		return http.build();
