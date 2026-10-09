@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet } from 'react-router'
 import { clearToken, useToken } from '../auth/session'
 import { useMe } from '../features/auth/api'
+import { VerifyEmailBanner } from '../features/auth/VerifyEmailBanner'
 import { ConnectionBar } from '../components/ConnectionBar'
 import { HoldTimer } from '../features/seats/HoldTimer'
 import { RouteEffects } from './RouteEffects'
@@ -61,6 +62,7 @@ export function Layout() {
         </div>
       </header>
       <ConnectionBar />
+      <VerifyEmailBanner />
       <RouteEffects />
       <main id="main" tabIndex={-1}>
         <Outlet />

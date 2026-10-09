@@ -34,6 +34,7 @@ class JwtTokenIssuer implements TokenIssuer {
 				.claim("email", user.getEmail())
 				.claim("roles", List.of(user.getRole().name()))
 				.claim("auth_time", authTime.getEpochSecond())
+				.claim("email_verified", user.isEmailVerified())
 				.build();
 		String token = encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
 				.getTokenValue();

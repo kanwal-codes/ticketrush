@@ -59,3 +59,31 @@ test('sign in and register pass an accessibility scan', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible()
   await expectAccessible(page, 'register')
 })
+
+test('the account recovery pages pass an accessibility scan', async ({ page }) => {
+  // The server's answers are stubbed: what is under test here is the pages, in a real browser.
+  await page.route('**/api/auth/forgot-password', (route) => route.fulfill({ status: 202 }))
+  await page.route('**/api/auth/reset-password', (route) => route.fulfill({ status: 204 }))
+  await page.route('**/api/auth/verify-email', (route) => route.fulfill({ status: 204 }))
+
+  await page.goto('/signin')
+  await page.getByRole('link', { name: 'Forgot your password?' }).click()
+  await expect(page.getByRole('heading', { name: 'Forgot your password?' })).toBeVisible()
+  await expectAccessible(page, 'forgot password')
+  await page.getByLabel('Email').fill('dana@example.org')
+  await page.getByRole('button', { name: 'Send the link' }).click()
+  await expect(page.getByText('Check your email')).toBeVisible()
+  await expectAccessible(page, 'forgot password, sent')
+
+  await page.goto('/reset-password?token=abc')
+  await expect(page.getByRole('heading', { name: 'Choose a new password' })).toBeVisible()
+  await expectAccessible(page, 'choose a new password')
+  await page.getByLabel('New password').fill('a-brand-new-one')
+  await page.getByRole('button', { name: 'Change password' }).click()
+  await expect(page.getByRole('heading', { name: 'Password changed' })).toBeVisible()
+  await expectAccessible(page, 'password changed')
+
+  await page.goto('/verify-email?token=abc')
+  await expect(page.getByRole('heading', { name: 'Email confirmed' })).toBeVisible()
+  await expectAccessible(page, 'email confirmed')
+})

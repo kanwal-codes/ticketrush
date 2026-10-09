@@ -126,3 +126,8 @@
 .site-nav .hold-timer:hover {
   background: var(--muted);
 }
+
+.verify-banner {
+  width: min(100% - 2 * var(--gutter), var(--page));
+  margin: var(--space-3) auto 0;
+}
