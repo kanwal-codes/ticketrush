@@ -10,6 +10,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # The tool that makes the API types (openapi-typescript) works with TypeScript 5 only, so a new major version breaks
+      # `npm install`. Take a TypeScript major bump by hand once that tool supports it.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
