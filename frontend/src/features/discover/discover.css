@@ -177,7 +177,8 @@
     grid-template-columns: 1fr;
   }
 
+  /* Small enough that the button under the title is on the first screen of a phone. */
   .hero__poster {
-    max-width: 280px;
+    max-width: 200px;
   }
 }
