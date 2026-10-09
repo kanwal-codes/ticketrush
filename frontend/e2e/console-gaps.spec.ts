@@ -53,7 +53,7 @@ test('cancelling an event refunds the buyers, and they see it', async ({ page, b
   await expect(page.getByText(/refunded automatically/)).toBeVisible()
   await page.getByRole('button', { name: 'Cancel the event' }).click()
 
-  await expect(page.locator('.chip--cancelled')).toBeVisible()
+  await expect(page.locator('.status--cancelled')).toBeVisible()
   await expect(page.getByText(/Orders: 1 refunded/)).toBeVisible()
   await expect(page.getByText('$0.00').first()).toBeVisible() // nothing is left of the revenue
 

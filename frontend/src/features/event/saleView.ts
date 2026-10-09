@@ -25,7 +25,8 @@ export function saleView(event: EventDetail): SaleView {
       return {
         headline: 'Tickets go on sale in',
         countdownTo: event.onSaleAt,
-        note: event.waitingRoom ? `The waiting room opens at ${formatTime(event.dropOpensAt)}.` : undefined,
+        // The button already says when it opens; this says what it is for.
+        note: event.waitingRoom ? 'Once it opens, people are let in by arrival time, not by who clicks fastest.' : undefined,
         cta: { kind: 'disabled', label: event.waitingRoom ? `Waiting room opens at ${formatTime(event.dropOpensAt)}` : 'Not on sale yet' },
       }
     case 'QUEUE_OPEN':

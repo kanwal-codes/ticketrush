@@ -12,7 +12,26 @@ describe('layoutTitle', () => {
     const { lines, size } = layoutTitle('Harbour FC vs Rivière United', opts)
     expect(lines.length).toBe(2)
     expect(lines.join(' ')).toBe('HARBOUR FC VS RIVIÈRE UNITED')
-    expect(size).toBeGreaterThan(layoutTitle('Harbour FC vs Rivière United', { ...opts, maxLines: 1 }).size)
+    expect(size).toBeGreaterThanOrEqual(opts.minSize)
+    expect(lines.every((line) => line.length * size * opts.factor <= opts.width + 1)).toBe(true)
+  })
+
+  it('cuts a title that is too long for its lines with an ellipsis, rather than squeezing it into something unreadable', () => {
+    const long = 'The Extraordinarily Long Titled Orchestra Of The Northern Lights Experience'
+    const { lines, size } = layoutTitle(long, opts)
+    expect(lines.length).toBeLessThanOrEqual(opts.maxLines)
+    expect(lines.at(-1)!.endsWith('…')).toBe(true)
+    expect(lines.join(' ').startsWith('THE EXTRAORDINARILY')).toBe(true)
+    expect(size).toBeGreaterThanOrEqual(opts.minSize)
+    // No line needs squeezing by more than a fifth to fit (the drawing code squeezes such a line to the width).
+    expect(lines.every((line) => line.length * size * opts.factor <= opts.width * 1.25)).toBe(true)
+  })
+
+  it('does not cut a title that fits, and never cuts down to nothing', () => {
+    expect(layoutTitle('Harbour FC vs Rivière United', opts).lines.join(' ')).not.toContain('…')
+    const huge = layoutTitle('Supercalifragilisticexpialidocious', opts)
+    expect(huge.lines).toEqual(['SUPERCALIFRAGILISTICEXPIALIDOCIOUS'])
+    expect(huge.size).toBe(opts.minSize)
   })
 
   it('does not split a title into more lines than allowed', () => {

@@ -43,11 +43,11 @@ async function chooseFree(page: Page, row: string, count: number) {
 
 // The home page and event page come first, while there is only one Afterlight Tour to show.
 // It happens soon so it sits on the first page of a database that already holds many events (the list is ordered by date).
-const upcoming = await createEvent({ ...afterlight, startsInDays: 2, onSaleInSeconds: 21 * 3600 + 42 * 60 + 10, waitingRoom: true })
+const upcoming = await createEvent({ ...afterlight, startsInDays: 2, onSaleInSeconds: 100, waitingRoom: true })
 
 await shoot('discover', 1280, 960, async (page) => {
   await page.goto(`${WEB}/`)
-  await page.getByRole('region', { name: 'Afterlight Tour' }).waitFor()
+  await page.locator('#hero-title').waitFor()
   await page.waitForTimeout(700)
 })
 

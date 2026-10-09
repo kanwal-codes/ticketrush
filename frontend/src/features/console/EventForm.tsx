@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../../api/errors'
 import type { OrganizerEvent, VenueView } from '../../api/types'
+import { BackBar } from '../../components/BackBar'
 import { Field } from '../../components/Field'
 import { Notice } from '../../components/Notice'
 import { ConsoleSkeleton } from '../../components/PageSkeletons'
@@ -146,10 +147,9 @@ function Form({ venues, editing }: { venues: VenueView[]; editing?: Editing }) {
 
   return (
     <div className="page console eventform">
+      <BackBar to={editing ? `/console/events/${editing.id}` : '/console'}>{editing ? 'Back to the event' : 'Your events'}</BackBar>
       <header>
-        <p className="label">
-          <Link to="/console" viewTransition>Console</Link> / {editing ? 'Edit event' : 'New event'}
-        </p>
+        <p className="label">{editing ? 'Edit event' : 'New event'}</p>
         <h1>{editing ? 'Edit event' : 'Create an event'}</h1>
         <p className="console__meta">{editing ? 'Only a draft can be edited. Guests see nothing until you publish.' : 'It is saved as a draft. Guests see nothing until you publish.'}</p>
       </header>
