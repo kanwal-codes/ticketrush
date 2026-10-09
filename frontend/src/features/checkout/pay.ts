@@ -58,8 +58,10 @@ const NO_ANSWER =
  * Pays for the hold with the card. Safe to call again for the same card after any outcome that is not final.
  * The card number is turned into a token here and never sent.
  */
-export async function submitPayment(holdId: number, cardNumber: string): Promise<PaymentOutcome> {
-  const token = cardToken(cardNumber)
+export const submitPayment = (holdId: number, cardNumber: string): Promise<PaymentOutcome> => payWithToken(holdId, cardToken(cardNumber))
+
+/** Pays with a token the provider made for the card: a built-in test token, or a Stripe PaymentMethod id. */
+export async function payWithToken(holdId: number, token: string): Promise<PaymentOutcome> {
   const key = keyFor(holdId, token)
 
   let result
