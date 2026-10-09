@@ -17,7 +17,10 @@ export function Hero({ event, onTick }: { event: EventSummary; onTick?: () => vo
       <div className="hero__body">
         <p className="label hero__kicker">{waiting ? `Drops ${formatDate(event.onSaleAt)} at ${formatTime(event.onSaleAt)}` : 'On sale now'}</p>
         <h2 id="hero-title" className="hero__title">
-          {event.title}
+          {/* The whole banner is clickable: this link stretches over it (see discover.css). */}
+          <Link to={`/events/${event.id}`} className="hero__link" viewTransition>
+            {event.title}
+          </Link>
         </h2>
         {event.artist.toLowerCase() !== event.title.toLowerCase() && <p className="hero__artist">{event.artist}</p>}
         <p className="hero__meta">

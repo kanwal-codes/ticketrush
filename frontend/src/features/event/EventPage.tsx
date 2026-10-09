@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 import { keys, useEvent } from '../../api/queries'
 import type { EventDetail, TierView } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
+import { BackBar } from '../../components/BackBar'
 import { Countdown } from '../../components/Countdown'
 import { EventSkeleton } from '../../components/PageSkeletons'
 import { Poster } from '../../components/Poster'
@@ -33,11 +34,7 @@ function EventDetails({ event }: { event: EventDetail }) {
   const sale = saleView(event)
   return (
     <div className="page event" style={eventTheme(event.poster)}>
-      <p>
-        <Link to="/" className="event__back" viewTransition>
-          ← All events
-        </Link>
-      </p>
+      <BackBar to="/">All events</BackBar>
       <div className="event__layout">
         <div className="event__poster" style={{ viewTransitionName: `poster-${event.id}` }}>
           <Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} />
@@ -66,7 +63,7 @@ function EventDetails({ event }: { event: EventDetail }) {
             </div>
             <div>
               <dt className="label">Seats</dt>
-              <dd className="num">{event.totalSeats.toLocaleString('en-CA')}, all reserved</dd>
+              <dd>{event.totalSeats.toLocaleString('en-CA')} reserved seats</dd>
             </div>
           </dl>
 
@@ -90,22 +87,25 @@ function EventDetails({ event }: { event: EventDetail }) {
             )}
           </section>
 
-          <section aria-labelledby="tiers-heading">
-            <h2 id="tiers-heading" className="visually-hidden">
-              Prices
-            </h2>
-            <ul className="tiers">
-              {event.tiers.map((tier) => (
-                <Tier key={tier.sectionId} tier={tier} />
-              ))}
-            </ul>
-            <p className="event__explain">
-              The price shown is the final price, fees included. Nothing is added at checkout.{' '}
-              {event.waitingRoom
-                ? `Everyone in the queue is let in by arrival time. Once you pick seats, you have ${HOLD_MINUTES} minutes to pay.`
-                : `Once you pick seats, you have ${HOLD_MINUTES} minutes to pay.`}
-            </p>
-          </section>
+          {/* A cancelled event has nothing to buy, so no prices or seats left are shown for it. */}
+          {!event.cancelled && (
+            <section aria-labelledby="tiers-heading">
+              <h2 id="tiers-heading" className="visually-hidden">
+                Prices
+              </h2>
+              <ul className="tiers">
+                {event.tiers.map((tier) => (
+                  <Tier key={tier.sectionId} tier={tier} />
+                ))}
+              </ul>
+              <p className="event__explain">
+                The price shown is the final price, fees included. Nothing is added at checkout.{' '}
+                {event.waitingRoom
+                  ? `Everyone in the queue is let in by arrival time. Once you pick seats, you have ${HOLD_MINUTES} minutes to pay.`
+                  : `Once you pick seats, you have ${HOLD_MINUTES} minutes to pay.`}
+              </p>
+            </section>
+          )}
 
           {event.description && <p className="event__about">{event.description}</p>}
         </div>
