@@ -39,4 +39,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 	@Query("select t.usedAt from Ticket t where t.code = :code")
 	Instant usedAt(String code);
 
+	/** Whether the guest still holds a ticket for an event that has not started: closing the account would strand it. */
+	@Query("select count(t) > 0 from Ticket t where t.userId = :userId and t.status = com.ticketrush.catalog.domain.TicketStatus.ISSUED "
+			+ "and exists (select 1 from Event e where e.id = t.eventId and e.startsAt > :now)")
+	boolean hasUpcoming(Long userId, Instant now);
+
 }

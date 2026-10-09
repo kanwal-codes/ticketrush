@@ -9,6 +9,8 @@ primary_region = "yyz"
   VITE_TURNSTILE_SITE_KEY = "0x4AAAAAAFPuXNF460Lcsn-S"
   # The public Stripe test key (pk_test_...), not a secret. Empty means the checkout uses the built-in test cards.
   VITE_STRIPE_PUBLISHABLE_KEY = ""
+  # The address shown on the contact page. Empty: the page points to the project's issue tracker instead.
+  VITE_SUPPORT_EMAIL = ""
 
 [env]
   # The API app's private address (see backend/fly.toml), and Fly's private DNS server that resolves it.
