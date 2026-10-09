@@ -18,7 +18,7 @@ primary_region = "yyz"
   RESOLVER = "[fdaa::3]"
 
 [http_service]
-  internal_port = 80
+  internal_port = 8080
   force_https = true
   # Kept running: the demo should answer straight away, and an idle nginx costs almost nothing.
   auto_stop_machines = "off"
