@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import { readFileSync } from 'node:fs'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
@@ -17,6 +18,12 @@ function renderAt(path: string) {
 }
 
 describe('app shell', () => {
+  it('styles the footer links in the layout stylesheet, which every page loads, not in a page that loads lazily', () => {
+    const css = (file: string) => readFileSync(`${process.cwd()}/src/${file}`, 'utf8')
+    expect(css('app/layout.css')).toMatch(/\.site-footer__links\s*{[^}]*display:\s*flex[^}]*justify-content:\s*center/)
+    expect(css('features/legal/legal.css')).not.toMatch(/\.site-footer__links/)
+  })
+
   it('shows the brand, the main links and a skip link', async () => {
     renderAt('/')
     expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
