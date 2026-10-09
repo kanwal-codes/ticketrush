@@ -26,7 +26,7 @@ class AuthRateLimitFilter extends OncePerRequestFilter {
 
 	private static final Logger log = LoggerFactory.getLogger(AuthRateLimitFilter.class);
 	private static final Set<String> PATHS = Set.of("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password",
-			"/api/auth/reset-password", "/api/auth/verify-email");
+			"/api/auth/reset-password", "/api/auth/verify-email", "/api/me/close");
 
 	private final StringRedisTemplate redis;
 	private final Clock clock;

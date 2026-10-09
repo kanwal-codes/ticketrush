@@ -64,6 +64,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/events": {
         parameters: {
             query?: never;
@@ -432,6 +448,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/events/{id}/seats": {
         parameters: {
             query?: never;
@@ -537,11 +569,6 @@ export interface components {
             /** @enum {string} */
             status: "DRAFT" | "PUBLISHED" | "CANCELLED";
         };
-        LoadGuest: {
-            /** Format: int64 */
-            id: number;
-            token: string;
-        };
         CreateVenueRequest: {
             name: string;
             city: string;
@@ -633,6 +660,9 @@ export interface components {
             /** @enum {string} */
             status: "ISSUED" | "USED" | "VOID";
         };
+        CloseRequest: {
+            password: string;
+        };
         QueueView: {
             /** @enum {string} */
             state: "NOT_IN_QUEUE" | "WAITING" | "ADMITTED";
@@ -717,15 +747,6 @@ export interface components {
         ForgotPasswordRequest: {
             /** Format: email */
             email: string;
-        };
-        PaymentStats: {
-            /** Format: int32 */
-            charges: number;
-            /** Format: int64 */
-            chargedCents: number;
-            /** Format: int32 */
-            refunds: number;
-            chargedKeys: string[];
         };
         MyTicket: {
             /** Format: int64 */
@@ -860,6 +881,33 @@ export interface components {
             waiting: number;
             /** Format: int64 */
             inside: number;
+        };
+        Account: {
+            /** Format: int64 */
+            id: number;
+            email: string;
+            displayName: string;
+            role: string;
+            emailVerified: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Export: {
+            /** Format: date-time */
+            exportedAt: string;
+            account: components["schemas"]["Account"];
+            orders: components["schemas"]["ExportedOrder"][];
+            emails: components["schemas"]["ExportedEmail"][];
+        };
+        ExportedEmail: {
+            subject: string;
+            kind: string;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        ExportedOrder: {
+            eventTitle: string;
+            order: components["schemas"]["OrderView"];
         };
         EventSummary: {
             /** Format: int64 */
@@ -1107,6 +1155,28 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["OrderView"];
                 };
+            };
+        };
+    };
+    close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1682,6 +1752,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["UserResponse"];
+                };
+            };
+        };
+    };
+    export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Export"];
                 };
             };
         };

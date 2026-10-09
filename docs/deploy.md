@@ -144,6 +144,11 @@ take a minute for a new payment to be searchable. Cards that demand extra authen
 because this app has no step to complete one. To go back to the mock provider: `fly secrets unset -a ticketrush-api
 STRIPE_SECRET_KEY` and redeploy the web app with the key emptied.
 
+## The contact address
+
+The contact page shows an email address if the web build has one: set `VITE_SUPPORT_EMAIL` under `[build.args]` in
+`frontend/fly.toml` (a mailbox you read) and redeploy the web app. Until then it points to the project's issue page.
+
 ## Watching the live site
 
 `.github/workflows/uptime.yml` checks `/healthz`, the home page and `/api/events` (which reads the database) every two

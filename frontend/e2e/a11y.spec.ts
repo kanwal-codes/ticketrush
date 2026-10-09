@@ -87,3 +87,15 @@ test('the account recovery pages pass an accessibility scan', async ({ page }) =
   await expect(page.getByRole('heading', { name: 'Email confirmed' })).toBeVisible()
   await expectAccessible(page, 'email confirmed')
 })
+
+test('the legal pages and the account page pass an accessibility scan', async ({ page }) => {
+  for (const [path, heading] of [['/terms', 'Terms of use'], ['/privacy', 'Privacy'], ['/refunds', 'Refunds'], ['/contact', 'Contact']] as const) {
+    await page.goto(path)
+    await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible()
+    await expectAccessible(page, heading)
+  }
+  await signInAsNewGuest(page)
+  await page.goto('/account')
+  await expect(page.getByRole('heading', { level: 1, name: 'Your account' })).toBeVisible()
+  await expectAccessible(page, 'account')
+})

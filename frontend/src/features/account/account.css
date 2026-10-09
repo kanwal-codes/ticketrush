@@ -1,0 +1,26 @@
+.account {
+  max-width: 640px;
+}
+
+.account section {
+  margin-top: var(--space-6);
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.account h2 {
+  font-size: 1.25rem;
+}
+
+.account__danger {
+  padding: var(--space-4);
+  border: 1px solid var(--ink);
+  width: 100%;
+}
+
+.account__danger form {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+}

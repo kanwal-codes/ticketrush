@@ -25,6 +25,7 @@ export const routes: RouteObject[] = [
             children: [
               { path: 'events/:id/seats', lazy: async () => ({ Component: (await import('../features/seats/SeatsPage')).SeatsPage }) },
               { path: 'events/:id/checkout', lazy: async () => ({ Component: (await import('../features/checkout/CheckoutPage')).CheckoutPage }) },
+              { path: 'account', lazy: async () => ({ Component: (await import('../features/account/AccountPage')).AccountPage }) },
               { path: 'tickets', lazy: async () => ({ Component: (await import('../features/tickets/TicketsPage')).TicketsPage }) },
               { path: 'events/:id/queue', lazy: async () => ({ Component: (await import('../features/queue/WaitingRoom')).WaitingRoom }) },
               {
@@ -42,6 +43,11 @@ export const routes: RouteObject[] = [
           },
           { path: 'signin', lazy: async () => ({ Component: (await import('../features/auth/pages')).SignIn }) },
           { path: 'register', lazy: async () => ({ Component: (await import('../features/auth/pages')).Register }) },
+          { path: 'goodbye', lazy: async () => ({ Component: (await import('../features/account/AccountPage')).Goodbye }) },
+          { path: 'terms', lazy: async () => ({ Component: (await import('../features/legal/LegalPages')).Terms }) },
+          { path: 'privacy', lazy: async () => ({ Component: (await import('../features/legal/LegalPages')).Privacy }) },
+          { path: 'refunds', lazy: async () => ({ Component: (await import('../features/legal/LegalPages')).Refunds }) },
+          { path: 'contact', lazy: async () => ({ Component: (await import('../features/legal/LegalPages')).Contact }) },
           { path: 'forgot-password', lazy: async () => ({ Component: (await import('../features/auth/recovery')).ForgotPassword }) },
           { path: 'reset-password', lazy: async () => ({ Component: (await import('../features/auth/recovery')).ResetPassword }) },
           { path: 'verify-email', lazy: async () => ({ Component: (await import('../features/auth/recovery')).VerifyEmail }) },
