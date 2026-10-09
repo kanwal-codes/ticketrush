@@ -42,8 +42,12 @@
 
 .site-nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-5);
+  /* Between a full-width desktop window and the 560px phone layout below, there isn't always room for every
+     item on one line. Wrapping the row (rather than squeezing it) means a link's own words never split in two. */
+  row-gap: var(--space-1);
+  column-gap: var(--space-5);
   font-size: 0.95rem;
 }
 
@@ -54,6 +58,7 @@
   border: 0;
   background: none;
   border-bottom: 2px solid transparent;
+  white-space: nowrap;
   transition: border-color var(--dur-fast) var(--ease-in-out);
 }
 
