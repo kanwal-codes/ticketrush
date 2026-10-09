@@ -59,3 +59,24 @@ test('no screen of the purchase scrolls sideways at phone, tablet or laptop widt
     await expectNoSidewaysScroll(page, `tickets at ${size.name} width`)
   }
 })
+
+/**
+ * Between the full desktop layout and the 560px phone layout, there is not always room for every nav item on one
+ * line. The nav must wrap as whole items onto a second line there, never split a single link's own words in two
+ * (found at 600px: "My tickets" and "Sign out" each broke across two lines).
+ */
+test('a nav item never splits its own words across lines, at any width between phone and desktop', async ({ page }) => {
+  await signInAsNewGuest(page)
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: 'My tickets' })).toBeVisible()
+
+  for (const width of [561, 600, 650, 700, 750, 850, 1024]) {
+    await page.setViewportSize({ width, height: 700 })
+    // "Events" is one word: it can never wrap, so its height is what a genuine single line looks like here.
+    const oneLine = (await page.getByRole('link', { name: 'Events' }).boundingBox())!.height
+    for (const label of ['My tickets', 'Sign out']) {
+      const box = await page.getByRole('link', { name: label }).or(page.getByRole('button', { name: label })).boundingBox()
+      expect(box?.height, `"${label}" at ${width}px wide (height ${box?.height}, one line is ${oneLine})`).toBeLessThanOrEqual(oneLine + 1)
+    }
+  }
+})
