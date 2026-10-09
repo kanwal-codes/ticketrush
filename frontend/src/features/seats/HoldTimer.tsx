@@ -27,15 +27,21 @@ export function HoldTimer() {
 
   useEffect(() => {
     if (!hold) return
-    const tick = setInterval(() => setNow(serverNow()), 500)
+    // Whether the hold has run out is decided here, from a clock read fresh each time, never from `now` — `now`
+    // can be a render or two behind (its very first value is from before this hold existed, maybe from before the
+    // server clock was even known), and clearing a hold that only *looks* expired because of that would be a real
+    // guest's seats disappearing for no reason the moment they get them.
+    const check = () => {
+      const fresh = serverNow()
+      if (Date.parse(hold.expiresAt) - fresh <= 0) clearActiveHold()
+      else setNow(fresh)
+    }
+    check()
+    const tick = setInterval(check, 500)
     return () => clearInterval(tick)
   }, [hold])
 
   const remaining = hold ? Date.parse(hold.expiresAt) - now : 0
-  useEffect(() => {
-    if (hold && remaining <= 0) clearActiveHold()
-  }, [hold, remaining])
-
   if (!hold || remaining <= 0) return null
   return (
     <Link to={`/events/${hold.eventId}/checkout`} className={`hold-timer${remaining < 60_000 ? ' hold-timer--urgent' : ''}`}>
