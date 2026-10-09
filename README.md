@@ -4,14 +4,16 @@
 
 Flash-sale ticketing that stays correct under a traffic spike: a waiting room, live seat maps, timed seat holds, and zero oversold seats, backed by a published load test.
 
-> Work in progress. Done: sign-in, the event and seat catalog, seat holds, the waiting room, checkout and tickets, a load test with published results, the guest web app, and the organizer console. It is live at https://ticketrush-web.fly.dev (demo data, mock payments; [how it is deployed](docs/deploy.md)).
+> End to end: sign-in and account recovery, the event and seat catalog, seat holds, the waiting room, checkout and tickets, cancellations and refunds, the organizer console, email, and a load test with published results. It is live at https://ticketrush-web.fly.dev ([how it is deployed](docs/deploy.md)) — demo data, and payments are in Stripe's test mode (no real charge is ever made; see [what it would still take to open this to the public](docs/adr/0009-ready-for-the-public.md)).
 
 ## Stack
 
 - **Backend:** Java 21 (virtual threads), Spring Boot 4, Spring Security with JWT, PostgreSQL 16, Redis 7, Flyway
+- **Payments, bots and email:** Stripe (test mode; a mock provider stands in otherwise), Cloudflare Turnstile at sign-up, Resend for transactional email
 - **Deployment:** Docker images, nginx, Fly.io (two apps, the API private), a smoke test for what must be closed
 - **Frontend:** React 19, TypeScript (strict), Vite, React Router, TanStack Query, plain CSS, served by nginx. Types are generated from the backend's OpenAPI document
-- **Quality:** JUnit 5, Testcontainers, ArchUnit, JaCoCo (95% of lines, gated), Vitest and Testing Library, Playwright and axe, k6, Prometheus and Grafana, GitHub Actions
+- **Quality:** JUnit 5, Testcontainers, ArchUnit, JaCoCo (93% of lines / 82% of branches, gated), Vitest and Testing Library, Playwright and axe, k6, Prometheus and Grafana, GitHub Actions
+- **Security:** Trivy scans of both images and the repository, a ZAP baseline scan of the running app, and a test that every endpoint's access rules agree with a single list of who may call it — all on every pull request and weekly
 
 ## Run locally
 
