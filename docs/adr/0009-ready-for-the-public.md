@@ -27,3 +27,22 @@ the ones written by hand. This record covers four steps toward real use. What is
   key, and a row that fails ten times is left for a person. Cancelling an event writes a cancellation notice for each
   refunded order.
 - Not done: changing the email address, and mail to organizers.
+
+## Stripe, in test mode
+- **A second adapter behind the same payment port.** The port already had what a real provider needs (idempotent charge,
+  look-up without charging, idempotent refund), so Stripe is one class. It is chosen when `STRIPE_SECRET_KEY` is set and
+  otherwise the mock stays. A key that is not a test key stops the app from starting: live money needs a review of
+  tax, disputes and Stripe's own verification, which this app has not had.
+- **Card numbers never touch this server or this page's code.** Stripe's own card form (one frame) makes a PaymentMethod
+  id in the browser; that id is the payment token we already accepted. The script, its frames and API are allowed by
+  the security policy and loaded only on the checkout page.
+- **Safe retries kept.** A charge is a PaymentIntent confirmed at once, sent with the order's key as Stripe's
+  `Idempotency-Key` and written into its metadata. After an answer that was lost, the page retries with the *same*
+  PaymentMethod (a new one would be a new payment), and the reconciler finds an unresolved charge through Stripe's search
+  by that metadata. Refunds use one key per order.
+- **No webhook.** Confirmation is synchronous and the reconciler covers the gaps, so there is no endpoint for Stripe to
+  call. A webhook would shorten the time to resolve a lost answer; it is not needed for correctness.
+- **3-D Secure is declined**, since completing it needs a step this app does not have. Fine for test cards, a real gap
+  for live use in some regions.
+- Not tested against Stripe itself in CI (that needs keys): the adapter is tested against recorded answers, and the
+  browser tests use a stand-in for Stripe.js.
