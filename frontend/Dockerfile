@@ -9,6 +9,8 @@ ARG VITE_TURNSTILE_SITE_KEY=""
 ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
 ARG VITE_STRIPE_PUBLISHABLE_KEY=""
 ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
+ARG VITE_SUPPORT_EMAIL=""
+ENV VITE_SUPPORT_EMAIL=$VITE_SUPPORT_EMAIL
 # Types and tests are checked by CI before an image is built, so this only bundles (the checks need e2e/ and scripts/,
 # which the image's context leaves out).
 RUN npx vite build

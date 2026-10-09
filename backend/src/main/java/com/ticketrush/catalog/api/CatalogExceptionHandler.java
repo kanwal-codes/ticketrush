@@ -1,5 +1,6 @@
 package com.ticketrush.catalog.api;
 
+import com.ticketrush.catalog.application.AccountNotClosableException;
 import com.ticketrush.catalog.application.AdmissionRequiredException;
 import com.ticketrush.catalog.application.HoldNotLiveException;
 import com.ticketrush.catalog.application.IdempotencyKeyReusedException;
@@ -25,6 +26,11 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(NotEditableException.class)
 	ProblemDetail notEditable(NotEditableException e) {
 		return problem(HttpStatus.CONFLICT, "Cannot be changed", e.getMessage());
+	}
+
+	@ExceptionHandler(AccountNotClosableException.class)
+	ProblemDetail accountNotClosable(AccountNotClosableException e) {
+		return problem(HttpStatus.CONFLICT, "Cannot close the account", e.getMessage());
 	}
 
 	@ExceptionHandler(NotFoundException.class)

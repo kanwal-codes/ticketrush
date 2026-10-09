@@ -47,6 +47,7 @@ export function Layout() {
             </NavLink>
             <HoldTimer />
             {token && <NavLink to="/tickets" viewTransition>My tickets</NavLink>}
+            {token && <NavLink to="/account" viewTransition>Account</NavLink>}
             {me?.role === 'ORGANIZER' && <NavLink to="/console" viewTransition>Console</NavLink>}
             {token ? (
               <>
@@ -69,6 +70,12 @@ export function Layout() {
       </main>
       <footer className="site-footer">
         <p className="label">Final prices, a fair queue, and a seat is never sold twice.</p>
+        <nav className="site-footer__links" aria-label="About">
+          <Link to="/terms">Terms</Link>
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/refunds">Refunds</Link>
+          <Link to="/contact">Contact</Link>
+        </nav>
       </footer>
     </>
   )
