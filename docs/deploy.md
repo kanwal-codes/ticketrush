@@ -139,6 +139,9 @@ By default checkout uses the built-in mock provider, with its five test cards. T
 4. Pay for a seat with `4242 4242 4242 4242`, any future date, any code. `4000 0000 0000 0002` is declined and
    `4000 0000 0000 9995` has no funds. Cancel the event and watch the refund appear in the dashboard.
 
+To check the wiring against Stripe yourself: `STRIPE_TEST_KEY=sk_test_... ./mvnw test -Dtest=StripeTestModeCheck` in `backend`
+(the adapter alone), and `e2e/stripe.spec.ts` (the card form, a payment and a refund, with the stack started with both keys).
+
 A payment that gets no answer is looked up again by the reconciler (Stripe's search finds it by the order's key); it can
 take a minute for a new payment to be searchable. Cards that demand extra authentication (3-D Secure) are declined,
 because this app has no step to complete one. To go back to the mock provider: `fly secrets unset -a ticketrush-api
