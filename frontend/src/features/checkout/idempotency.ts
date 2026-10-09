@@ -45,3 +45,13 @@ export function endAttempt(holdId: number): void {
     // nothing to clear
   }
 }
+
+/** The card token of an attempt that is still open, so a retry after "we could not confirm" sends the very same one. */
+export function currentToken(holdId: number): string | null {
+  try {
+    const raw = sessionStorage.getItem(storageKey(holdId))
+    return raw ? (JSON.parse(raw) as Stored).token : null
+  } catch {
+    return null
+  }
+}

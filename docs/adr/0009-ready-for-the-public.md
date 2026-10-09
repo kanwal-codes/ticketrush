@@ -27,3 +27,63 @@ the ones written by hand. This record covers four steps toward real use. What is
   key, and a row that fails ten times is left for a person. Cancelling an event writes a cancellation notice for each
   refunded order.
 - Not done: changing the email address, and mail to organizers.
+
+## Stripe, in test mode
+- **A second adapter behind the same payment port.** The port already had what a real provider needs (idempotent charge,
+  look-up without charging, idempotent refund), so Stripe is one class. It is chosen when `STRIPE_SECRET_KEY` is set and
+  otherwise the mock stays. A key that is not a test key stops the app from starting: live money needs a review of
+  tax, disputes and Stripe's own verification, which this app has not had.
+- **Card numbers never touch this server or this page's code.** Stripe's own card form (one frame) makes a PaymentMethod
+  id in the browser; that id is the payment token we already accepted. The script, its frames and API are allowed by
+  the security policy and loaded only on the checkout page.
+- **Safe retries kept.** A charge is a PaymentIntent confirmed at once, sent with the order's key as Stripe's
+  `Idempotency-Key` and written into its metadata. After an answer that was lost, the page retries with the *same*
+  PaymentMethod (a new one would be a new payment), and the reconciler finds an unresolved charge through Stripe's search
+  by that metadata. Refunds use one key per order.
+- **No webhook.** Confirmation is synchronous and the reconciler covers the gaps, so there is no endpoint for Stripe to
+  call. A webhook would shorten the time to resolve a lost answer; it is not needed for correctness.
+- **3-D Secure is declined**, since completing it needs a step this app does not have. Fine for test cards, a real gap
+  for live use in some regions.
+- CI has no Stripe keys, so there the adapter is tested against recorded answers and the browser tests use a stand-in
+  for Stripe.js. Against Stripe's real test API it was checked by hand on 9 October 2026 with two checks that stay in the repository and
+  skip themselves without a key: `StripeTestModeCheck` (the adapter: a charge, the same key again not charging twice, finding it
+  later by search, refunds once per key and "already refunded" counted as done, a decline, no funds, a 3-D Secure card
+  declined and not left open, a payment method that does not exist, a charge nobody made) and `e2e/stripe.spec.ts` (the
+  production web image's real card form behind its security policy: pay, see the succeeded payment at Stripe for the right
+  amount, cancel the event and see the refund at Stripe; a declined card, then a good one). All passed.
+
+## Trust pages and account controls
+- **Terms, privacy, refunds and contact**, written to match what the app really does (what is stored, who handles it, what a
+  cancellation refunds, that tickets are final otherwise) and linked from every footer and the sign-up form. They say
+  plainly that payments are in test mode, which is true and is enforced (live Stripe keys are refused). They are a
+  plain-language draft and **have not been reviewed by a lawyer**; that must happen, and the pages must change, before any real money is taken.
+- **A copy of your data** (`GET /api/me/export`): the account, orders with their tickets, and the messages sent, as one JSON file.
+- **Closing an account** (`POST /api/me/close`, password required again, rate limited like sign-in). The user row is kept but
+  loses its name, address and password, so orders and tickets keep their records and the organizer's sales still add up;
+  the emails written to the guest are scrubbed and any still waiting are stopped; reset and confirmation links are
+  deleted; the address can be used to sign up again. Refused for organizers (they own events), while a guest holds a
+  ticket for an event that has not happened (it would be stranded), and while a payment or refund is settling.
+  A token issued before closing keeps working until it expires (at most 30 minutes) but cannot be renewed.
+- **The contact page** shows `VITE_SUPPORT_EMAIL` when the build has one and the project's issue tracker otherwise; a
+  public service needs a real mailbox there.
+- Not done: retention schedules for old order records, deleting the records after a statutory period, cookie consent
+  (there are no cookies), and the legal review above.
+
+## Automated security checks
+- **Who may call what, for every endpoint.** One test lists each endpoint the app has as open, for any signed-in guest, or for organizers,
+  then calls all of them as an anonymous caller, a guest and an organizer and checks the security rules agree. An endpoint with no entry
+  fails the test, so adding one means deciding who may use it. (It found an endpoint nobody had listed on its first run: the guest's own order list.)
+- **A scan on every pull request and every Monday** (`.github/workflows/security.yml`): `npm audit` on what the web app ships; Trivy on both built
+  images (the dependencies inside them and their base layers; HIGH and CRITICAL with a fix available fail the run); Trivy on the
+  repository for committed secrets and risky container settings; and a passive ZAP baseline scan of the running app in its production shape.
+  Findings the baseline reports are either failures or listed with a reason in `.zap/rules.tsv`.
+- **What the first run found, and what changed.** The API image carried Tomcat 11.0.24 (three critical bypass issues) and Jackson 2 and 3
+  releases with denial-of-service issues: the versions are overridden in the pom until Spring Boot ships them. The web image had 44 high findings in
+  Alpine packages: it now upgrades them at build time. It also ran nginx as root: it is now the unprivileged build, on port 8080 (Fly's
+  `internal_port` and the compose mapping moved with it). nginx stopped announcing its version and the app now sends a Permissions-Policy
+  and Cross-Origin-Opener-Policy.
+- **Not done, and why.** An independent penetration test (needs a person outside this project). CodeQL (the repository is private, and
+  code scanning on private repositories is a paid GitHub feature). An authenticated active scan of the API (a passive scan and the endpoint
+  matrix cover the public surface and the access rules; deeper testing wants a dedicated environment). Cross-Origin-Embedder-Policy
+  (it would block the Stripe and Cloudflare frames the app embeds). Third-party script integrity (Stripe's and Cloudflare's scripts
+  must be loaded from their hosts and cannot be pinned).

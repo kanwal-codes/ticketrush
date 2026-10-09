@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface EmailTokenRepository extends JpaRepository<EmailToken, Long> {
 
+	void deleteByUserId(Long userId);
+
 	Optional<EmailToken> findByTokenHashAndKind(String tokenHash, String kind);
 
 	Optional<EmailToken> findFirstByUserIdAndKindOrderByCreatedAtDesc(Long userId, String kind);

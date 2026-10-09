@@ -22,7 +22,7 @@ events="$(body "$BASE/api/events?size=1")"
 echo "$events" | grep -q '"items"' && ok "the events API answers with a list" || bad "the events API did not answer with a list"
 
 echo "Security headers"
-for h in content-security-policy x-content-type-options x-frame-options referrer-policy; do
+for h in content-security-policy x-content-type-options x-frame-options referrer-policy permissions-policy cross-origin-opener-policy; do
   [ -n "$(header "$h" "$BASE/")" ] && ok "$h is set" || bad "$h is missing"
 done
 

@@ -72,6 +72,14 @@ public class SentEmail {
 		this.lastError = error.length() > 500 ? error.substring(0, 500) : error;
 	}
 
+	public String getKind() {
+		return kind;
+	}
+
+	public Instant getSentAt() {
+		return sentAt;
+	}
+
 	public Long getId() {
 		return id;
 	}

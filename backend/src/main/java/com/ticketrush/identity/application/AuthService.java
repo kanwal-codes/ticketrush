@@ -117,7 +117,7 @@ public class AuthService {
 		if (authTime.plus(maxSession).isBefore(clock.instant())) {
 			throw new SessionExpiredException();
 		}
-		User user = users.findById(userId).orElseThrow(SessionExpiredException::new);
+		User user = users.findById(userId).filter(u -> !u.isDeleted()).orElseThrow(SessionExpiredException::new);
 		// A sign-in from before the password changed is not renewed: whoever held it needs the new password.
 		// The token records whole seconds, so compare in whole seconds or a sign-in right after the change would be refused.
 		if (user.getPasswordChangedAt() != null && authTime.isBefore(user.getPasswordChangedAt().truncatedTo(ChronoUnit.SECONDS))) {

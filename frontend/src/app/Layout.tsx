@@ -47,6 +47,7 @@ export function Layout() {
             </NavLink>
             <HoldTimer />
             {token && <NavLink to="/tickets" viewTransition>My tickets</NavLink>}
+            {token && <NavLink to="/account" viewTransition>Account</NavLink>}
             {me?.role === 'ORGANIZER' && <NavLink to="/console" viewTransition>Console</NavLink>}
             {token ? (
               <>
@@ -67,8 +68,14 @@ export function Layout() {
       <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
-      {/* Only the closing hairline and some air: the promises it used to repeat are stated on the pages where they apply. */}
-      <footer className="site-footer" />
+      <footer className="site-footer">
+        <nav className="site-footer__links" aria-label="About">
+          <Link to="/terms">Terms</Link>
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/refunds">Refunds</Link>
+          <Link to="/contact">Contact</Link>
+        </nav>
+      </footer>
     </>
   )
 }
