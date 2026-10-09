@@ -6,6 +6,25 @@ Flash-sale ticketing that stays correct under a traffic spike: a waiting room, l
 
 > End to end: sign-in and account recovery, the event and seat catalog, seat holds, the waiting room, checkout and tickets, cancellations and refunds, the organizer console, email, and a load test with published results. It is live at https://ticketrush-web.fly.dev ([how it is deployed](docs/deploy.md)) — demo data, and payments are in Stripe's test mode (no real charge is ever made; see [what it would still take to open this to the public](docs/adr/0009-ready-for-the-public.md)).
 
+## System design
+
+![Architecture: a browser reaches nginx over HTTPS, which proxies /api to the private Spring Boot API, which talks to Postgres and Redis inside the private network and to Stripe, Cloudflare Turnstile and Resend outside it](docs/img/architecture.svg)
+
+The interesting problems here are the ones that only show up under concurrency, and each is settled by a test that
+creates the race on purpose rather than by reasoning about it after the fact:
+
+| Problem | How it is solved | Proven by |
+|---|---|---|
+| **No seat is ever sold twice** | One conditional `UPDATE … WHERE status = 'AVAILABLE'` per seat, the database's own row lock as the only coordination — no distributed lock, no queue to serialize on | 300 guests claim one seat at the same instant: exactly one wins, every run. [ADR 0001](docs/adr/0001-seat-claims.md) |
+| **A fair line under load, not a stampede** | Guests join a queue in Redis; one admission round a second lets a fixed number in, shared across every app instance so horizontal scaling can't break the order | 200 guests joining at once get places 1–200 with no gaps or repeats; 8 simultaneous admission rounds admit exactly the cap, in order. [ADR 0002](docs/adr/0002-waiting-room.md) |
+| **A card is never charged twice** | Money never moves inside a database transaction. Three independent layers instead: the client's idempotency key, one live order per seat hold, and a key derived from the order at the payment provider | 10 identical requests at once produce one order and one charge; an unknown outcome (a timeout) is resolved later by a reconciler that looks the charge up, never retries blindly. [ADR 0003](docs/adr/0003-checkout-and-payments.md) |
+| **A confirmation is never lost, never duplicated** | Paying writes an outbox row in the same transaction as the payment. A relay delivers each row to idempotent listeners and retries what fails, instead of sending the email inline and hoping | Killing the relay mid-delivery and restarting it delivers each confirmation exactly once. [ADR 0003](docs/adr/0003-checkout-and-payments.md) |
+
+That reasoning, and what changed after a 1,500-guest load test found it wanting, is written down as it happened in
+[docs/adr](docs/adr) — nine decision records, each with the alternatives considered and why they lost. The
+[load test results](docs/performance.md) are below, and the [security record](docs/adr/0009-ready-for-the-public.md)
+covers what a scan of both images, the repository and the running app found and how it was fixed.
+
 ## Stack
 
 - **Backend:** Java 21 (virtual threads), Spring Boot 4, Spring Security with JWT, PostgreSQL 16, Redis 7, Flyway
