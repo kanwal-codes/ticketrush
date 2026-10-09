@@ -105,6 +105,8 @@ await shoot('checkout', 1280, 800, async (page) => {
   await chooseFree(page, 'C', 2)
   await page.getByRole('button', { name: 'Hold these 2 seats' }).click()
   await page.waitForURL('**/checkout')
+  await page.getByRole('heading', { name: 'Checkout' }).waitFor()
+  await page.waitForTimeout(700) // the seat map glides into the checkout summary; let it finish before the picture
   await page.getByLabel('Card number').fill('4242424242424242')
   await page.getByLabel('Expiry').fill('1234')
   await page.getByLabel('Security code').fill('123')
