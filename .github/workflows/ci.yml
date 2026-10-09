@@ -44,7 +44,7 @@ jobs:
               print(f"- Lines: **{pct('LINE'):.1f}%**")
               print(f"- Branches: **{pct('BRANCH'):.1f}%**")
           PY
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: test-reports
@@ -204,7 +204,7 @@ jobs:
       - name: Run the end-to-end tests
         working-directory: frontend
         run: npx playwright test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: playwright-report
