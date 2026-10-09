@@ -5,6 +5,7 @@ import { Field } from '../../components/Field'
 import { Notice } from '../../components/Notice'
 import { Turnstile } from '../../components/Turnstile'
 import { turnstileSiteKey } from '../../lib/turnstile'
+import { useAfter } from '../../lib/useAfter'
 import { describeError, type ErrorDescription } from '../../lib/errorCopy'
 import { useRetryCountdown } from '../../lib/useRetryCountdown'
 import { safeRedirect } from '../../auth/redirect'
@@ -13,6 +14,9 @@ import { useTitle } from '../../lib/useTitle'
 import { register, signIn } from './api'
 import { validate, type Mode, type Values } from './validate'
 import './auth.css'
+
+/** How long the sign-up bot check gets before the page says it is taking too long. */
+const CHECK_PATIENCE_MS = 15_000
 
 export function AuthForm({ mode }: { mode: Mode }) {
   const isRegister = mode === 'register'
@@ -31,6 +35,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const checked = isRegister && turnstileSiteKey() !== ''
   const [answer, setAnswer] = useState<string | null>(null)
   const [asks, setAsks] = useState(0)
+  // If the check cannot run (an ad blocker, a strict network) or just takes long, say so instead of waiting silently.
+  const [checkFailed, setCheckFailed] = useState(false)
+  const [restarts, setRestarts] = useState(0)
+  const slow = useAfter(CHECK_PATIENCE_MS, checked && answer === null && !checkFailed, `${asks}:${restarts}`)
 
   if (token && !busy) return <Navigate to={from} replace />
 
@@ -94,7 +102,39 @@ export function AuthForm({ mode }: { mode: Mode }) {
             {waitSeconds > 0 && <> You can try again in {waitSeconds} s.</>}
           </Notice>
         )}
-        {checked && <Turnstile onToken={setAnswer} resetKey={asks} />}
+        {checked && (
+          <Turnstile
+            key={restarts}
+            onToken={(token) => {
+              setAnswer(token)
+              if (token) setCheckFailed(false)
+            }}
+            onError={() => setCheckFailed(true)}
+            resetKey={asks}
+          />
+        )}
+        {checked && answer === null && (checkFailed || slow) && (
+          <Notice
+            tone="warning"
+            title={checkFailed ? 'We could not run the security check' : 'The security check is taking longer than usual'}
+            compact
+            actions={
+              <button
+                type="button"
+                className="btn btn--quiet"
+                onClick={() => {
+                  setCheckFailed(false)
+                  setRestarts((n) => n + 1)
+                }}
+              >
+                Try the check again
+              </button>
+            }
+          >
+            An ad blocker, a strict network or a very old browser can get in the way. Turn blockers off for this site, reload the
+            page or try another browser, then try again.
+          </Notice>
+        )}
         <button type="submit" className="btn auth__submit" disabled={busy || waitSeconds > 0 || (checked && answer === null)}>
           {busy ? 'One moment…' : waitSeconds > 0 ? `Try again in ${waitSeconds} s` : checked && answer === null ? 'Checking that you are a person…' : isRegister ? 'Create account' : 'Sign in'}
         </button>
