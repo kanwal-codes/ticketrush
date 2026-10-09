@@ -7,6 +7,8 @@ COPY . .
 # The public site key for the sign-up bot check (empty means none). Fly passes it as a build argument.
 ARG VITE_TURNSTILE_SITE_KEY=""
 ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
+ARG VITE_STRIPE_PUBLISHABLE_KEY=""
+ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
 # Types and tests are checked by CI before an image is built, so this only bundles (the checks need e2e/ and scripts/,
 # which the image's context leaves out).
 RUN npx vite build

@@ -18,7 +18,10 @@ import { useTitle } from '../../lib/useTitle'
 import { useMe } from '../auth/api'
 import { clearActiveHold } from '../seats/activeHold'
 import { seatKeys, useMyHold } from '../seats/api'
-import { checkOrder, submitPayment, type PaymentOutcome } from './pay'
+import { checkOrder, payWithToken, submitPayment, type PaymentOutcome } from './pay'
+import { currentToken } from './idempotency'
+import { StripeCard, type CardForm } from './StripeCard'
+import { stripePublishableKey } from '../../lib/stripe'
 import { checkoutTimings } from './timings'
 import { describeSeats } from './summary'
 import './checkout.css'
@@ -83,6 +86,10 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
   const [retrySafely, setRetrySafely] = useState(false)
   const [card, setCard] = useState({ number: '', expiry: '', cvc: '' })
   const [errors, setErrors] = useState<CardErrors>({})
+  // With a Stripe key the card is typed into Stripe's own form; without one, into the fields below (test cards only).
+  const stripeOn = stripePublishableKey() !== ''
+  const [stripeForm, setStripeForm] = useState<CardForm | null>(null)
+  const [stripeBlocked, setStripeBlocked] = useState(false)
 
   /** Acts on what the server said about the payment. */
   const apply = useCallback(
@@ -149,8 +156,33 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
     return () => clearInterval(timer)
   }, [pendingOrder, hold.id, apply])
 
+  async function submitStripe() {
+    if (!stripeForm) {
+      setMessage(stripeBlocked ? 'The card form could not load. Turn off any ad blocker for this site, reload the page and try again.' : 'The card form is still loading. Give it a moment, then try again.', 'warning')
+      return
+    }
+    setView({ step: 'paying' })
+    // After "we could not confirm", the same card must be sent again as the same token, or the retry would be a new payment.
+    let token = retrySafely ? currentToken(hold.id) : null
+    if (!token) {
+      const made = await stripeForm.createPaymentMethod()
+      if ('error' in made) {
+        setView({ step: 'form' })
+        setMessage(made.error)
+        return
+      }
+      token = made.id
+    }
+    apply(await payWithToken(hold.id, token))
+  }
+
   async function submit(e: FormEvent) {
     e.preventDefault()
+    setMessage('')
+    if (stripeOn) {
+      await submitStripe()
+      return
+    }
     const problems = validateCard(card)
     setErrors(problems)
     setMessage('')
@@ -220,35 +252,45 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
           <h2>Contact and card</h2>
           {me && <p className="checkout__email">Your confirmation goes to <strong>{me.email}</strong>.</p>}
 
-          <Field
-            label="Card number"
-            value={card.number}
-            onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
-            error={errors.number}
-            inputMode="numeric"
-            autoComplete="cc-number"
-            placeholder="1234 1234 1234 1234"
-            disabled={paying}
-          />
-          <div className="checkout__pair">
-            <Field label="Expiry" value={card.expiry} onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))} error={errors.expiry} inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" maxLength={5} disabled={paying} />
-            <Field label="Security code" value={card.cvc} onChange={(e) => setCard((c) => ({ ...c, cvc: digitsOnly(e.target.value).slice(0, 4) }))} error={errors.cvc} inputMode="numeric" autoComplete="cc-csc" placeholder="123" disabled={paying} />
-          </div>
+          {stripeOn ? (
+            <StripeCard onForm={setStripeForm} onUnavailable={() => setStripeBlocked(true)} />
+          ) : (
+            <>
+              <Field
+                label="Card number"
+                value={card.number}
+                onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
+                error={errors.number}
+                inputMode="numeric"
+                autoComplete="cc-number"
+                placeholder="1234 1234 1234 1234"
+                disabled={paying}
+              />
+              <div className="checkout__pair">
+                <Field label="Expiry" value={card.expiry} onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))} error={errors.expiry} inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" maxLength={5} disabled={paying} />
+                <Field label="Security code" value={card.cvc} onChange={(e) => setCard((c) => ({ ...c, cvc: digitsOnly(e.target.value).slice(0, 4) }))} error={errors.cvc} inputMode="numeric" autoComplete="cc-csc" placeholder="123" disabled={paying} />
+              </div>
+            </>
+          )}
 
-          <p className="checkout__test">Test mode. No real charge is made.</p>
-          <details className="testcards">
-            <summary>Use a test card</summary>
-            <ul>
-              {TEST_CARDS.map((t) => (
-                <li key={t.token}>
-                  <button type="button" className="testcards__use" onClick={() => setCard({ number: t.number, expiry: '12/34', cvc: '123' })}>
-                    <span className="num">{t.number}</span>
-                  </button>
-                  <span>{t.means}</span>
-                </li>
-              ))}
-            </ul>
-          </details>
+          <p className="checkout__test">
+            Test mode. No real charge is made.{stripeOn && <> Use card 4242 4242 4242 4242 with any future date and any security code.</>}
+          </p>
+          {!stripeOn && (
+            <details className="testcards">
+              <summary>Use a test card</summary>
+              <ul>
+                {TEST_CARDS.map((t) => (
+                  <li key={t.token}>
+                    <button type="button" className="testcards__use" onClick={() => setCard({ number: t.number, expiry: '12/34', cvc: '123' })}>
+                      <span className="num">{t.number}</span>
+                    </button>
+                    <span>{t.means}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
 
           {message && (
             <Notice tone={tone} title={NOTICE_TITLE[tone]} compact>
