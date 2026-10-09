@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resetServerTime } from '../../lib/time'
+import { resetServerTime, syncServerTime } from '../../lib/time'
 import { clearActiveHold, getActiveHold, setActiveHold } from './activeHold'
 import { HoldTimer } from './HoldTimer'
 
@@ -44,5 +44,18 @@ describe('HoldTimer', () => {
     act(() => void vi.advanceTimersByTime(3000))
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
     expect(getActiveHold()).toBeNull()
+  })
+
+  it('does not clear a brand new hold just because it mounted before the server clock was known', () => {
+    // Mounted with no hold yet: its clock starts from this machine's own idea of "now".
+    show()
+    act(() => {
+      // The real server turns out to run two hours behind that. A hold arrives relative to its clock, not this
+      // machine's: the hold is a healthy 8 minutes 41 seconds from expiring, by the server's own account.
+      syncServerTime('2026-10-08T08:00:00Z')
+      setActiveHold({ holdId: 55, eventId: 7, expiresAt: '2026-10-08T08:08:41Z' })
+    })
+    expect(getActiveHold()).not.toBeNull()
+    expect(screen.getByRole('timer')).toHaveTextContent('08:41')
   })
 })
