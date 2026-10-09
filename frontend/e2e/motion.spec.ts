@@ -94,7 +94,7 @@ test('after moving to a new page, keyboard focus is on its heading', async ({ pa
   await page.goto(`/?q=${encodeURIComponent(event.title)}`)
   await page.getByRole('link', { name: new RegExp(event.title) }).click()
   await expect(page.getByRole('heading', { level: 1, name: event.title })).toBeFocused()
-  await page.getByRole('link', { name: '← All events' }).click()
+  await page.getByRole('link', { name: 'All events' }).click()
   await expect(page.locator('main h1')).toBeFocused()
 })
 

@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet } from 'react-router'
 import { clearToken, useToken } from '../auth/session'
 import { useMe } from '../features/auth/api'
@@ -11,6 +12,18 @@ export function Layout() {
   const token = useToken()
   const queryClient = useQueryClient()
   const me = useMe().data
+  const header = useRef<HTMLElement>(null)
+
+  // The header wraps onto a second row on a phone, so what sticks under it needs its real height.
+  useEffect(() => {
+    const el = header.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const publish = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`)
+    publish()
+    const watcher = new ResizeObserver(publish)
+    watcher.observe(el)
+    return () => watcher.disconnect()
+  }, [])
 
   function signOut() {
     clearToken()
@@ -22,7 +35,7 @@ export function Layout() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <header className="site-header">
+      <header className="site-header" ref={header}>
         <div className="site-header__inner">
           <Link to="/" className="brand" aria-label="TicketRush, home" viewTransition>
             TicketRush
@@ -32,7 +45,7 @@ export function Layout() {
               Events
             </NavLink>
             <HoldTimer />
-            <NavLink to="/tickets" viewTransition>My tickets</NavLink>
+            {token && <NavLink to="/tickets" viewTransition>My tickets</NavLink>}
             {me?.role === 'ORGANIZER' && <NavLink to="/console" viewTransition>Console</NavLink>}
             {token ? (
               <>

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import type { SalesSummary, TierRow } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
+import { BackBar } from '../../components/BackBar'
 import { ConsoleSkeleton } from '../../components/PageSkeletons'
 import { Notice } from '../../components/Notice'
 import { RollingNumber } from '../../components/RollingNumber'
@@ -56,10 +57,11 @@ function Board({ id }: { id: number }) {
 
   return (
     <div className="page console dashboard">
+      <BackBar to="/console">Your events</BackBar>
       <header className="console__head">
         <div>
           <p className="label">
-            <Link to="/console" viewTransition>Console</Link> / <span className={`chip chip--${s.status.toLowerCase()}`}>{STATUS[s.status]}</span>
+            <span className={`status status--${s.status.toLowerCase()}`}>{STATUS[s.status]}</span>
           </p>
           <h1>{s.title}</h1>
         </div>

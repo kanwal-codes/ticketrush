@@ -1,0 +1,39 @@
+/* Sticks just under the header (whose height the layout publishes, since it wraps on a phone). */
+.backbar {
+  position: sticky;
+  top: var(--header-h, 61px);
+  z-index: 4;
+  margin-bottom: var(--space-3);
+  background: var(--paper);
+}
+
+.backbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding-right: var(--space-4);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.backbar__link:hover span,
+.backbar__link:focus-visible span {
+  text-decoration: underline;
+}
+
+.backbar__arrow {
+  flex: none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.backbar__link:hover .backbar__arrow {
+  transform: translateX(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backbar__link:hover .backbar__arrow {
+    transform: none;
+  }
+}

@@ -1,10 +1,11 @@
 import { RollingNumber } from '../../components/RollingNumber'
+import { BackBar } from '../../components/BackBar'
 import { Notice } from '../../components/Notice'
 import { useToast } from '../../components/Toast'
 import { describeError, type Tone } from '../../lib/errorCopy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Navigate, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../../api/errors'
 import { useEvent } from '../../api/queries'
 import type { EventDetail, HoldView, SeatMap as SeatMapData } from '../../api/types'
@@ -143,11 +144,7 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
 
   return (
     <div className="page seats" style={eventTheme(event.poster)}>
-      <p>
-        <Link to={`/events/${event.id}`} className="event__back">
-          ← {event.title}
-        </Link>
-      </p>
+      <BackBar to={`/events/${event.id}`}>{event.title}</BackBar>
       <h1 className="seats__title">Choose your seats</h1>
       <p className="seats__where">
         {event.title}, {event.venueName}
@@ -160,6 +157,7 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
             <li><span className="seat seat--taken" aria-hidden="true" /> Taken</li>
             <li><span className="seat seat--selected" aria-hidden="true" /> Yours</li>
           </ul>
+          <p className="seats__hint">Swipe sideways to see every seat in a row.</p>
           <SeatMap map={map} tiers={event.tiers} selected={chosen} mine={mine} onToggle={toggle} />
         </div>
 
