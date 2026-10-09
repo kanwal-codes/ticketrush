@@ -76,7 +76,16 @@
 
 .site-footer {
   border-top: 1px solid var(--rule);
-  padding-block: var(--space-5);
+  padding: var(--space-5) var(--gutter);
+}
+
+/* Here and not with the legal pages' styles: those load only once a legal page is opened, and this footer is on every page. */
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2) var(--space-4);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 560px) {
