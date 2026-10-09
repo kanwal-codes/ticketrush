@@ -28,6 +28,11 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Newer than the ones Spring Boot 4.1.1 manages, to close published vulnerabilities (Tomcat: three critical
+			 bypass issues; Jackson: denial of service) found by the image scan. Drop these once Boot ships them. -->
+		<tomcat.version>11.0.25</tomcat.version>
+		<jackson-2-bom.version>2.21.7</jackson-2-bom.version>
+		<jackson-bom.version>3.1.7</jackson-bom.version>
 	</properties>
 	<dependencies>
 		<dependency>

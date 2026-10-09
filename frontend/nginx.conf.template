@@ -9,8 +9,10 @@ map $http_fly_client_ip $client_ip {
 }
 
 server {
-  listen 80;
+  listen 8080;
   server_name _;
+  # Do not announce which version of nginx this is.
+  server_tokens off;
   root /usr/share/nginx/html;
 
   gzip on;

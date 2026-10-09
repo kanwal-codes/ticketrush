@@ -1,0 +1,103 @@
+name: Security
+
+# Scans for known vulnerabilities in what ships (the dependencies, both container images and their base layers), for
+# secrets and risky container settings in the repository, and a passive scan of the running web app. It also runs every
+# Monday, because new vulnerabilities are published without any change to this code.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependencies:
+    name: Web dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # What is shipped to browsers. Build tools are not, and a finding in them is a Dependabot matter.
+      - name: Audit the packages the app ships
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+  images:
+    name: Images and repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the API image
+        run: docker build -t ticketrush-api backend
+      - name: Build the web image
+        run: docker build -t ticketrush-web frontend
+      # HIGH and CRITICAL findings that have a fix available. Findings with no fix yet cannot be acted on, so they do not
+      # fail the build; the weekly run shows them once a fix exists.
+      - name: Scan the API image
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+            --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ticketrush-api
+      - name: Scan the web image
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+            --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ticketrush-web
+      # Secrets committed by mistake and risky container settings (running as root, and the like). pom.xml is skipped here:
+      # reading it means asking Maven Central for every parent pom, which rate limits scanners; the image scan covers it.
+      - name: Scan the repository for secrets and misconfiguration
+        run: |
+          docker run --rm -v "$PWD":/src aquasec/trivy:latest fs \
+            --scanners secret,misconfig --severity HIGH,CRITICAL --exit-code 1 \
+            --skip-dirs node_modules,target,.git --skip-files backend/pom.xml /src
+
+  zap:
+    name: Passive scan of the running app
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the images
+        run: |
+          docker build -t ticketrush-api backend
+          docker build -t ticketrush-web frontend
+      # The same shape as production: the "prod" profile (API docs closed), the web app's nginx in front, nothing else exposed.
+      - name: Start the app
+        run: |
+          docker network create scan
+          docker run -d --name postgres --network scan -e POSTGRES_PASSWORD=scan-only -e POSTGRES_DB=ticketrush -e POSTGRES_USER=ticketrush postgres:16-alpine
+          docker run -d --name redis --network scan redis:7-alpine
+          sleep 8
+          docker run -d --name api --network scan \
+            -e SPRING_PROFILES_ACTIVE=prod -e DB_URL=jdbc:postgresql://postgres:5432/ticketrush -e DB_USER=ticketrush \
+            -e DB_PASSWORD=scan-only -e REDIS_URL=redis://redis:6379 \
+            -e JWT_SECRET=scan-only-secret-that-is-at-least-32-characters \
+            ticketrush-api
+          docker run -d --name web --network scan -e BACKEND=http://api:8080 -e RESOLVER=127.0.0.11 ticketrush-web
+          for i in $(seq 1 60); do
+            docker run --rm --network scan curlimages/curl -sf http://web:8080/api/events > /dev/null && exit 0
+            sleep 3
+          done
+          docker logs api | tail -50
+          exit 1
+      # Passive: it reads what the app serves and checks headers, cookies and the like. Findings listed in .zap/rules.tsv are
+      # either failures or deliberately ignored, with the reason; anything new is a warning that does not fail the run.
+      - name: Scan with ZAP
+        run: |
+          mkdir -p zap && chmod 777 zap && cp .zap/rules.tsv zap/rules.tsv
+          docker run --rm --network scan -v "$PWD/zap":/zap/wrk:rw ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py -t http://web:8080 -c rules.tsv -r report.html -m 2
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: zap-report
+          path: zap/report.html
+          retention-days: 14
