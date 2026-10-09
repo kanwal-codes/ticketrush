@@ -1,6 +1,4 @@
 .hero {
-  position: relative; /* the title's link stretches over the whole banner */
-  cursor: pointer;
   display: grid;
   grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
   gap: var(--space-6);
@@ -23,6 +21,13 @@
 
 .hero__kicker {
   color: var(--ev-text);
+  font-size: 0.875rem;
+}
+
+/* The date and time are what a guest came for; "Drops" is only the label. The mono font has regular and medium (no
+   bold), so medium is the real step up, and asking for 700 would only smear it. */
+.hero__kicker strong {
+  font-weight: 500;
 }
 
 .hero__title {
@@ -32,38 +37,26 @@
   color: var(--ev-text);
 }
 
-/* One link, stretched over the banner: a click anywhere opens the event. The button below is above it and goes to the
-   same place. */
+/* The poster, the title and the button each open the event on their own. Nothing is laid over the banner, so the rest of
+   it (the artist, the date, the countdown) can be selected and read like any other text. */
 .hero__link {
   color: inherit;
   text-decoration: none;
 }
 
-.hero__link::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-.hero .btn {
-  position: relative;
-  z-index: 2;
-}
-
-.hero:hover .hero__link {
+.hero__link:hover {
   text-decoration: underline;
   text-decoration-thickness: 3px;
   text-underline-offset: 6px;
 }
 
-.hero:has(.hero__link:focus-visible) {
-  outline: 3px solid var(--ev-text);
-  outline-offset: 8px;
+.hero__posterlink {
+  display: block;
 }
 
-.hero__link:focus-visible {
-  outline: none;
+/* Same border change as a card's poster; the lift itself is in motion.css. */
+.hero:has(.hero__posterlink:hover, .hero__link:hover, .btn:hover, .hero__link:focus-visible, .btn:focus-visible) .hero__poster {
+  border-color: var(--ink);
 }
 
 .hero__artist {
@@ -88,22 +81,24 @@
   font-weight: 500;
 }
 
-.hero__note {
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
 .discover__list {
   margin-top: var(--space-7);
 }
 
+/* "On now" and the search stay under the header while the grid scrolls, so a long list can be searched from anywhere. */
 .discover__head {
+  position: sticky;
+  top: var(--header-h, 61px);
+  z-index: 3;
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: var(--space-4);
   flex-wrap: wrap;
   margin-bottom: var(--space-5);
+  padding-block: var(--space-3);
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
 }
 
 .discover__search {

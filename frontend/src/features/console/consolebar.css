@@ -1,0 +1,58 @@
+/* A dark strip across the top of every console page: the one place the organizer's side looks different from the guest's. */
+.consolebar {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.consolebar__inner {
+  width: min(100% - 2 * var(--gutter), var(--page));
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--space-5);
+  min-height: 40px;
+  font-size: 0.875rem;
+}
+
+.consolebar__mode {
+  margin-right: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rule);
+}
+
+.consolebar a {
+  padding-block: var(--space-2);
+  border-bottom: 2px solid transparent;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--dur-fast) var(--ease-in-out);
+}
+
+.consolebar a:hover {
+  border-bottom-color: var(--muted);
+}
+
+.consolebar a[aria-current='page'] {
+  border-bottom-color: var(--paper);
+}
+
+.consolebar a:focus-visible {
+  outline-color: var(--paper);
+}
+
+/* Label and both links have to share one row at 375px, so everything tightens a little. */
+@media (max-width: 560px) {
+  .consolebar__inner {
+    column-gap: var(--space-4);
+    font-size: 0.8rem;
+  }
+
+  .consolebar__mode {
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+  }
+}

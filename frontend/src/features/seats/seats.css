@@ -130,7 +130,7 @@ span.seat {
 
 .panel {
   position: sticky;
-  top: 84px;
+  top: var(--sticky-top);
   display: grid;
   gap: var(--space-4);
   padding: var(--space-5);

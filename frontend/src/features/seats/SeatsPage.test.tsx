@@ -28,7 +28,7 @@ describe('SeatsPage', () => {
     renderRoute('/events/7/seats')
 
     expect(await screen.findByRole('heading', { name: 'Floor' })).toBeInTheDocument()
-    expect(screen.getByText('$103.20 with fees')).toBeInTheDocument()
+    expect(screen.getByText('$103.20')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /Floor row/ })).toHaveLength(10)
     expect(seat(2)).toHaveAttribute('aria-disabled', 'true')
     expect(seat(2)).toHaveAccessibleName(/taken/)

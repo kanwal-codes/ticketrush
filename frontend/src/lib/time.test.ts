@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { formatCountdown, formatMinutes, resetServerTime, serverNow, syncServerTime } from './time'
+import { formatCountdown, formatDateShort, formatMinutes, resetServerTime, serverNow, syncServerTime } from './time'
 
 afterEach(() => {
   resetServerTime()
@@ -37,6 +37,15 @@ describe('formatCountdown', () => {
 
   it('never goes negative', () => {
     expect(formatCountdown(-5000)).toBe('00:00:00')
+  })
+})
+
+describe('formatDateShort', () => {
+  it('leaves out the year when it is this year and keeps it otherwise', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-09T12:00:00'))
+    expect(formatDateShort('2026-10-09T03:48:00')).toBe('Fri, Oct 9')
+    expect(formatDateShort('2027-01-08T20:00:00')).toBe('Fri, Jan 8, 2027')
   })
 })
 
