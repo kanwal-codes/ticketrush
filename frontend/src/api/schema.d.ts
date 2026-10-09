@@ -569,6 +569,11 @@ export interface components {
             /** @enum {string} */
             status: "DRAFT" | "PUBLISHED" | "CANCELLED";
         };
+        LoadGuest: {
+            /** Format: int64 */
+            id: number;
+            token: string;
+        };
         CreateVenueRequest: {
             name: string;
             city: string;
@@ -747,6 +752,15 @@ export interface components {
         ForgotPasswordRequest: {
             /** Format: email */
             email: string;
+        };
+        PaymentStats: {
+            /** Format: int32 */
+            charges: number;
+            /** Format: int64 */
+            chargedCents: number;
+            /** Format: int32 */
+            refunds: number;
+            chargedKeys: string[];
         };
         MyTicket: {
             /** Format: int64 */
