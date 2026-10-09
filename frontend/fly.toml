@@ -8,7 +8,7 @@ primary_region = "yyz"
   # The public Turnstile site key (not a secret). Empty until the Cloudflare widget exists.
   VITE_TURNSTILE_SITE_KEY = "0x4AAAAAAFPuXNF460Lcsn-S"
   # The public Stripe test key (pk_test_...), not a secret. Empty means the checkout uses the built-in test cards.
-  VITE_STRIPE_PUBLISHABLE_KEY = ""
+  VITE_STRIPE_PUBLISHABLE_KEY = "pk_test_51UO2VNEs9zCsTUeXxOgTzG0OFsqeEmpiA17CyT3ZNlnOOniObftTlpfPCiI7PueBW5tFDK0wuPxGP1qWsLZfz85C00iSrgEx5l"
   # The address shown on the contact page. Empty: the page points to the project's issue tracker instead.
   VITE_SUPPORT_EMAIL = ""
 
