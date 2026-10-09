@@ -44,8 +44,13 @@ the ones written by hand. This record covers four steps toward real use. What is
   call. A webhook would shorten the time to resolve a lost answer; it is not needed for correctness.
 - **3-D Secure is declined**, since completing it needs a step this app does not have. Fine for test cards, a real gap
   for live use in some regions.
-- Not tested against Stripe itself in CI (that needs keys): the adapter is tested against recorded answers, and the
-  browser tests use a stand-in for Stripe.js.
+- CI has no Stripe keys, so there the adapter is tested against recorded answers and the browser tests use a stand-in
+  for Stripe.js. Against Stripe's real test API it was checked by hand on 9 October 2026 with two checks that stay in the repository and
+  skip themselves without a key: `StripeTestModeCheck` (the adapter: a charge, the same key again not charging twice, finding it
+  later by search, refunds once per key and "already refunded" counted as done, a decline, no funds, a 3-D Secure card
+  declined and not left open, a payment method that does not exist, a charge nobody made) and `e2e/stripe.spec.ts` (the
+  production web image's real card form behind its security policy: pay, see the succeeded payment at Stripe for the right
+  amount, cancel the event and see the refund at Stripe; a declined card, then a good one). All passed.
 
 ## Trust pages and account controls
 - **Terms, privacy, refunds and contact**, written to match what the app really does (what is stored, who handles it, what a
