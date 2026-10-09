@@ -1,6 +1,8 @@
 package com.ticketrush.catalog.api;
 
+import com.ticketrush.catalog.application.EventQueryService.PageView;
 import com.ticketrush.catalog.application.OrganizerService;
+import com.ticketrush.catalog.application.OrganizerService.OrganizerEvent;
 import com.ticketrush.catalog.application.OrganizerService.SalesSummary;
 import com.ticketrush.catalog.application.VenueService;
 import com.ticketrush.catalog.application.VenueService.VenueView;
@@ -33,8 +35,14 @@ class OrganizerController {
 	}
 
 	@GetMapping("/events")
-	List<EventRow> events(@AuthenticationPrincipal Jwt jwt) {
-		return organizer.events(id(jwt));
+	PageView<EventRow> events(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		return organizer.events(id(jwt), page, size);
+	}
+
+	@GetMapping("/events/{id}")
+	OrganizerEvent event(@AuthenticationPrincipal Jwt jwt, @PathVariable long id) {
+		return organizer.event(id(jwt), id);
 	}
 
 	@GetMapping("/events/{id}/summary")

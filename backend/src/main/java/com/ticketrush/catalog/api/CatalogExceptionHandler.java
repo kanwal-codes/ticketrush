@@ -3,6 +3,7 @@ package com.ticketrush.catalog.api;
 import com.ticketrush.catalog.application.AdmissionRequiredException;
 import com.ticketrush.catalog.application.HoldNotLiveException;
 import com.ticketrush.catalog.application.IdempotencyKeyReusedException;
+import com.ticketrush.catalog.application.NotEditableException;
 import com.ticketrush.catalog.application.NotFoundException;
 import com.ticketrush.catalog.application.PaymentInProgressException;
 import com.ticketrush.catalog.application.NotOwnerException;
@@ -19,6 +20,11 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(RuleViolationException.class)
 	ProblemDetail ruleViolation(RuleViolationException e) {
 		return problem(HttpStatus.BAD_REQUEST, "Request rejected", e.getMessage());
+	}
+
+	@ExceptionHandler(NotEditableException.class)
+	ProblemDetail notEditable(NotEditableException e) {
+		return problem(HttpStatus.CONFLICT, "Cannot be changed", e.getMessage());
 	}
 
 	@ExceptionHandler(NotFoundException.class)

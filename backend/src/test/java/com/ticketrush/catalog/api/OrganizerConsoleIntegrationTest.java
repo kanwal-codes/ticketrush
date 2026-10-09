@@ -101,12 +101,12 @@ class OrganizerConsoleIntegrationTest extends OrderTestSupport {
 		new CatalogFixtures(mvc, other).createOnSaleEvent("Elsewhere-" + UUID.randomUUID(), 1, 3);
 
 		String body = read(mine, "/events").andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-		List<Integer> ids = JsonPath.read(body, "$[*].id");
+		List<Integer> ids = JsonPath.read(body, "$.items[*].id");
 		assertThat(ids).containsExactlyInAnyOrder(draft, published);
-		List<Map<String, Object>> rows = JsonPath.read(body, "$[?(@.id == " + draft + ")]");
+		List<Map<String, Object>> rows = JsonPath.read(body, "$.items[?(@.id == " + draft + ")]");
 		assertThat(rows.get(0)).containsEntry("status", "DRAFT").containsEntry("capacity", 15).containsEntry("sold", 0)
 				.containsEntry("grossCents", 0);
-		List<Map<String, Object>> live = JsonPath.read(body, "$[?(@.id == " + published + ")]");
+		List<Map<String, Object>> live = JsonPath.read(body, "$.items[?(@.id == " + published + ")]");
 		assertThat(live.get(0)).containsEntry("status", "PUBLISHED").containsEntry("capacity", 15);
 	}
 

@@ -3,6 +3,8 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { ApiError } from '../../api/errors'
 import { Field } from '../../components/Field'
 import { Notice } from '../../components/Notice'
+import { Turnstile } from '../../components/Turnstile'
+import { turnstileSiteKey } from '../../lib/turnstile'
 import { describeError, type ErrorDescription } from '../../lib/errorCopy'
 import { useRetryCountdown } from '../../lib/useRetryCountdown'
 import { safeRedirect } from '../../auth/redirect'
@@ -25,6 +27,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [formError, setFormError] = useState<Pick<ErrorDescription, 'tone' | 'title' | 'message'> | null>(null)
   const [waitSeconds, startWait] = useRetryCountdown()
   const [busy, setBusy] = useState(false)
+  // The sign-up bot check, when the build has a site key: sign-up waits for its answer, and each answer is used once.
+  const checked = isRegister && turnstileSiteKey() !== ''
+  const [answer, setAnswer] = useState<string | null>(null)
+  const [asks, setAsks] = useState(0)
 
   if (token && !busy) return <Navigate to={from} replace />
 
@@ -39,11 +45,15 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
     setBusy(true)
     try {
-      if (isRegister) await register({ ...values, email: values.email.trim(), displayName: values.displayName.trim() })
+      if (isRegister) await register({ ...values, email: values.email.trim(), displayName: values.displayName.trim(), turnstileToken: answer ?? undefined })
       else await signIn(values.email.trim(), values.password)
       void navigate(from, { replace: true, viewTransition: true })
     } catch (error) {
       setBusy(false)
+      if (checked) {
+        setAnswer(null)
+        setAsks((n) => n + 1)
+      }
       if (error instanceof ApiError) {
         // The server's per-field messages go under the fields; a duplicate email belongs to the email field.
         const fields = { ...error.fieldErrors } as Partial<Record<keyof Values, string>>
@@ -84,8 +94,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
             {waitSeconds > 0 && <> You can try again in {waitSeconds} s.</>}
           </Notice>
         )}
-        <button type="submit" className="btn auth__submit" disabled={busy || waitSeconds > 0}>
-          {busy ? 'One moment…' : waitSeconds > 0 ? `Try again in ${waitSeconds} s` : isRegister ? 'Create account' : 'Sign in'}
+        {checked && <Turnstile onToken={setAnswer} resetKey={asks} />}
+        <button type="submit" className="btn auth__submit" disabled={busy || waitSeconds > 0 || (checked && answer === null)}>
+          {busy ? 'One moment…' : waitSeconds > 0 ? `Try again in ${waitSeconds} s` : checked && answer === null ? 'Checking that you are a person…' : isRegister ? 'Create account' : 'Sign in'}
         </button>
       </form>
 

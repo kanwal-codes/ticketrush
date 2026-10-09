@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../../api/errors'
-import type { VenueView } from '../../api/types'
+import type { OrganizerEvent, VenueView } from '../../api/types'
 import { Field } from '../../components/Field'
 import { Notice } from '../../components/Notice'
 import { ConsoleSkeleton } from '../../components/PageSkeletons'
@@ -12,9 +12,10 @@ import { contrast } from '../../lib/color'
 import { eventTheme } from '../../lib/eventTheme'
 import { describeError, type ErrorDescription } from '../../lib/errorCopy'
 import { useTitle } from '../../lib/useTitle'
-import { consoleKeys, createEvent, createVenue, useMyVenues } from './api'
+import { consoleKeys, createEvent, createVenue, updateEvent, useEventToEdit, useMyVenues } from './api'
 import {
   clearDraft,
+  draftFromEvent,
   emptyDraft,
   eventRequest,
   loadDraft,
@@ -40,7 +41,13 @@ function previewDate(local: string): string {
   return (Number.isNaN(t.getTime()) ? new Date(Date.now() + 30 * 86_400_000) : t).toISOString()
 }
 
+/** Create an event, or (at /console/events/:id/edit) change a draft. */
 export function EventForm() {
+  const id = Number(useParams().id)
+  return Number.isInteger(id) && id > 0 ? <EditEvent id={id} /> : <CreateEvent />
+}
+
+function CreateEvent() {
   useTitle('Create an event · TicketRush')
   const venuesQuery = useMyVenues()
   if (venuesQuery.isPending) return <ConsoleSkeleton />
@@ -48,12 +55,28 @@ export function EventForm() {
   return <Form venues={venuesQuery.data} />
 }
 
-function Form({ venues }: { venues: VenueView[] }) {
+function EditEvent({ id }: { id: number }) {
+  useTitle('Edit event · TicketRush')
+  const source = useEventToEdit(id)
+  if (source.isPending) return <ConsoleSkeleton />
+  if (!source.data) throw source.error
+  const { event, venue } = source.data
+  return <Form venues={[venue]} editing={{ id, initial: draftFromEvent(event, venue), status: event.status }} />
+}
+
+interface Editing {
+  id: number
+  initial: Draft
+  status: OrganizerEvent['status']
+}
+
+function Form({ venues, editing }: { venues: VenueView[]; editing?: Editing }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast()
-  const [restored] = useState(() => loadDraft() !== null)
+  const [restored] = useState(() => !editing && loadDraft() !== null)
   const [draft, setDraft] = useState<Draft>(() => {
+    if (editing) return editing.initial
     const saved = loadDraft() ?? emptyDraft()
     // A venue the organizer has none of yet means laying one out; one they have means choosing it.
     return venues.length === 0 && saved.venueMode === 'existing' ? { ...saved, venueMode: 'new' } : saved
@@ -63,7 +86,9 @@ function Form({ venues }: { venues: VenueView[] }) {
   const [busy, setBusy] = useState(false)
 
   // Kept as the organizer types, so a refresh or a sign-in when the token runs out does not lose the form.
-  useEffect(() => saveDraft(draft), [draft])
+  useEffect(() => {
+    if (!editing) saveDraft(draft)
+  }, [draft, editing])
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }))
   const text = (key: keyof Draft) => ({
@@ -94,17 +119,18 @@ function Form({ venues }: { venues: VenueView[] }) {
     setBusy(true)
     try {
       let chosen = venue
-      if (draft.venueMode === 'new') {
+      if (!editing && draft.venueMode === 'new') {
         chosen = await createVenue(venueRequest(draft))
         const made = chosen
         // From here the venue exists. If the event then fails, a retry must reuse it, not make a second one.
         queryClient.setQueryData<VenueView[]>(consoleKeys.venues, (old = []) => [...old, made])
         setDraft((d) => ({ ...d, venueMode: 'existing', venueId: String(made.id) }))
       }
-      const ref = await createEvent(eventRequest(draft, chosen!))
-      clearDraft()
-      void queryClient.invalidateQueries({ queryKey: consoleKeys.events })
-      toast({ tone: 'success', title: 'Draft saved', message: 'Check it over, then publish when you are ready.' })
+      const request = eventRequest(draft, chosen!)
+      const ref = editing ? await updateEvent(editing.id, request) : await createEvent(request)
+      if (!editing) clearDraft()
+      void queryClient.invalidateQueries({ queryKey: ['console'] })
+      toast(editing ? { tone: 'success', title: 'Changes saved' } : { tone: 'success', title: 'Draft saved', message: 'Check it over, then publish when you are ready.' })
       void navigate(`/console/events/${ref.id}`, { viewTransition: true })
     } catch (error) {
       setBusy(false)
@@ -122,10 +148,10 @@ function Form({ venues }: { venues: VenueView[] }) {
     <div className="page console eventform">
       <header>
         <p className="label">
-          <Link to="/console" viewTransition>Console</Link> / New event
+          <Link to="/console" viewTransition>Console</Link> / {editing ? 'Edit event' : 'New event'}
         </p>
-        <h1>Create an event</h1>
-        <p className="console__meta">It is saved as a draft. Guests see nothing until you publish.</p>
+        <h1>{editing ? 'Edit event' : 'Create an event'}</h1>
+        <p className="console__meta">{editing ? 'Only a draft can be edited. Guests see nothing until you publish.' : 'It is saved as a draft. Guests see nothing until you publish.'}</p>
       </header>
 
       {restored && <Notice tone="info" title="We kept your draft" compact>The form is as you left it.</Notice>}
@@ -146,6 +172,8 @@ function Form({ venues }: { venues: VenueView[] }) {
               label="Venue"
               value={draft.venueMode === 'new' ? NEW_VENUE : draft.venueId}
               error={errors.venueId}
+              disabled={!!editing}
+              hint={editing ? 'The venue of a draft cannot be changed. Cancel it and create a new event to use another.' : undefined}
               onChange={(e) => (e.target.value === NEW_VENUE ? set('venueMode', 'new') : setDraft((d) => ({ ...d, venueMode: 'existing', venueId: e.target.value })))}
             >
               <option value="">Choose a venue…</option>
@@ -242,9 +270,9 @@ function Form({ venues }: { venues: VenueView[] }) {
           )}
           <p className="eventform__actions">
             <button type="submit" className="btn" disabled={busy}>
-              {busy ? 'Saving…' : 'Save as draft'}
+              {busy ? 'Saving…' : editing ? 'Save changes' : 'Save as draft'}
             </button>
-            <Link to="/console" className="btn btn--quiet">Cancel</Link>
+            <Link to={editing ? `/console/events/${editing.id}` : '/console'} className="btn btn--quiet">Cancel</Link>
           </p>
         </div>
 

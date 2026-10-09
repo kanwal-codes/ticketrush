@@ -73,7 +73,7 @@ public class EventQueryService {
 	public record EventDetail(long id, String title, String artist, String description, Instant startsAt,
 			Instant doorsAt, Instant dropOpensAt, Instant onSaleAt, SaleState saleState, Instant serverTime,
 			String venueName, String city, PosterView poster, List<TierView> tiers, int totalSeats,
-			int availableSeats, boolean waitingRoom) {
+			int availableSeats, boolean waitingRoom, boolean cancelled) {
 	}
 
 	public record SeatCell(long id, int number, String status) {
@@ -107,7 +107,10 @@ public class EventQueryService {
 
 	public EventDetail detail(long id) {
 		Instant now = clock.instant();
-		Event event = published(id);
+		// A cancelled event can still be read, so a guest who bought can see what was cancelled. It cannot be bought.
+		Event event = events.findWithVenueById(id).filter(e -> e.getStatus() != EventStatus.DRAFT)
+				.orElseThrow(() -> new NotFoundException("Event " + id + " not found"));
+		boolean cancelled = event.getStatus() == EventStatus.CANCELLED;
 		Map<Long, SectionAvailability> availability = seats.availabilityBySection(id, now).stream()
 				.collect(Collectors.toMap(SectionAvailability::sectionId, Function.identity()));
 		Map<Long, VenueSection> byId = sections.findByVenueIdOrderBySortOrder(event.getVenue().getId()).stream()
@@ -124,9 +127,9 @@ public class EventQueryService {
 		tiers.sort((a, b) -> Long.compare(a.sectionId(), b.sectionId()));
 		return new EventDetail(event.getId(), event.getTitle(), event.getArtist(), event.getDescription(),
 				event.getStartsAt(), event.getDoorsAt(), event.getDropOpensAt(), event.getOnSaleAt(),
-				event.saleState(now), now, event.getVenue().getName(), event.getVenue().getCity(), poster(event),
+				cancelled ? SaleState.ENDED : event.saleState(now), now, event.getVenue().getName(), event.getVenue().getCity(), poster(event),
 				tiers, tiers.stream().mapToInt(TierView::totalSeats).sum(),
-				tiers.stream().mapToInt(TierView::availableSeats).sum(), event.isQueueEnabled());
+				tiers.stream().mapToInt(TierView::availableSeats).sum(), event.isQueueEnabled(), cancelled);
 	}
 
 	/** Cached for a couple of seconds: the map is the hot read while a drop is running. */
