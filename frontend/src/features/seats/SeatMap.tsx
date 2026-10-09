@@ -76,7 +76,7 @@ export function SeatMap({ map, tiers, selected, mine, onToggle }: Props) {
           <section key={section.id} className="seatmap__section" aria-label={section.name}>
             <header className="seatmap__header">
               <h3>{section.name}</h3>
-              <p className="label">{free === 0 ? 'Sold out' : tier ? `${formatMoney(tier.allInCents)} with fees` : ''}</p>
+              <p className="label">{free === 0 ? 'Sold out' : tier ? formatMoney(tier.allInCents) : ''}</p>
             </header>
             <div className="seatmap__rows">
               {section.rows.map((row) => (
@@ -92,7 +92,7 @@ export function SeatMap({ map, tiers, selected, mine, onToggle }: Props) {
                         id={seat.id}
                         number={seat.number}
                         state={state}
-                        label={`${section.name} row ${row.label} seat ${seat.number}, ${state === 'selected' ? 'chosen' : state}${tier && state !== 'taken' ? `, ${formatMoney(tier.allInCents)} with fees` : ''}`}
+                        label={`${section.name} row ${row.label} seat ${seat.number}, ${state === 'selected' ? 'chosen' : state}${tier && state !== 'taken' ? `, ${formatMoney(tier.allInCents)}` : ''}`}
                         tabStop={seat.id === tabStop}
                         onToggle={onToggle}
                         onFocus={setFocusId}
@@ -129,6 +129,7 @@ const SeatButton = memo(function SeatButton({ id, number, state, label, tabStop,
       data-seat={id}
       className={`seat seat--${state}`}
       aria-label={label}
+      title={label}
       aria-pressed={state === 'selected'}
       aria-disabled={state === 'taken' ? true : undefined}
       tabIndex={tabStop ? 0 : -1}

@@ -18,6 +18,7 @@ import { useTitle } from '../../lib/useTitle'
 import { useMe } from '../auth/api'
 import { clearActiveHold } from '../seats/activeHold'
 import { seatKeys, useMyHold } from '../seats/api'
+import { HoldClock } from '../seats/HoldTimer'
 import { checkOrder, payWithToken, submitPayment, type PaymentOutcome } from './pay'
 import { currentToken } from './idempotency'
 import { StripeCard, type CardForm } from './StripeCard'
@@ -307,6 +308,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
         </form>
 
         <aside className="checkout__summary" aria-labelledby="summary-heading">
+          <HoldClock expiresAt={hold.expiresAt} />
           <h2 id="summary-heading">{event.title}</h2>
           <p className="checkout__when">
             {formatDate(event.startsAt)}, {formatTime(event.startsAt)}

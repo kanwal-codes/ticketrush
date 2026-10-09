@@ -77,11 +77,6 @@
 .site-footer {
   border-top: 1px solid var(--rule);
   padding-block: var(--space-5);
-  text-align: center;
-}
-
-.site-footer p {
-  margin-inline: auto;
 }
 
 @media (max-width: 560px) {
@@ -125,6 +120,21 @@
 
 .site-nav .hold-timer:hover {
   background: var(--muted);
+}
+
+/* On a phone the clock rides at the right end of the brand row, always in the same corner, and the links keep one row
+   of their own below. Without this a running hold pushed the nav onto a third row and the sticky header ate a fifth of
+   the screen. */
+@media (max-width: 560px) {
+  .site-header__inner {
+    position: relative;
+  }
+
+  .site-nav .hold-timer {
+    position: absolute;
+    top: var(--space-2);
+    right: 0;
+  }
 }
 
 .verify-banner {

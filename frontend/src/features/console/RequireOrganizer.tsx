@@ -2,6 +2,7 @@ import { Outlet } from 'react-router'
 import { ConsoleSkeleton } from '../../components/PageSkeletons'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { useMe } from '../auth/api'
+import { ConsoleBar } from './ConsoleBar'
 
 /**
  * The console is for organizers. This only decides what to show: the server refuses every organizer call from anyone
@@ -18,5 +19,10 @@ export function RequireOrganizer() {
       </ErrorScreen>
     )
   }
-  return <Outlet />
+  return (
+    <>
+      <ConsoleBar />
+      <Outlet />
+    </>
+  )
 }

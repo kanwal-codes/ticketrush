@@ -69,7 +69,6 @@ export function Layout() {
         <Outlet />
       </main>
       <footer className="site-footer">
-        <p className="label">Final prices, a fair queue, and a seat is never sold twice.</p>
         <nav className="site-footer__links" aria-label="About">
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>

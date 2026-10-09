@@ -96,7 +96,7 @@ describe('EventPage', () => {
     renderRoute('/events/7')
     expect(await screen.findByRole('heading', { name: 'This event was cancelled' })).toBeInTheDocument()
     expect(screen.getByText(/refunded automatically/)).toBeInTheDocument()
-    expect(screen.queryByText(/with fees/i)).not.toBeInTheDocument()
+    expect(screen.queryByText('$137.60')).not.toBeInTheDocument()
     expect(screen.queryByText(/left$/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Choose seats|Join the waiting room/ })).not.toBeInTheDocument()
   })

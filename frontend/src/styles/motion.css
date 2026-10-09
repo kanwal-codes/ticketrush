@@ -272,7 +272,8 @@ button.seat--selected {
   animation: slide-down-in var(--dur-base) var(--ease-out) both;
 }
 
-.site-nav .hold-timer--urgent {
+.site-nav .hold-timer--urgent,
+.hold-clock--urgent .hold-clock__time {
   animation: pulse-soft 1.4s var(--ease-in-out) infinite;
 }
 
@@ -286,6 +287,19 @@ button.seat--selected {
 
 .card__link:hover .card__poster,
 .card__link:focus-visible .card__poster {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+/* The featured poster lifts exactly like a card's, whichever of its three ways in (poster, title, button) the pointer is on. */
+.hero__poster {
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.hero:has(.hero__posterlink:hover, .hero__link:hover, .btn:hover, .hero__link:focus-visible, .btn:focus-visible) .hero__poster {
   transform: translate(-3px, -3px);
   box-shadow: 6px 6px 0 var(--ink);
 }
@@ -309,6 +323,7 @@ button.seat--selected {
 
 @media (prefers-reduced-motion: reduce) {
   .site-nav .hold-timer--urgent,
+  .hold-clock--urgent .hold-clock__time,
   .checkout__ring {
     animation: none;
   }

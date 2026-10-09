@@ -44,6 +44,14 @@ export function formatDate(iso: string): string {
   return dayMonth.format(new Date(iso))
 }
 
+const weekdayMonthDay = new Intl.DateTimeFormat('en-CA', { weekday: 'short', day: 'numeric', month: 'short' })
+
+/** "Fri, Oct 9", with the year ("Fri, Jan 8, 2027") only when it is not the current one, on the server's clock. */
+export function formatDateShort(iso: string): string {
+  const date = new Date(iso)
+  return date.getFullYear() === new Date(serverNow()).getFullYear() ? weekdayMonthDay.format(date) : dayMonth.format(date)
+}
+
 /** "8:00 p.m." */
 export function formatTime(iso: string): string {
   return time.format(new Date(iso))
