@@ -46,7 +46,8 @@ async function fillCard(number = '4242424242424242') {
   await userEvent.type(screen.getByLabelText('Security code'), '123')
 }
 
-const pay = (total = '$206.40') => userEvent.click(screen.getByRole('button', { name: new RegExp(`${total.replace('$', '\\$')}$`) }))
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const pay = (total = '$206.40') => userEvent.click(screen.getByRole('button', { name: new RegExp(`${escapeRegExp(total)}$`) }))
 
 const original = checkoutTimings.poll
 beforeEach(() => {
