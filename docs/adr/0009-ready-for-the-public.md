@@ -82,8 +82,10 @@ the ones written by hand. This record covers four steps toward real use. What is
   Alpine packages: it now upgrades them at build time. It also ran nginx as root: it is now the unprivileged build, on port 8080 (Fly's
   `internal_port` and the compose mapping moved with it). nginx stopped announcing its version and the app now sends a Permissions-Policy
   and Cross-Origin-Opener-Policy.
-- **Not done, and why.** An independent penetration test (needs a person outside this project). CodeQL (the repository is private, and
-  code scanning on private repositories is a paid GitHub feature). An authenticated active scan of the API (a passive scan and the endpoint
-  matrix cover the public surface and the access rules; deeper testing wants a dedicated environment). Cross-Origin-Embedder-Policy
-  (it would block the Stripe and Cloudflare frames the app embeds). Third-party script integrity (Stripe's and Cloudflare's scripts
-  must be loaded from their hosts and cannot be pinned).
+- **CodeQL** (`.github/workflows/codeql.yml`): static analysis of the Java and TypeScript source itself, not its dependencies — SQL
+  injection, path traversal, hardcoded credentials and the like. Findings land in the repository's Security tab. Added once the
+  repository went public, since code scanning on a private repository is a paid GitHub feature.
+- **Not done, and why.** An independent penetration test (needs a person outside this project). An authenticated active scan of the API
+  (a passive scan and the endpoint matrix cover the public surface and the access rules; deeper testing wants a dedicated environment).
+  Cross-Origin-Embedder-Policy (it would block the Stripe and Cloudflare frames the app embeds). Third-party script integrity (Stripe's
+  and Cloudflare's scripts must be loaded from their hosts and cannot be pinned).
