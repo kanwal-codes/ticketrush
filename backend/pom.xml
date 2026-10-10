@@ -13,18 +13,24 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ticketrush-backend</name>
 	<description>TicketRush flash-sale ticketing API</description>
-	<url/>
+	<url>https://github.com/kanwal-codes/ticketrush</url>
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://github.com/kanwal-codes/ticketrush/blob/main/LICENSE</url>
+		</license>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<name>Kanwaljot Singh</name>
+			<url>https://github.com/kanwal-codes</url>
+		</developer>
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:https://github.com/kanwal-codes/ticketrush.git</connection>
+		<developerConnection>scm:git:https://github.com/kanwal-codes/ticketrush.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/kanwal-codes/ticketrush</url>
 	</scm>
 	<properties>
 		<java.version>21</java.version>

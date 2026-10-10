@@ -1,6 +1,8 @@
 # TicketRush
 
 [![CI](https://github.com/kanwal-codes/ticketrush/actions/workflows/ci.yml/badge.svg)](https://github.com/kanwal-codes/ticketrush/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/demo-ticketrush--web.fly.dev-2B2FD9)](https://ticketrush-web.fly.dev)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Flash-sale ticketing that stays correct under a traffic spike: a waiting room, live seat maps, timed seat holds, and zero oversold seats, backed by a published load test.
 
