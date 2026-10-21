@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useEventsById } from '../../api/queries'
-import type { MyTicket } from '../../api/types'
+import type { MyTicket, PosterView } from '../../api/types'
 import { WalletSkeleton } from '../../components/PageSkeletons'
 import { eventTheme } from '../../lib/eventTheme'
 import { Notice } from '../../components/Notice'
@@ -13,7 +13,7 @@ import './tickets.css'
 
 export function TicketsPage() {
   useTitle('My tickets · TicketRush')
-  const { state } = useLocation() as { state: { paid?: { reference: string; totalCents: number } } | null }
+  const { state } = useLocation() as { state: { paid?: { reference: string; totalCents: number; poster?: PosterView } } | null }
   const tickets = useTickets()
   const paid = state?.paid
 
@@ -36,25 +36,26 @@ export function TicketsPage() {
   return (
     <div className="page tickets">
       {paid && (
-        <section className="confirmation" aria-labelledby="paid-heading">
+        <section className="confirmation" style={paid.poster ? eventTheme(paid.poster) : undefined} aria-labelledby="paid-heading">
           <h1 id="paid-heading" ref={heading} tabIndex={-1}>
             You are going!
           </h1>
           <p>
-            Order <strong className="num">{paid.reference}</strong>, {formatMoney(paid.totalCents)} paid. Your tickets are below. Show the code at the door.
+            Order <strong className="num">{paid.reference}</strong> is confirmed. Total paid: {formatMoney(paid.totalCents)}. Show your ticket’s QR code at the door.
           </p>
         </section>
       )}
-      {!paid && <h1>My tickets</h1>}
+      {!paid && <><p className="tickets__eyebrow">Your admission</p><h1>Your event, in hand.</h1><p className="tickets__lead">Your event details and entry code, ready when you are.</p></>}
 
       {tickets.isPending ? (
         <div className="skeleton tickets__skeleton" aria-busy="true" aria-label="Loading your tickets" />
       ) : byEvent.length === 0 ? (
         <div className="tickets__empty">
-          <p>No tickets yet.</p>
+          <h2>No tickets yet</h2>
+          <p>Tickets you buy will appear here, ready for your event.</p>
           <p style={{ marginTop: 'var(--space-4)' }}>
             <Link to="/" className="btn">
-              See what is on
+              Find an event
             </Link>
           </p>
         </div>
@@ -63,14 +64,11 @@ export function TicketsPage() {
           const event = events[i]?.data
           return (
             <section key={eventId} className="tickets__event" style={event ? eventTheme(event.poster) : undefined} aria-label={event?.title ?? 'Tickets'}>
-              {event && (
+              {event?.cancelled && (
                 <header>
-                  <h2 className="tickets__title">{event.title}</h2>
-                  {event.cancelled && (
-                    <Notice tone="warning" title="This event was cancelled" compact>
-                      These tickets no longer work. Your money is being returned to your card automatically.
-                    </Notice>
-                  )}
+                  <Notice tone="warning" title="This event was cancelled" compact>
+                    These tickets no longer work. Your money is being returned to your card automatically.
+                  </Notice>
                 </header>
               )}
               {event ? (

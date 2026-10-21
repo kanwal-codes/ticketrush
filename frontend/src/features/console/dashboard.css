@@ -1,3 +1,4 @@
+/* One event's dashboard: what is selling, section by section. */
 .dashboard__actions {
   display: flex;
   flex-wrap: wrap;
@@ -6,17 +7,16 @@
 
 .dashboard__stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--space-5);
   margin: 0;
 }
 
 .dashboard__stat {
   display: grid;
   gap: var(--space-2);
-  padding: var(--space-4);
-  border: 1px solid var(--rule);
-  background: var(--white);
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--ink);
 }
 
 .dashboard__stat dd {
@@ -26,8 +26,13 @@
 }
 
 .dashboard__value {
-  font-size: clamp(1.5rem, 4vw, 2.1rem);
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: var(--text-metric);
+  font-weight: var(--weight-display);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .dashboard__tiers {
@@ -35,7 +40,7 @@
   margin: var(--space-4) 0 0;
   padding: 0;
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .dashboard__tier {
@@ -50,16 +55,17 @@
 }
 
 .dashboard__tier h3 {
-  font-size: 1rem;
+  font-size: var(--text-body);
 }
 
-/* Two layers scaled from the left: held (paler) behind sold (solid). Scaling, never resizing. */
+/* Two layers scaled from the left: held (hatched) behind sold (solid). Scaling, never resizing. */
 .dashboard__meter {
   position: relative;
   display: block;
-  height: 14px;
-  background: var(--rule);
+  height: 12px;
   overflow: hidden;
+  border-radius: 999px;
+  background: var(--rule);
 }
 
 .dashboard__meter > span {
@@ -71,20 +77,35 @@
 }
 
 .dashboard__held {
-  background: repeating-linear-gradient(135deg, var(--ink) 0 2px, var(--rule) 2px 5px);
+  background: repeating-linear-gradient(135deg, var(--action) 0 2px, var(--action-tint) 2px 5px);
 }
 
 .dashboard__sold {
-  background: var(--ink);
+  background: var(--action);
 }
 
 .dashboard__counts {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 
 .dashboard__orders {
   margin-top: var(--space-4);
+}
+
+@media (max-width: 720px) {
+  .dashboard__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .dashboard__stat {
+    padding-top: var(--space-3);
+  }
+
+  .dashboard__value {
+    font-size: var(--text-metric-compact);
+  }
 }

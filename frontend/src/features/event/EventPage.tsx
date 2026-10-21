@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router'
 import { keys, useEvent } from '../../api/queries'
 import type { EventDetail, TierView } from '../../api/types'
 import { NotFound } from '../../app/RouteError'
-import { BackBar } from '../../components/BackBar'
 import { Countdown } from '../../components/Countdown'
 import { EventSkeleton } from '../../components/PageSkeletons'
 import { Poster } from '../../components/Poster'
@@ -34,7 +33,6 @@ function EventDetails({ event }: { event: EventDetail }) {
   const sale = saleView(event)
   return (
     <div className="page event" style={eventTheme(event.poster)}>
-      <BackBar to="/">All events</BackBar>
       <div className="event__layout">
         <div className="event__poster" style={{ viewTransitionName: `poster-${event.id}` }}>
           <Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} />
@@ -43,6 +41,7 @@ function EventDetails({ event }: { event: EventDetail }) {
         <div className="event__main">
           {event.artist.toLowerCase() !== event.title.toLowerCase() && <p className="label event__kicker">{event.artist}</p>}
           <h1 className="event__title">{event.title}</h1>
+          {event.description && <p className="event__description">{event.description}</p>}
 
           <dl className="facts">
             <div>
@@ -71,6 +70,7 @@ function EventDetails({ event }: { event: EventDetail }) {
             <h2 id="sale-heading" className="sale__headline">
               {sale.headline}
             </h2>
+            {!event.cancelled && event.tiers.length > 0 && <div className="sale__price"><span className="label">Starting at</span><strong>{formatMoney(Math.min(...event.tiers.map(tier => tier.allInCents)))}</strong><span>Per ticket</span></div>}
             {sale.countdownTo && (
               <Countdown to={sale.countdownTo} className="sale__clock" onDone={() => void queryClient.invalidateQueries({ queryKey: keys.event(event.id) })} />
             )}
@@ -99,15 +99,11 @@ function EventDetails({ event }: { event: EventDetail }) {
                 ))}
               </ul>
               <p className="event__explain">
-                The price shown is the final price, fees included. Nothing is added at checkout.{' '}
-                {event.waitingRoom
-                  ? `Everyone in the queue is let in by arrival time. Once you pick seats, you have ${HOLD_MINUTES} minutes to pay.`
-                  : `Once you pick seats, you have ${HOLD_MINUTES} minutes to pay.`}
+                {`Once you choose seats, we’ll hold them for ${HOLD_MINUTES} minutes while you pay.`}
               </p>
             </section>
           )}
 
-          {event.description && <p className="event__about">{event.description}</p>}
         </div>
       </div>
     </div>

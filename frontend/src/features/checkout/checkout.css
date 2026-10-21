@@ -1,6 +1,25 @@
+/* Checkout: pay for what you held. The form and the order summary are two cards of the same kind and about the same
+   height, so neither needs to stick; on a phone the summary comes first, compact, and scrolls with the page. */
+.checkout__eyebrow {
+  color: var(--ev-text);
+  font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.page.checkout > h1 {
+  max-width: 16ch;
+  margin-top: var(--space-3);
+  font-size: var(--text-page);
+  font-weight: var(--weight-display);
+}
+
 .checkout__lead {
+  max-width: 52ch;
   margin-top: var(--space-3);
   color: var(--muted);
+  font-size: var(--text-item);
+  line-height: 1.5;
 }
 
 .checkout__actions {
@@ -11,22 +30,41 @@
   margin-top: var(--space-5);
 }
 
+.checkout__actions > a:not(.btn) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .checkout__reference {
   margin-top: var(--space-5);
 }
 
+/* ---- Layout ---- */
 .checkout__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: var(--space-7);
-  margin-top: var(--space-5);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: clamp(24px, 5vw, 72px);
+  margin-top: var(--space-6);
   align-items: start;
 }
 
+.checkout__layout > * {
+  min-width: 0;
+}
+
+/* ---- Payment form ---- */
 .checkout__form {
   display: grid;
   gap: var(--space-4);
-  min-width: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--ev);
+  background: var(--white);
+}
+
+.checkout__form h2 {
+  font-size: var(--text-section);
 }
 
 .checkout__email {
@@ -41,101 +79,156 @@
 }
 
 .checkout__test {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
   color: var(--muted);
+  font: var(--text-caption) / 1.5 var(--font-mono);
 }
 
 .testcards {
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 
 .testcards summary {
-  cursor: pointer;
+  display: flex;
+  align-items: center;
   width: max-content;
+  min-height: 44px;
+  cursor: pointer;
 }
 
 .testcards ul {
   list-style: none;
-  margin: var(--space-3) 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .testcards li {
   display: flex;
   gap: var(--space-3);
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
 }
 
 .testcards__use {
+  min-height: 44px;
+  padding: 0;
   border: 0;
   background: none;
-  padding: 0;
+  color: var(--action);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .checkout__pay {
   width: 100%;
-  min-height: 54px;
-  font-size: 1.05rem;
+  min-height: 56px;
+  font-size: var(--text-body);
 }
 
-.checkout__assure {
-  color: var(--muted);
-  font-size: 0.9rem;
+/* Stripe's card form is drawn in its own frame, so this only gives it the look of the fields beside it. */
+.stripe-card {
+  min-height: 48px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-control);
+  background: var(--white);
 }
 
+/* ---- Order summary ---- */
 .checkout__summary {
-  position: sticky;
-  top: var(--sticky-top);
   display: grid;
-  gap: var(--space-3);
+  grid-template-columns: 88px minmax(0, 1fr);
+  column-gap: var(--space-4);
+  align-content: start;
   padding: var(--space-5);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--ev);
+  background: var(--white);
+}
+
+.checkout__summary > * {
+  grid-column: 1 / -1;
+}
+
+/* The poster is shown whole, as a thumbnail beside the event's name: cropping it would cut off its own lettering. */
+.checkout__poster {
+  grid-column: 1;
+  grid-row: 2 / span 3;
+  align-self: start;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
   background: var(--ev-paper);
-  color: var(--on-ev-paper);
-  border: 1px solid var(--ink);
+}
+
+.checkout__summary h2 {
+  grid-column: 2;
+  grid-row: 2;
+  font-size: var(--text-item);
+  line-height: 1.25;
+}
+
+.checkout__when {
+  grid-column: 2;
+  grid-row: 3;
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-small);
+}
+
+.checkout__seats {
+  grid-column: 2;
+  grid-row: 4;
+  margin-top: var(--space-2);
+  font-size: var(--text-small);
+  font-weight: var(--weight-heading);
 }
 
 .hold-clock {
+  grid-row: 1;
   display: grid;
-  gap: var(--space-1);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid currentColor;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface-subtle);
+}
+
+.hold-clock .label {
+  color: var(--ink);
 }
 
 .hold-clock__time {
-  justify-self: start; /* a box of its own, so the last-minute pulse can scale it from the left */
-  transform-origin: left;
-  font-size: 2.25rem;
-  font-weight: 500;
+  grid-row: 1;
+  grid-column: 2;
+  transform-origin: right;
+  font-size: var(--text-section);
+  font-weight: var(--weight-label);
   line-height: 1;
 }
 
 .hold-clock__note {
-  font-size: 0.9rem;
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: var(--text-caption);
 }
 
 /* The last minute: the numbers get a heavy underline as well as pulsing, so urgency never rests on motion or colour. */
+.hold-clock--urgent {
+  background: color-mix(in srgb, var(--danger) 10%, var(--white));
+}
+
 .hold-clock--urgent .hold-clock__time {
+  color: var(--danger);
   text-decoration: underline;
-  text-decoration-thickness: 4px;
-  text-underline-offset: 6px;
-}
-
-.checkout__summary h2 {
-  font-size: 1.3rem;
-}
-
-.checkout__seats {
-  font-weight: 600;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 5px;
 }
 
 .checkout__totals {
-  margin: 0;
+  grid-row: 5;
+  margin: var(--space-5) 0 0;
 }
 
 .checkout__totals div {
@@ -143,7 +236,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding-block: var(--space-2);
-  border-bottom: 1px solid currentColor;
+  border-bottom: 1px solid var(--rule);
 }
 
 .checkout__totals dd {
@@ -151,32 +244,27 @@
 }
 
 .checkout__total {
-  font-weight: 700;
-  font-size: 1.15rem;
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--ink);
+  border-bottom: 0;
+  font-size: var(--text-section);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 880px) {
   .checkout__layout {
     grid-template-columns: 1fr;
     gap: var(--space-5);
+    margin-top: var(--space-5);
   }
 
-  /* The summary comes first on a phone, so the guest sees what they are paying for before the card form. */
+  /* First, so the guest sees what they are paying for before the card form. */
   .checkout__summary {
-    position: static;
     order: -1;
   }
-}
 
-/* The summary sits on the event's own paper colour, which can be anything: its labels take the readable ink chosen for it. */
-.checkout__summary .label {
-  color: inherit;
-}
-
-/* Stripe's card form is drawn in its own frame, so this only gives it the look of the fields beside it. */
-.stripe-card {
-  padding: var(--space-3);
-  background: var(--paper, #fff);
-  border: 1px solid var(--ink);
-  min-height: 44px;
+  .checkout__form {
+    padding: var(--space-5) var(--space-4);
+  }
 }

@@ -20,9 +20,9 @@ export function RequireOrganizer() {
     )
   }
   return (
-    <>
+    <div className="organizer-shell">
       <ConsoleBar />
       <Outlet />
-    </>
+    </div>
   )
 }

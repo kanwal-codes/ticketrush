@@ -2,8 +2,9 @@ import type { CSSProperties } from 'react'
 import type { PosterView } from '../api/types'
 import { contrast, withReadableText } from './color'
 
-const PAGE_PAPER = '#f6f6f3'
-const INK = '#121212'
+// Keep contrast calculations aligned with the neutral page colors in tokens.css.
+const PAGE_PAPER = '#fafafa'
+const INK = '#181a1e'
 
 /**
  * An event's inks are chosen to look good on its poster, not to be read as text on the page. Pick whichever of the

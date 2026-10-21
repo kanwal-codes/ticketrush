@@ -21,7 +21,6 @@ export function ConsoleEvents() {
     <div className="page console">
       <header className="console__head">
         <div>
-          <p className="label">Console</p>
           <h1>Your events</h1>
         </div>
         <Link to="/console/events/new" className="btn" viewTransition>

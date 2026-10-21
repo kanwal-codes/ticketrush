@@ -1,4 +1,6 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { json, mockApi } from '../../test/mockApi'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetServerTime, syncServerTime } from '../../lib/time'
@@ -19,11 +21,33 @@ afterEach(() => {
 const show = () =>
   render(
     <MemoryRouter>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <HoldTimer />
+      </QueryClientProvider>
     </MemoryRouter>,
   )
 
 describe('HoldTimer', () => {
+  it('releases the server hold and removes the timer', async () => {
+    const { calls } = mockApi({ 'DELETE /api/holds/55': () => new Response(null, { status: 204 }) })
+    setActiveHold({ holdId: 55, eventId: 7, expiresAt: '2026-10-08T10:08:41Z' })
+    show()
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Release held seats' })) })
+    expect(calls.some(call => call.method === 'DELETE' && new URL(call.url).pathname === '/api/holds/55')).toBe(true)
+    expect(getActiveHold()).toBeNull()
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+  })
+
+  it('keeps the hold and offers retry when release fails', async () => {
+    mockApi({ 'DELETE /api/holds/55': () => json({ title: 'Server error' }, 503) })
+    setActiveHold({ holdId: 55, eventId: 7, expiresAt: '2026-10-08T10:08:41Z' })
+    show()
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Release held seats' })) })
+    expect(getActiveHold()).not.toBeNull()
+    expect(screen.getByRole('timer')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Release held seats' })).toBeEnabled()
+  })
   it('shows nothing when no seats are held', () => {
     show()
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()

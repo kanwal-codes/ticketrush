@@ -1,8 +1,55 @@
+/* Tickets: what you bought, as tickets. Each one is the event's poster, the details, and a tear-off stub with the QR code. */
+.tickets__eyebrow {
+  color: var(--action);
+  font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.page.tickets > h1 {
+  max-width: 16ch;
+  margin-top: var(--space-3);
+  font-size: var(--text-page);
+  font-weight: var(--weight-display);
+}
+
+.tickets__lead {
+  max-width: 52ch;
+  margin-top: var(--space-3);
+  color: var(--muted);
+  font-size: var(--text-item);
+  line-height: 1.5;
+}
+
+/* ---- Confirmation after paying ---- */
 .confirmation {
-  padding: var(--space-5);
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
   margin-bottom: var(--space-6);
-  background: var(--ink);
-  color: var(--paper);
+  padding: var(--space-6);
+  border-top: 3px solid var(--ev);
+  background: color-mix(in srgb, var(--ev-paper) 45%, var(--white));
+  color: var(--ink);
+}
+
+.confirmation::before {
+  content: '✓';
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: var(--space-2);
+  border: 2px solid var(--ev);
+  border-radius: 50%;
+  color: var(--ev-text);
+  font-size: var(--text-item);
+  font-weight: var(--weight-heading);
+}
+
+.confirmation h1 {
+  font-size: var(--text-page);
+  font-weight: var(--weight-display);
 }
 
 .confirmation h1:focus {
@@ -10,16 +57,11 @@
 }
 
 .confirmation p {
-  margin-top: var(--space-3);
+  font-size: var(--text-item);
 }
 
 .tickets__event {
   margin-top: var(--space-7);
-}
-
-.tickets__title {
-  color: var(--ev-text);
-  margin-bottom: var(--space-4);
 }
 
 .tickets__event header .notice {
@@ -32,76 +74,131 @@
 }
 
 .tickets__empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
   margin-top: var(--space-6);
+  padding: var(--space-7) var(--space-6);
+  border: 1px solid var(--rule);
+  background: var(--white);
+}
+
+.tickets__empty p {
   color: var(--muted);
 }
 
+/* ---- A ticket ---- */
 .stubs {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: var(--space-5);
-  /* A ticket tilts slightly as it arrives; that must never make the page scroll sideways. */
+  max-width: 960px;
+  /* A ticket rises as it arrives; that must never make the page scroll sideways. */
   overflow-x: clip;
 }
 
-/* A ticket: the event's ink on the left, a white stub with the QR on the right, notches where it tears. */
 .stub {
   --notch: 14px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  background: var(--ev);
-  color: var(--on-ev);
+  grid-template-columns: 200px minmax(0, 1fr) 232px;
+  min-height: 280px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ticket);
+  background: var(--white);
+  color: var(--ink);
+}
+
+.stub__art {
   position: relative;
-  border: 1px solid var(--ev);
+  min-width: 0;
+  overflow: hidden;
+  background: var(--ev-paper);
+}
+
+.stub__art > svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .stub__main {
-  padding: var(--space-5);
   display: grid;
-  gap: var(--space-2);
-  align-content: start;
+  align-content: center;
+  gap: var(--space-3);
   min-width: 0;
+  padding: var(--space-6);
 }
 
 .stub__label {
-  color: inherit;
-  opacity: 0.8;
+  color: var(--muted);
 }
 
-.stub__seat {
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 900;
-}
-
-.stub__event {
-  font-weight: 700;
+.stub__title {
+  font-size: var(--text-section);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .stub__when {
-  font-size: 0.9rem;
-  opacity: 0.9;
+  color: var(--muted);
+  font-size: var(--text-small);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.stub__seat {
+  margin-top: var(--space-1);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+  font-size: var(--text-item);
+  font-variant-numeric: tabular-nums;
 }
 
 .stub__status {
-  color: inherit;
-  border: 1px solid currentColor;
   width: max-content;
   padding: 2px var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--surface-subtle);
+  color: var(--ink);
 }
 
+/* The tear-off stub: a dashed edge with a notch cut out at each end. */
 .stub__side {
   position: relative;
-  width: 200px;
-  padding: var(--space-4);
   display: grid;
   justify-items: center;
   align-content: center;
   gap: var(--space-3);
+  padding: var(--space-5);
+  border-left: 2px dashed var(--rule);
   background: var(--white);
-  color: var(--ink);
-  border-left: 2px dashed var(--ev);
+}
+
+.stub__side::before,
+.stub__side::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--notch) - 1px);
+  width: calc(2 * var(--notch));
+  height: calc(2 * var(--notch));
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+
+.stub__side::before {
+  top: calc(-1 * var(--notch));
+}
+
+.stub__side::after {
+  bottom: calc(-1 * var(--notch));
 }
 
 .stub__qr {
@@ -110,62 +207,85 @@
 }
 
 .stub__noqr {
-  font-size: 0.85rem;
+  font-size: var(--text-small);
   text-align: center;
 }
 
 .stub__code {
-  font-size: 0.8rem;
+  font-size: var(--text-caption);
   text-align: center;
   word-break: break-word;
 }
 
-.stub__side::before,
-.stub__side::after {
-  content: '';
-  position: absolute;
-  width: calc(2 * var(--notch));
-  height: calc(2 * var(--notch));
-  border-radius: 50%;
-  background: var(--paper);
+.stub--used .stub__art {
+  filter: grayscale(1);
+  opacity: 0.65;
 }
 
-/* Beside a vertical tear, centred on it at the top and bottom edges. */
-.stub__side::before {
-  left: calc(-1 * var(--notch));
-  top: calc(-1 * var(--notch));
-}
-
-.stub__side::after {
-  left: calc(-1 * var(--notch));
-  bottom: calc(-1 * var(--notch));
-}
-
-.stub--used {
-  opacity: 0.55;
-}
-
-@media (max-width: 640px) {
+@media (max-width: 880px) {
   .stub {
-    grid-template-columns: 1fr;
+    grid-template-columns: 160px minmax(0, 1fr);
+    min-height: 0;
   }
 
+  .stub__art {
+    grid-row: 1;
+  }
+
+  .stub__main {
+    padding: var(--space-5);
+  }
+
+  /* The tear is horizontal once the stub drops below, so its notches sit at the left and right ends. */
   .stub__side {
-    width: auto;
+    grid-column: 1 / -1;
     border-left: 0;
-    border-top: 2px dashed var(--ev);
+    border-top: 2px dashed var(--rule);
   }
 
-  /* The tear is horizontal on a phone, so the notches sit at its left and right ends. */
+  .stub__side::before,
+  .stub__side::after {
+    top: calc(-1 * var(--notch) - 1px);
+    bottom: auto;
+  }
+
   .stub__side::before {
     left: calc(-1 * var(--notch));
-    top: calc(-1 * var(--notch));
   }
 
   .stub__side::after {
     left: auto;
     right: calc(-1 * var(--notch));
-    top: calc(-1 * var(--notch));
-    bottom: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .confirmation {
+    padding: var(--space-5);
+  }
+
+  /* A small poster, shown whole, beside the name of the event. */
+  .stub {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .stub__art {
+    align-self: start;
+    margin: var(--space-4) 0 0 var(--space-4);
+    aspect-ratio: 3 / 4;
+  }
+
+  .stub__main {
+    padding: var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .stub__title {
+    font-size: var(--text-item);
+  }
+
+  .stub__seat {
+    padding-top: var(--space-3);
+    font-size: var(--text-body);
   }
 }

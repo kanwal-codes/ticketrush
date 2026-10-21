@@ -232,7 +232,7 @@ function Form({ venues, editing }: { venues: VenueView[]; editing?: Editing }) {
             </fieldset>
           )}
 
-          <fieldset>
+          <fieldset className="eventform__schedule">
             <legend>When</legend>
             <Field type="datetime-local" label="Event starts" {...text('startsAt')} />
             <Field type="datetime-local" label="Doors open" {...text('doorsAt')} />

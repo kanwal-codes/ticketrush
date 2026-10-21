@@ -13,8 +13,8 @@
   gap: var(--space-2);
   min-height: 44px;
   padding-right: var(--space-4);
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight:var(--weight-heading);
+  font-size: var(--text-small);
   text-decoration: none;
 }
 

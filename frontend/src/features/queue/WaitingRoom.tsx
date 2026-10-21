@@ -1,5 +1,4 @@
 import { RollingNumber } from '../../components/RollingNumber'
-import { BackBar } from '../../components/BackBar'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
@@ -10,6 +9,7 @@ import { NotFound } from '../../app/RouteError'
 import { Countdown } from '../../components/Countdown'
 import { QueueSkeleton } from '../../components/PageSkeletons'
 import { eventTheme } from '../../lib/eventTheme'
+import { Poster } from '../../components/Poster'
 import { formatTime } from '../../lib/time'
 import { useTitle } from '../../lib/useTitle'
 import { useWaitingRoom } from './useWaitingRoom'
@@ -49,9 +49,11 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
 
   const shell = (children: React.ReactNode) => (
     <div className="page queue" style={eventTheme(event.poster)}>
-      <BackBar to={`/events/${event.id}`}>{event.title}</BackBar>
-      <p className="label queue__event">Waiting room</p>
+      <div className="queue__art"><Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} /></div>
+      <div className="queue__body">
+      <p className="label queue__event">{event.title}</p>
       {children}
+      </div>
     </div>
   )
 
@@ -130,7 +132,7 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
 
   return shell(
     <>
-      <h1>You are in the queue.</h1>
+      <h1>You’re in line.</h1>
 
       {/* The big number is for the eye; a screen reader gets one plain sentence instead of the pieces. */}
       <p className="queue__ahead" aria-hidden="true">
@@ -174,7 +176,7 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
         </p>
       )}
 
-      <p className="queue__saved">Your place is saved. A refresh keeps it, and people are let in by arrival time.</p>
+      <p className="queue__saved">Your place is saved. Refreshing won’t lose it, and guests enter in arrival order.</p>
 
       {room.connection !== 'live' && (
         <p className="queue__connection" role="status">
@@ -205,4 +207,3 @@ function RoomBody({ event, onRejoin }: { event: EventDetail; onRejoin: () => voi
     </>,
   )
 }
-

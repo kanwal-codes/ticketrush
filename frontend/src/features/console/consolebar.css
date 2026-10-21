@@ -1,58 +1,101 @@
-/* A dark strip across the top of every console page: the one place the organizer's side looks different from the guest's. */
+/* The organizer's side looks different on purpose: a dark sidebar (a strip across the top on a phone) that says "you are
+   running events now, not browsing", and is the way out to the public site. */
+.organizer-shell {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.organizer-shell > .page {
+  width: calc(100% - 2 * var(--space-6));
+  max-width: 1040px;
+  margin-inline: var(--space-6);
+  padding-top: var(--space-6);
+  min-width: 0;
+}
+
 .consolebar {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--surface-inverse);
+  color: var(--on-inverse);
 }
 
 .consolebar__inner {
-  width: min(100% - 2 * var(--gutter), var(--page));
-  margin-inline: auto;
+  position: sticky;
+  top: var(--header-h, 72px);
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: var(--space-5);
-  min-height: 40px;
-  font-size: 0.875rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--text-small);
 }
 
 .consolebar__mode {
-  margin-right: auto;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  margin: 0 0 var(--space-4) var(--space-3);
+  color: var(--muted-inverse);
+  font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--rule);
 }
 
 .consolebar a {
-  padding-block: var(--space-2);
-  border-bottom: 2px solid transparent;
-  color: inherit;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--muted-inverse);
+  font-weight: var(--weight-label);
   text-decoration: none;
-  transition: border-color var(--dur-fast) var(--ease-in-out);
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
 
 .consolebar a:hover {
-  border-bottom-color: var(--muted);
+  background: rgb(255 255 255 / 0.08);
+  color: var(--on-inverse);
 }
 
 .consolebar a[aria-current='page'] {
-  border-bottom-color: var(--paper);
+  background: rgb(255 255 255 / 0.14);
+  color: var(--on-inverse);
 }
 
 .consolebar a:focus-visible {
-  outline-color: var(--paper);
+  outline-color: var(--on-inverse);
 }
 
-/* Label and both links have to share one row at 375px, so everything tightens a little. */
-@media (max-width: 560px) {
+@media (max-width: 1000px) {
+  .organizer-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .organizer-shell > .page {
+    width: calc(100% - 2 * var(--gutter));
+    margin-inline: auto;
+    padding-top: var(--space-5);
+  }
+
   .consolebar__inner {
-    column-gap: var(--space-4);
-    font-size: 0.8rem;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-2) var(--gutter);
   }
 
   .consolebar__mode {
-    font-size: 0.68rem;
-    letter-spacing: 0.04em;
+    margin: 0 auto 0 0;
+  }
+}
+
+/* The label gives way before the links do, so the strip stays on one row. */
+@media (max-width: 560px) {
+  .consolebar__mode {
+    display: none;
+  }
+
+  .consolebar__inner {
+    justify-content: flex-start;
   }
 }

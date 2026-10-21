@@ -82,9 +82,9 @@ function Door({ id }: { id: number }) {
     <div className="page console scanner">
       <BackBar to={`/console/events/${id}`}>{title}</BackBar>
       <header>
-        <p className="label">Door</p>
+        <p className="label">Door check-in</p>
         <h1>
-          <span className="num">{door.checkedIn.toLocaleString('en-CA')}</span> of <span className="num">{door.issued.toLocaleString('en-CA')}</span> in
+          <span className="num">{door.checkedIn.toLocaleString('en-CA')}</span> of <span className="num">{door.issued.toLocaleString('en-CA')}</span> tickets checked in
         </h1>
       </header>
 
@@ -101,10 +101,10 @@ function Door({ id }: { id: number }) {
             autoCapitalize="characters"
             spellCheck={false}
             inputMode="text"
-            placeholder="Scan or type"
+            placeholder="Scan or type code"
           />
           <button type="submit" className="btn" disabled={busy || !code.trim()}>
-            {busy ? 'Checking…' : 'Check'}
+            {busy ? 'Checking…' : 'Check ticket'}
           </button>
         </div>
       </form>

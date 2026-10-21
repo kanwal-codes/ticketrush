@@ -1,27 +1,34 @@
-.event__back {
-  font-size: 0.9rem;
-  color: var(--muted);
+/* Event page: the poster, what it is, and the one way to buy. The event's own colours appear in its artwork and in a
+   few identity marks (the artist line, the rule above the booking card); every control is the shared action blue. */
+.page.event {
+  padding-top: clamp(16px, 3vw, 40px);
 }
 
 .event__layout {
   display: grid;
-  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
-  gap: var(--space-7);
-  margin-top: var(--space-4);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+  gap: clamp(32px, 6vw, 96px);
   align-items: start;
 }
 
+/* Not sticky: at this width the poster is as tall as everything beside it, so there is nothing for it to stay beside. */
 .event__poster {
   aspect-ratio: 3 / 4;
-  border: 1px solid var(--rule);
   overflow: hidden;
-  position: sticky;
-  top: var(--sticky-top);
+  background: var(--ev-paper);
+}
+
+.event__poster > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .event__main {
   display: grid;
   gap: var(--space-6);
+  align-content: start;
   min-width: 0;
 }
 
@@ -29,57 +36,90 @@
   color: var(--ev-text);
 }
 
-.event__title {
-  color: var(--ev-text);
+.event__kicker + .event__title {
   margin-top: calc(-1 * var(--space-4));
-  font-weight: 900;
+}
+
+.event__title {
+  font-size: var(--text-display);
+  font-weight: var(--weight-display);
+  text-wrap: balance;
+}
+
+.event__description {
+  max-width: 44ch;
+  color: var(--muted);
+  font-size: var(--text-item);
+  line-height: 1.55;
 }
 
 .facts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--space-4) var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
   margin: 0;
-  padding-block: var(--space-4);
+  padding-block: var(--space-5);
   border-block: 1px solid var(--rule);
 }
 
 .facts dd {
   margin: var(--space-1) 0 0;
-  font-weight: 600;
+  font-weight: var(--weight-heading);
   text-wrap: balance;
 }
 
-.facts .num {
-  font-weight: 500;
-}
-
+/* ---- Booking card ---- */
 .sale {
   display: grid;
   gap: var(--space-3);
   justify-items: start;
   padding: var(--space-5);
-  background: var(--ev-paper);
-  color: var(--on-ev-paper);
-  border: 1px solid var(--ink);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--ev);
+  background: var(--white);
 }
 
 .sale__headline {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--text-item);
+  font-weight: var(--weight-heading);
   letter-spacing: 0;
 }
 
+.sale__price {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.sale__price strong {
+  font-family: var(--font-display);
+  font-size: var(--text-metric);
+  font-weight: var(--weight-display);
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+}
+
+.sale__price > span:last-child {
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+
 .sale__clock {
-  font-size: clamp(2.25rem, 6vw, 3.5rem);
-  font-weight: 500;
+  font-size: var(--text-metric);
+  font-weight: var(--weight-label);
   line-height: 1;
 }
 
 .sale__note {
-  font-size: 0.9rem;
+  color: var(--muted);
+  font-size: var(--text-small);
 }
 
+.sale .btn {
+  width: 100%;
+  min-height: 52px;
+}
+
+/* ---- Tiers ---- */
 .tiers {
   list-style: none;
   margin: 0;
@@ -97,50 +137,68 @@
 }
 
 .tier__name {
-  font-size: 1.1rem;
+  font-size: var(--text-item);
 }
 
 .tier__price {
-  font-size: 1.15rem;
+  font-size: var(--text-item);
   text-align: right;
 }
 
 .event__explain {
   margin-top: var(--space-4);
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 
-.event__about {
-  max-width: var(--measure);
-}
+@media (max-width: 720px) {
+  .page.event {
+    padding-top: var(--space-4);
+  }
 
-@media (max-width: 760px) {
+  /* Poster and title side by side, so the way to buy is on the first screen. */
   .event__layout {
-    grid-template-columns: 1fr;
-    gap: var(--space-5);
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: var(--space-5) var(--space-4);
   }
 
   .event__poster {
-    position: static;
-    max-width: 200px;
+    grid-row: 1 / span 2;
+    align-self: start;
   }
 
-  /* The way to buy comes straight after the title, not after four rows of facts. */
-  .event__main > .facts {
-    order: 1;
+  .event__main {
+    display: contents;
   }
 
-  .event__main > [aria-labelledby='tiers-heading'] {
-    order: 2;
+  .event__kicker,
+  .event__title {
+    grid-column: 2;
   }
 
-  .event__about {
-    order: 3;
+  .event__kicker {
+    align-self: end;
   }
-}
 
-/* Same on the sale box: it is on the event's paper colour, so a muted grey label can fall below readable contrast. */
-.sale .label {
-  color: inherit;
+  .event__kicker + .event__title {
+    margin-top: 0;
+    align-self: start;
+  }
+
+  .event__title {
+    font-size: var(--text-page);
+  }
+
+  .event__main > :is(.facts, .sale, section, .notice, .event__description) {
+    grid-column: 1 / -1;
+  }
+
+  /* Reading order on a phone: poster and title, a line about it, the way to buy, then the details. */
+  .event__poster { order: -4; }
+  .event__kicker { order: -3; }
+  .event__title { order: -2; }
+  .event__main > .event__description { order: -1; }
+  .event__main > .sale { order: 0; }
+  .event__main > .facts { order: 1; }
+  .event__main > [aria-labelledby='tiers-heading'] { order: 2; }
 }

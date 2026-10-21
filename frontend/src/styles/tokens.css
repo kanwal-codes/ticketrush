@@ -1,22 +1,92 @@
-/* The design system from the approved canvas: one paper, one ink, square corners, hairline rules.
-   Each event brings its own two inks and paper, set as --ev, --ev-accent and --ev-paper on its page. */
+/* TicketRush foundations: one paper, one ink, one action color, editorial structure with restrained control radii.
+   Each event brings its own two inks and paper, set as --ev, --ev-accent and --ev-paper on its page. Those colors
+   belong to artwork and small identity marks (rules, the confirmation tick); every button and selection uses --action. */
+@font-face { font-family:'Bricolage Grotesque Variable'; src:url('@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2') format('woff2'); font-weight:200 800; font-display:swap; }
 :root {
-  --paper: #f6f6f3;
-  --ink: #121212;
-  --muted: #686862;
-  --rule: #d9d9d3;
+  --paper: #fafafa;
+  --ink: #181a1e;
+  --muted: #62666e;
+  --rule: #dedfe2;
   --white: #ffffff;
-  --danger: #b3261e;
-  --ok: #1c7a4d;
+  --surface: var(--white);
+  --surface-subtle: #f0f1f3;
+  --surface-input: #eceef0;
+  --surface-inverse: #181e29;
+  --on-inverse: #f7f8fa;
+  --muted-inverse: #c0c6d0;
+  --border-control: #8b9098;
+  --focus: #315be8;
+  --danger: #b42318;
+  --ok: #087443;
+  --warning: #805600;
+  --danger-inverse: #ffaaa2;
+  --warning-inverse: #f4cd73;
+  --info-inverse: #bacce5;
+  --ok-inverse: #8fdeb1;
+  --action: #315be8;
+  --action-hover: #2748c4;
+  --action-tint: #ebeffc;
+  --on-action: #ffffff;
+  --accent: var(--action);
+  --on-accent: var(--on-action);
+  --shadow-soft: 0 8px 24px rgb(24 26 30 / .06);
+  --shadow-lift: 0 16px 40px rgb(24 26 30 / .1);
+  --radius-control: 6px;
+  --radius-panel: 12px;
+  --radius-ticket: 14px;
+  --radius-chip: var(--radius-control);
 
-  /* Overridden per event by <EventTheme>. These are the canvas defaults ("Afterlight"). */
-  --ev: #2b2fd9;
-  --ev-accent: #ff5a36;
-  --ev-paper: #ffd9c4;
+  /* Neutral until an event supplies its own readable artwork colors. */
+  --ev: var(--ink);
+  --ev-accent: var(--ink);
+  --ev-paper: var(--surface-subtle);
   --on-ev: #ffffff;
+  --ev-text: var(--ink);
+  --on-ev-paper: var(--ink);
 
+  /* Three families, three jobs: display for headings, UI for reading and controls, mono for data (prices, seats, clocks). */
+  --font-display: 'Bricolage Grotesque Variable', var(--font-ui);
   --font-ui: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Roles, not page-specific sizes: display → page → section → item → body → metadata. */
+  --text-display: clamp(2.5rem, 4.5vw, 4.5rem);
+  --text-page: clamp(2rem, 3.5vw, 3.5rem);
+  --text-page-compact: clamp(1.75rem, 2.5vw, 2.5rem);
+  --text-section: clamp(1.375rem, 2vw, 1.75rem);
+  --text-item: 1.125rem;
+  --text-body: 1rem;
+  --text-small: .875rem;
+  --text-caption: .8125rem;
+  --text-label: .75rem;
+  --text-metric: clamp(1.75rem, 3vw, 2.5rem);
+  --text-metric-compact: clamp(1.25rem, 5vw, 1.75rem);
+  --text-count: clamp(3.5rem, 10vw, 6rem);
+  --weight-display: 720;
+  --weight-heading: 650;
+  --weight-label: 550;
+  --leading-display: 1.08;
+  --leading-heading: 1.25;
+  --leading-body: 1.6;
+  --tracking-display: -.045em;
+  --tracking-heading: -.025em;
+  --tracking-label: .08em;
+
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-spring: cubic-bezier(.34, 1.3, .64, 1);
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-page: 280ms;
+  --dur-slow: 420ms;
+  --dur-progress: 700ms;
+  --dur-repeat: 1400ms;
+  --dur-breathe: 2400ms;
+  --stagger-step: 40ms;
+  --motion-fast: var(--dur-fast);
+  --motion-base: var(--dur-base);
+  --motion-slow: var(--dur-slow);
+  --motion-ease: var(--ease-out);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -28,10 +98,9 @@
   --space-8: 72px;
 
   --measure: 62ch;
-  --page: 1180px;
+  --page: 1280px;
   --gutter: clamp(16px, 4vw, 40px);
 
-  /* Where a sticky side block (poster, seat summary, order summary) comes to rest: under the header (whose height the
-     layout publishes) and the 44px back bar, plus a gap. Hardcoding this slid the blocks under the back bar. */
-  --sticky-top: calc(var(--header-h, 61px) + 44px + var(--space-4));
+  --journey-bar-h: 64px;
+  --sticky-top: calc(var(--header-h, 74px) + var(--space-5));
 }

@@ -1,5 +1,15 @@
-.auth {
-  max-width: 460px;
+/* Sign in, register, and the recovery pages: one narrow card, the same on all of them. */
+.page.auth {
+  max-width: 480px;
+  margin-block: var(--space-7);
+  padding: var(--space-7) var(--space-6);
+  border: 1px solid var(--rule);
+  background: var(--white);
+}
+
+.auth h1 {
+  font-size: var(--text-page-compact);
+  font-weight: var(--weight-display);
 }
 
 .auth__lead {
@@ -15,22 +25,39 @@
 
 .auth__submit {
   margin-top: var(--space-2);
+  min-height: 52px;
+}
+
+.auth__forgot {
+  margin-top: calc(var(--space-2) * -1);
+  font-size: var(--text-small);
+}
+
+.auth__forgot a,
+.auth__switch a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .auth__switch {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.auth > .notice {
   margin-top: var(--space-5);
 }
 
 .field__hint {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--text-small);
 }
 
-.auth h1 {
-  font-size: clamp(1.9rem, 4vw, 2.5rem);
-}
-
-.auth__forgot {
-  margin-top: calc(var(--space-2) * -1);
-  font-size: 0.9rem;
+@media (max-width: 560px) {
+  .page.auth {
+    margin-block: var(--space-4);
+    padding: var(--space-5) var(--space-4);
+  }
 }

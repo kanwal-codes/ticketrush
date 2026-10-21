@@ -46,11 +46,11 @@ export function ForgotPassword() {
         </Notice>
       ) : (
         <>
-          <p className="auth__lead">Enter the email you signed up with and we will send you a link to choose a new one.</p>
+          <p className="auth__lead">Enter your account email. We’ll send you a link to reset your password.</p>
           <form onSubmit={(e) => void submit(e)} noValidate className="auth__form">
             <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error} autoComplete="email" inputMode="email" />
             <button type="submit" className="btn auth__submit" disabled={busy}>
-              {busy ? 'One moment…' : 'Send the link'}
+              {busy ? 'Sending link…' : 'Send reset link'}
             </button>
           </form>
         </>

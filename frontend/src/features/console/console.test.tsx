@@ -354,7 +354,7 @@ describe('the door scanner', () => {
     renderRoute('/console/events/7/scan')
     const input = await screen.findByLabelText('Ticket code')
     await waitFor(() => expect(input).toHaveFocus())
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('12 of 40 in')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('12 of 40 tickets checked in')
     expect(screen.getByText('ABCD 1234 EFGH 5678 JKMN 9PQ1')).toBeInTheDocument()
   })
 

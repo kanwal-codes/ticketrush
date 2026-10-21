@@ -28,7 +28,8 @@ describe('account page', () => {
     await userEvent.click(await screen.findByRole('button', { name: /account menu/i }))
     await userEvent.click(await screen.findByRole('link', { name: 'Account' }))
     expect(await screen.findByRole('heading', { level: 1, name: 'Your account' })).toBeInTheDocument()
-    expect(screen.getByText('Ana, ana@example.org')).toBeInTheDocument()
+    expect(screen.getAllByText('Ana').length).toBeGreaterThan(0)
+    expect(screen.getByText('ana@example.org')).toBeInTheDocument()
   })
 
   it('downloads a copy of the guest\'s data as a file', async () => {
@@ -59,7 +60,7 @@ describe('account page', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/goodbye'))
     expect(await calls.find((c) => c.url.endsWith('/api/me/close'))!.json()).toEqual({ password: 'correct-horse' })
-    expect(getToken()).toBeNull()
+    await waitFor(() => expect(getToken()).toBeNull())
     expect(await screen.findByRole('heading', { name: 'Your account is closed' })).toBeInTheDocument()
   })
 

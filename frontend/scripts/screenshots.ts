@@ -20,7 +20,8 @@ const hall = [
   { name: 'Stalls', rows: 7, perRow: 16, priceCents: 9600 },
   { name: 'Balcony', rows: 4, perRow: 16, priceCents: 6400 },
 ]
-const afterlight = { title: 'Afterlight Tour', artist: 'Mira Okafor', poster, sections: hall, startsInDays: 40 }
+const description = 'Mira Okafor brings the Afterlight Tour to Halden Hall for one night: the new songs, the old favourites, and every seat reserved.'
+const afterlight = { title: 'Afterlight Tour', artist: 'Mira Okafor', description, poster, sections: hall, startsInDays: 40 }
 
 const [me] = await createGuests(1)
 const browser = await chromium.launch()
@@ -51,7 +52,7 @@ await shoot('discover', 1280, 960, async (page) => {
   await page.waitForTimeout(700)
 })
 
-await shoot('event', 1280, 900, async (page) => {
+await shoot('event', 1280, 1250, async (page) => {
   await page.goto(`${WEB}/events/${upcoming.id}`)
   await page.getByRole('heading', { level: 1, name: 'Afterlight Tour' }).waitFor()
   await page.waitForTimeout(700)
@@ -84,13 +85,15 @@ await new Promise((resolve) => setTimeout(resolve, 2500))
 
 await shoot('queue', 1280, 820, async (page) => {
   await page.goto(`${WEB}/events/${queued.id}/queue`)
-  await page.getByRole('heading', { name: 'You are in the queue.' }).waitFor()
+  await page.getByRole('heading', { name: 'You’re in line.' }).waitFor()
   await page.getByText('312', { exact: true }).waitFor()
+  await page.waitForTimeout(900) // let the page finish fading in before the picture
 })
 
 await shoot('queue-phone', 390, 844, async (page) => {
   await page.goto(`${WEB}/events/${queued.id}/queue`)
   await page.getByText('312', { exact: true }).waitFor()
+  await page.waitForTimeout(900)
 })
 
 await shoot('seats', 1280, 1000, async (page) => {
@@ -98,6 +101,7 @@ await shoot('seats', 1280, 1000, async (page) => {
   await page.getByRole('heading', { name: 'Stalls' }).waitFor()
   await chooseFree(page, 'E', 2)
   await page.getByText('$206.40').first().waitFor()
+  await page.waitForTimeout(900) // the totals roll into place; let them settle
 })
 
 await shoot('checkout', 1280, 800, async (page) => {
@@ -105,8 +109,8 @@ await shoot('checkout', 1280, 800, async (page) => {
   await chooseFree(page, 'C', 2)
   await page.getByRole('button', { name: 'Hold these 2 seats' }).click()
   await page.waitForURL('**/checkout')
-  await page.getByRole('heading', { name: 'Checkout' }).waitFor()
-  await page.waitForTimeout(700) // the seat map glides into the checkout summary; let it finish before the picture
+  await page.getByRole('heading', { name: 'Make it official.' }).waitFor()
+  await page.waitForTimeout(700) // the page fades in; let it finish before the picture
   await page.getByLabel('Card number').fill('4242424242424242')
   await page.getByLabel('Expiry').fill('1234')
   await page.getByLabel('Security code').fill('123')

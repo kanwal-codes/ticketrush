@@ -66,7 +66,7 @@ describe('CheckoutPage', () => {
     mockApi(base)
     renderRoute('/events/7/checkout')
 
-    expect(await screen.findByRole('heading', { name: 'Checkout' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Make it official.' })).toBeInTheDocument()
     const summary = screen.getByRole('complementary', { name: 'Afterlight Tour' })
     expect(within(summary).getByText('Floor, row A, seats 1 and 2')).toBeInTheDocument()
     expect(within(summary).getByText('2 tickets')).toBeInTheDocument()
@@ -75,14 +75,12 @@ describe('CheckoutPage', () => {
     expect(within(summary).getByText('$14.40')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Pay $206.40' })).toBeInTheDocument()
     expect(screen.getByText('ana@example.org')).toBeInTheDocument()
-    expect(screen.getByText(/final price\. Nothing is added after this step/)).toBeInTheDocument()
-    expect(screen.getByText(/not be charged twice/)).toBeInTheDocument()
   })
 
   it('checks the card before sending anything', async () => {
     const { calls } = mockApi(base)
     renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
+    await screen.findByRole('heading', { name: 'Make it official.' })
     await pay()
 
     expect(await screen.findByText('Enter the number on your card')).toBeInTheDocument()
@@ -93,12 +91,12 @@ describe('CheckoutPage', () => {
   it('pays with a test card, sends a token, and takes the guest to their tickets', async () => {
     const { calls } = mockApi({ ...base, 'POST /api/orders': () => settle(json(order(), 201)), 'GET /api/tickets': () => json([]) })
     const { router } = renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
+    await screen.findByRole('heading', { name: 'Make it official.' })
     await fillCard()
     await pay()
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/tickets'))
-    expect(router.state.location.state).toEqual({ paid: { reference: 'TR-ABC123', totalCents: 20640 } })
+    expect(router.state.location.state).toEqual({ paid: { reference: 'TR-ABC123', totalCents: 20640, poster: eventDetail().poster } })
     expect(getActiveHold()).toBeNull()
     const sent = await calls.find((c) => c.method === 'POST')!.json()
     expect(sent).toEqual({ holdId: 55, paymentToken: 'tok_visa' })
@@ -107,8 +105,8 @@ describe('CheckoutPage', () => {
   it('fills in a test card for the guest on request', async () => {
     mockApi(base)
     renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
-    await userEvent.click(screen.getByText('Use a test card'))
+    await screen.findByRole('heading', { name: 'Make it official.' })
+    await userEvent.click(screen.getByText('Fill with a test card'))
     await userEvent.click(screen.getByRole('button', { name: '4000 0000 0000 0002' }))
     expect(screen.getByLabelText('Card number')).toHaveValue('4000 0000 0000 0002')
     expect(screen.getByLabelText('Expiry')).toHaveValue('12/34')
@@ -118,7 +116,7 @@ describe('CheckoutPage', () => {
     const results = [json(order({ status: 'FAILED', failureReason: 'card_declined', paidAt: null }), 402), json(order(), 201)]
     const { calls } = mockApi({ ...base, 'POST /api/orders': () => results.shift()!, 'GET /api/tickets': () => json([]) })
     const { router } = renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
+    await screen.findByRole('heading', { name: 'Make it official.' })
     await fillCard('4000000000000002')
     await pay()
 
@@ -143,7 +141,7 @@ describe('CheckoutPage', () => {
       'GET /api/tickets': () => json([]),
     })
     const { router } = renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
+    await screen.findByRole('heading', { name: 'Make it official.' })
     await fillCard()
     await pay()
 
@@ -165,11 +163,11 @@ describe('CheckoutPage', () => {
       'GET /api/tickets': () => json([]),
     })
     const { router } = renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
+    await screen.findByRole('heading', { name: 'Make it official.' })
     await fillCard('4000000000000119')
     await pay()
 
-    expect(await screen.findByRole('heading', { name: 'Confirming your payment' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Checking your payment' })).toBeInTheDocument()
     expect(screen.getByText('Please do not pay again.')).toBeInTheDocument()
     expect(screen.getByText('Order TR-ABC123')).toBeInTheDocument()
 
@@ -180,7 +178,7 @@ describe('CheckoutPage', () => {
   it('says plainly when the seats were lost and the money has been returned', async () => {
     mockApi({ ...base, 'POST /api/orders': () => settle(json(order({ status: 'REFUNDED', paidAt: null }), 409)) })
     renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
+    await screen.findByRole('heading', { name: 'Make it official.' })
     await fillCard()
     await pay()
 
@@ -193,7 +191,7 @@ describe('CheckoutPage', () => {
   it('says so when the hold ran out before the guest paid', async () => {
     mockApi({ ...base, 'POST /api/orders': () => json({ title: 'Hold unavailable', detail: 'Your hold has expired. Pick your seats again.' }, 409) })
     renderRoute('/events/7/checkout')
-    await screen.findByRole('heading', { name: 'Checkout' })
+    await screen.findByRole('heading', { name: 'Make it official.' })
     await fillCard()
     await pay()
 

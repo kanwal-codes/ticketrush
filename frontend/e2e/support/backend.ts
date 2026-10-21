@@ -26,6 +26,8 @@ export function organizerToken(): Promise<string> {
 export interface NewEvent {
   title?: string
   artist?: string
+  /** What the event page says about the event. Tests do not care; the README screenshots do. */
+  description?: string
   waitingRoom?: boolean
   /** Seconds until the sale opens. Negative or zero means it is already on sale. */
   onSaleInSeconds?: number
@@ -66,7 +68,7 @@ export async function createEvent(options: NewEvent = {}): Promise<CreatedEvent>
     {
       title,
       artist: options.artist ?? 'The E2E Band',
-      description: 'Created by an end-to-end test.',
+      description: options.description ?? 'Created by an end-to-end test.',
       venueId: venue.id,
       startsAt: iso(now + (options.startsInDays ?? 30) * day),
       doorsAt: iso(now + (options.startsInDays ?? 30) * day - 3_600_000),

@@ -48,7 +48,7 @@ describe('SeatsPage', () => {
     await userEvent.click(seat(1))
     await userEvent.click(seat(2))
 
-    const panel = screen.getByRole('complementary', { name: 'Your tickets' })
+    const panel = screen.getByRole('complementary', { name: 'Your selection' })
     expect(within(panel).getByText('Floor A1')).toBeInTheDocument()
     expect(within(panel).getByText('$192.00')).toBeInTheDocument() // tickets
     expect(within(panel).getByText('$14.40')).toBeInTheDocument() // fees
@@ -146,7 +146,7 @@ describe('SeatsPage', () => {
     expect(seat(1)).toHaveAttribute('aria-pressed', 'true')
     expect(seat(2)).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('$206.40')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Continue to payment' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Review and pay' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/events/7/checkout'))
     expect(calls.some((c) => c.method === 'POST')).toBe(false)
@@ -165,12 +165,12 @@ describe('SeatsPage', () => {
     })
     renderRoute('/events/7/seats')
     await screen.findByRole('heading', { name: 'Floor' })
-    await userEvent.click(screen.getByRole('button', { name: 'Release my seats' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Release seats' }))
 
     await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true))
     expect(await screen.findByText('Your seats are released.')).toBeInTheDocument()
     await waitFor(() => expect(getActiveHold()).toBeNull())
-    expect(screen.queryByRole('button', { name: 'Release my seats' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Release seats' })).not.toBeInTheDocument()
   })
 
   it('sends a guest who has not been let in to the waiting room first', async () => {

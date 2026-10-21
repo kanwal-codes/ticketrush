@@ -24,7 +24,7 @@ test('a guest signs up, waits in the queue, picks seats, pays and gets tickets w
 
   await page.waitForURL('**/checkout')
   await expect(page.getByRole('button', { name: 'Pay $206.40' })).toBeVisible() // the same total, now from the server
-  await expect(page.locator('.hold-timer')).toBeVisible()
+  await expect(page.locator('.hold-clock')).toBeVisible()
   await payWith(page, '4242 4242 4242 4242')
 
   await page.waitForURL('**/tickets')
@@ -49,7 +49,7 @@ test('a declined card keeps the seats, and the next card pays', async ({ page })
 
   await payWith(page, '4000 0000 0000 0002')
   await expect(page.getByRole('alert')).toContainText('Your card was declined')
-  await expect(page.locator('.hold-timer')).toBeVisible() // the seats are still held
+  await expect(page.locator('.hold-clock')).toBeVisible() // the seats are still held
 
   await payWith(page, '4242 4242 4242 4242')
   await page.waitForURL('**/tickets')
@@ -62,10 +62,10 @@ test('an unknown outcome says not to pay again, and nobody is charged', async ({
   await chooseAndHold(page, event.id, [1])
 
   await payWith(page, '4000 0000 0000 0119') // the provider answers with an error: no one knows if it went through
-  await expect(page.getByRole('heading', { name: 'Confirming your payment' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Checking your payment' })).toBeVisible()
   await expect(page.getByText('Please do not pay again.')).toBeVisible()
-  await page.getByRole('button', { name: 'Check now' }).click()
-  await expect(page.getByRole('heading', { name: 'Confirming your payment' })).toBeVisible()
+  await page.getByRole('button', { name: 'Check payment status' }).click()
+  await expect(page.getByRole('heading', { name: 'Checking your payment' })).toBeVisible()
 
   // Judged on this guest's own order: other tests pay at the same time, so the provider's total is not ours to read.
   const [order] = await ordersOf(guest.token)
@@ -78,10 +78,10 @@ test('refreshing keeps the guest\'s place in the queue and their hold', async ({
   const event = await createEvent({ onSaleInSeconds: 25 })
 
   await page.goto(`/events/${event.id}/queue`)
-  await expect(page.getByRole('heading', { name: 'You are in the queue.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'You’re in line.' })).toBeVisible()
   await expect(page.getByText('#1')).toBeVisible()
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'You are in the queue.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'You’re in line.' })).toBeVisible()
   await expect(page.getByText('#1')).toBeVisible()
 
   // The sale opens, the guest is let in without doing anything, and a refresh on the seats finds the hold.
@@ -90,7 +90,7 @@ test('refreshing keeps the guest\'s place in the queue and their hold', async ({
   await page.getByRole('button', { name: 'Hold this seat' }).click()
   await page.waitForURL('**/checkout')
   await page.goto(`/events/${event.id}/seats`)
-  await expect(page.getByRole('button', { name: 'Continue to payment' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Review and pay' })).toBeVisible()
   // The seat map is cached for a couple of seconds on purpose, so look until it has caught up.
   await expect.poll(() => seatStatuses(event.id)).toMatchObject({ HELD: 1 })
 })
