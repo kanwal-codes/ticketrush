@@ -7,3 +7,4 @@
 10049	IGNORE	(cacheable content: hashed assets are meant to be cached, index.html is no-cache)
 10109	IGNORE	(informational: this is a single-page app)
 90004	IGNORE	(Cross-Origin-Embedder-Policy would block the Stripe and Cloudflare frames this app embeds)
+10027	IGNORE	(suspicious comments: the built scripts are minified, so the scanner reads ordinary words in third-party code, such as "query" in the router, as comments; our own comments are stripped when the site is built)

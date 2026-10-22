@@ -89,6 +89,8 @@ test('a nav item never splits its own words across lines, at any width between p
   const oneLine = (await panel.getByRole('link', { name: 'My tickets' }).boundingBox())!.height
   for (const label of ['Account', 'Sign out']) {
     const box = await panel.getByRole('link', { name: label, exact: true }).or(panel.getByRole('button', { name: label, exact: true })).boundingBox()
-    expect(box?.height, `"${label}" in the open panel (height ${box?.height}, one line is ${oneLine})`).toBeLessThanOrEqual(oneLine + 1)
+    // A wrapped label would be about twice as tall. Sign out also has a 1px top border and every height is fractional, so
+    // "within a pixel of a link" was too strict: it passed on one machine's fonts and failed on another's.
+    expect(box?.height, `"${label}" in the open panel (height ${box?.height}, one line is ${oneLine})`).toBeLessThan(oneLine * 1.25)
   }
 })
