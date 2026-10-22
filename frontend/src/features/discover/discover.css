@@ -78,22 +78,16 @@
   text-decoration: none;
 }
 
-.hero__poster {
+/* One picture fills the banner whatever its shape, cropped to fit around the stage. */
+.hero__image {
   position: absolute;
   inset: 0;
-}
-
-.hero__poster > svg {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 42%;
   transition: transform var(--dur-slow) var(--ease-out);
-}
-
-/* The caption below carries the title, so the poster's own lettering is hidden to avoid saying it twice. */
-.hero__poster svg text {
-  display: none;
 }
 
 .hero__feature::after {
@@ -104,7 +98,7 @@
   pointer-events: none;
 }
 
-.hero__feature:hover .hero__poster > svg {
+.hero__feature:hover .hero__image {
   transform: scale(1.03);
 }
 
