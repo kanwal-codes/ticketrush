@@ -1,11 +1,10 @@
 import { Link } from 'react-router'
 import type { EventSummary } from '../../api/types'
 import { Countdown } from '../../components/Countdown'
-import { Poster } from '../../components/Poster'
 import { formatDateShort, formatTime } from '../../lib/time'
 import { useEventNavigation } from './useEventNavigation'
 
-/** The live event supplies the artwork and booking state for Discover's editorial lead. */
+/** The banner is one illustration of a night out (the picture is cropped to fit, so it carries no lettering); the live event supplies its title and booking state. */
 export function Hero({ event, onTick }: { event: EventSummary; onTick?: () => void }) {
   const { warm, open } = useEventNavigation(event.id)
   const waiting = event.saleState === 'UPCOMING' || event.saleState === 'QUEUE_OPEN'
@@ -20,9 +19,7 @@ export function Hero({ event, onTick }: { event: EventSummary; onTick?: () => vo
         {waiting && <p className="hero__drop">Tickets go on sale {formatDateShort(event.onSaleAt)} at {formatTime(event.onSaleAt)} <Countdown to={event.onSaleAt} onDone={onTick} /></p>}
       </div>
       <Link to={`/events/${event.id}`} className="hero__feature" onClick={open} viewTransition>
-        <div className="hero__poster" style={{ viewTransitionName: `poster-${event.id}` }}>
-          <Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} />
-        </div>
+        <img className="hero__image" src="/hero/scene.webp" alt="" decoding="async" />
         <div className="hero__caption">
           <span className="hero__caption-label">Featured / {event.city}</span>
           <h2 id="hero-title">{event.title}</h2>
