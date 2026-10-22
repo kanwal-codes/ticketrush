@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { api, unwrap } from '../../api/client'
 import { Field } from '../../components/Field'
 import { Notice } from '../../components/Notice'
@@ -8,6 +8,7 @@ import { clearToken } from '../../auth/session'
 import { describeError } from '../../lib/errorCopy'
 import { useTitle } from '../../lib/useTitle'
 import { useMe } from '../auth/api'
+import { useTickets } from '../tickets/api'
 import './account.css'
 
 /** Hands the browser a file made from JSON, as a download. */
@@ -23,6 +24,7 @@ function download(filename: string, data: unknown) {
 export function AccountPage() {
   useTitle('Your account · TicketRush')
   const me = useMe().data
+  const tickets = useTickets()
   const navigate = useNavigate()
 
   const [exporting, setExporting] = useState(false)
@@ -65,11 +67,18 @@ export function AccountPage() {
   return (
     <div className="page account">
       <h1>Your account</h1>
-      {me && (
-        <p>
-          {me.displayName}, {me.email}
-        </p>
-      )}
+      <p className="account__lead">Your tickets, personal details, and privacy settings.</p>
+      <div className="account__overview">
+        <aside className="account__identity"><span>{me?.displayName?.slice(0, 1).toUpperCase()}</span><strong>{me?.displayName}</strong><p>{me?.email}</p><Link to="/tickets">My tickets</Link><a href="#export-heading">Privacy &amp; data</a><a href="#close-heading">Account settings</a></aside>
+        <section className="account__summary" aria-label="Account overview">
+          <h2>Your tickets and account</h2>
+          <div className="account__stats">
+            <div><span className="label">Tickets in your wallet</span><strong>{tickets.data ? tickets.data.filter(ticket => ticket.status === 'ISSUED').length : '–'}</strong><Link to="/tickets">View your tickets</Link></div>
+            <div><span className="label">Email address</span><strong>{me ? me.emailVerified ? 'Confirmed' : 'Not confirmed' : 'Loading…'}</strong><p>For your tickets and account recovery.</p></div>
+          </div>
+          <Link to="/" className="btn">Browse events</Link>
+        </section>
+      </div>
 
       <section aria-labelledby="export-heading">
         <h2 id="export-heading">Your data</h2>
@@ -98,7 +107,7 @@ export function AccountPage() {
                 {closeProblem.message}
               </Notice>
             )}
-            <button type="submit" className="btn" disabled={closing}>
+            <button type="submit" className="btn btn--danger" disabled={closing}>
               {closing ? 'Closing…' : 'Close my account'}
             </button>
           </form>

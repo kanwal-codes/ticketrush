@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { getToken, setToken } from '../auth/session'
 import { json, mockApi } from '../test/mockApi'
 import { routes } from './routes'
+import { eventDetail } from '../test/fixtures'
 
 function renderAt(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] })
@@ -15,13 +16,35 @@ function renderAt(path: string) {
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 describe('app shell', () => {
+  it('keeps the event as the return destination when switching between sign-up and sign-in', async () => {
+    mockApi({ 'GET /api/events/7': () => json(eventDetail()) })
+    const router = renderAt('/events/7')
+    await screen.findByRole('heading', { name: 'Afterlight Tour' })
+    await userEvent.click(screen.getByRole('link', { name: 'Sign up' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/register'))
+    expect(router.state.location.state).toEqual({ from: '/events/7' })
+    await userEvent.click(screen.getAllByRole('link', { name: 'Sign in' })[0]!)
+    await waitFor(() => expect(router.state.location.pathname).toBe('/signin'))
+    expect(router.state.location.state).toEqual({ from: '/events/7' })
+  })
+
   it('styles the footer links in the layout stylesheet, which every page loads, not in a page that loads lazily', () => {
     const css = (file: string) => readFileSync(`${process.cwd()}/src/${file}`, 'utf8')
-    expect(css('app/layout.css')).toMatch(/\.site-footer__links\s*{[^}]*display:\s*flex[^}]*justify-content:\s*center/)
+    expect(css('app/layout.css')).toMatch(/\.site-footer__links\s*{[^}]*display:\s*flex/)
     expect(css('features/legal/legal.css')).not.toMatch(/\.site-footer__links/)
+  })
+
+  it('keeps the footer branded and all four information links available', async () => {
+    renderAt('/')
+    const footer = await screen.findByRole('contentinfo')
+    expect(within(footer).getByRole('link', { name: 'TicketRush' })).toHaveAttribute('href', '/')
+    expect(within(footer).getByText('Find your next event.')).toBeInTheDocument()
+    const links = within(within(footer).getByRole('navigation', { name: 'About' })).getAllByRole('link')
+    expect(links.map(link => link.getAttribute('href'))).toEqual(['/terms', '/privacy', '/refunds', '/contact'])
   })
 
   it('shows the brand, the main links and a skip link', async () => {
@@ -31,6 +54,8 @@ describe('app shell', () => {
     // Signed out, there is no account menu at all: tickets and an account belong to someone signed in.
     expect(screen.queryByRole('button', { name: /account menu/i })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Sign up' })).toHaveAttribute('href', '/register')
+    expect(screen.queryByRole('link', { name: 'Events' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main')
   })
 

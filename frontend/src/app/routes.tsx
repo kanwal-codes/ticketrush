@@ -5,7 +5,23 @@ import { Layout } from './Layout'
 import { BootFallback } from './BootFallback'
 import { NotFound, RouteError } from './RouteError'
 
+/**
+ * Design explorations (the journey prototype, the screen gallery, the concept directions). They are reference material for
+ * building the real screens, not part of the product, so they exist only in development and are not in the production build.
+ */
+const designRoutes: RouteObject[] = import.meta.env.DEV
+  ? [
+      { path: '/design-lab', lazy: async () => ({ Component: (await import('../features/design/JourneyPrototype')).JourneyPrototype }) },
+      { path: '/design-lab/journey', lazy: async () => ({ Component: (await import('../features/design/JourneyPrototype')).JourneyPrototype }) },
+      { path: '/design-lab/concepts', lazy: async () => ({ Component: (await import('../features/design/ConceptGallery')).ConceptGallery }) },
+      { path: '/design-lab/concepts/:direction/:screen', lazy: async () => ({ Component: (await import('../features/design/ConceptGallery')).ConceptScreen }) },
+      { path: '/design-lab/board', lazy: async () => ({ Component: (await import('../features/design/DesignLab')).DesignLab }) },
+      { path: '/design-lab/:screen', lazy: async () => ({ Component: (await import('../features/design/ScreenStudio')).ScreenStudio }) },
+    ]
+  : []
+
 export const routes: RouteObject[] = [
+  ...designRoutes,
   {
     path: '/',
     element: <Layout />,

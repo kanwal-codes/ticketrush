@@ -69,7 +69,7 @@ test('an organizer runs an event end to end: create, publish, sell, watch, scan'
   await box.fill(code!)
   await box.press('Enter')
   await expect(page.locator('.scanner__headline')).toHaveText('Let them in')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('1 of 2 in')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('1 of 2 tickets checked in')
   await expect(box).toBeFocused()
   await box.fill(code!.toLowerCase())
   await box.press('Enter')

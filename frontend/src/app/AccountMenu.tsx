@@ -39,7 +39,9 @@ export function AccountMenu({ me, onSignOut }: { me: Me | undefined; onSignOut: 
   }, [open])
 
   return (
-    <div className="account-menu" ref={root}>
+    <div className="account-menu" ref={root} onBlur={(event) => {
+      if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false)
+    }}>
       <button
         type="button"
         ref={trigger}
@@ -54,10 +56,10 @@ export function AccountMenu({ me, onSignOut }: { me: Me | undefined; onSignOut: 
       {open && (
         <div id="account-menu-panel" className="account-menu__panel">
           {me && (
-            <p className="account-menu__who">
-              <strong>{me.displayName}</strong>
-              <span>{me.email}</span>
-            </p>
+            <div className="account-menu__who">
+              <span className="account-menu__avatar" aria-hidden="true">{initial}</span>
+              <p><strong>{me.displayName}</strong><span>{me.email}</span></p>
+            </div>
           )}
           <NavLink to="/tickets" onClick={() => setOpen(false)} viewTransition>
             My tickets

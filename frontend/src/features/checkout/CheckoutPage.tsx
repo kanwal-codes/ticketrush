@@ -1,4 +1,4 @@
-import { BackBar } from '../../components/BackBar'
+import { Poster } from '../../components/Poster'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { Notice } from '../../components/Notice'
 import type { Tone } from '../../lib/errorCopy'
@@ -52,6 +52,7 @@ function NoHold({ event }: { event: EventDetail }) {
   useTitle(`Checkout · ${event.title}`)
   return (
     <div className="page checkout" style={eventTheme(event.poster)}>
+      <p className="checkout__eyebrow">Checkout / Seats required</p>
       <h1>You have no seats held</h1>
       <p className="checkout__lead">Your hold may have ended, or you paid already. Choose your seats again to continue.</p>
       <p className="checkout__actions">
@@ -101,7 +102,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
         void queryClient.invalidateQueries({ queryKey: ['tickets'] })
         void queryClient.invalidateQueries({ queryKey: seatKeys.hold(event.id) })
         void queryClient.invalidateQueries({ queryKey: seatKeys.seats(event.id) })
-        void navigate('/tickets', { replace: true, viewTransition: true, state: { paid: { reference: outcome.order.reference, totalCents: outcome.order.totalCents } } })
+        void navigate('/tickets', { replace: true, viewTransition: true, state: { paid: { reference: outcome.order.reference, totalCents: outcome.order.totalCents, poster: event.poster } } })
         return
       case 'declined':
         setView({ step: 'form' })
@@ -136,7 +137,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
         setRetrySafely(true)
     }
     },
-    [event.id, queryClient, navigate],
+    [event.id, event.poster, queryClient, navigate],
   )
 
   // The hold running out while the guest is on the form ends the checkout. A payment in flight is the server's to
@@ -226,16 +227,16 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
   if (view.step === 'pending') {
     return (
       <div className="page checkout" style={eventTheme(event.poster)}>
-        <h1>Confirming your payment</h1>
+        <h1>Checking your payment</h1>
         <span className="checkout__ring" aria-hidden="true" />
         <p className="checkout__lead" role="status">
           Your payment is taking longer than usual. <strong>Please do not pay again.</strong> Your seats are being kept for you, and this page updates by itself as soon as we hear back.
         </p>
         <p className="checkout__actions">
           <button type="button" className="btn btn--quiet" onClick={() => void checkOrder(view.order.id, hold.id).then(apply)}>
-            Check now
+            Check payment status
           </button>
-          <Link to="/tickets">My tickets</Link>
+          <Link to="/tickets">View my tickets</Link>
         </p>
         <p className="checkout__reference label">Order {view.order.reference}</p>
       </div>
@@ -245,13 +246,14 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
   const total = formatMoney(hold.totalCents)
   return (
     <div className="page checkout" style={eventTheme(event.poster)}>
-      <BackBar to={`/events/${event.id}/seats`}>Change seats</BackBar>
-      <h1>Checkout</h1>
+      <p className="checkout__eyebrow">Review your order / Payment</p>
+      <h1>Make it official.</h1>
+      <p className="checkout__lead">Check the event, seats, and total before you pay.</p>
 
       <div className="checkout__layout">
         <form className="checkout__form" onSubmit={(e) => void submit(e)} noValidate aria-label="Contact and card">
-          <h2>Contact and card</h2>
-          {me && <p className="checkout__email">Your confirmation goes to <strong>{me.email}</strong>.</p>}
+          <h2>Payment details</h2>
+          {me && <p className="checkout__email">We’ll send your confirmation to <strong>{me.email}</strong>.</p>}
 
           {stripeOn ? (
             <StripeCard onForm={setStripeForm} onUnavailable={() => setStripeBlocked(true)} />
@@ -279,7 +281,7 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
           </p>
           {!stripeOn && (
             <details className="testcards">
-              <summary>Use a test card</summary>
+              <summary>Fill with a test card</summary>
               <ul>
                 {TEST_CARDS.map((t) => (
                   <li key={t.token}>
@@ -300,14 +302,12 @@ function CheckoutBody({ event, hold }: { event: EventDetail; hold: HoldView }) {
           )}
 
           <button type="submit" className="btn checkout__pay" disabled={paying}>
-            {paying ? 'Paying…' : retrySafely ? `Check and try again, ${total}` : `Pay ${total}`}
+            {paying ? 'Securing your tickets…' : retrySafely ? `Check and try again, ${total}` : `Pay ${total}`}
           </button>
-          <p className="checkout__assure">
-            This is the final price. Nothing is added after this step. If your connection drops, you can try again safely and you will not be charged twice.
-          </p>
         </form>
 
         <aside className="checkout__summary" aria-labelledby="summary-heading">
+          <div className="checkout__poster"><Poster {...event.poster} style={event.poster.style} title={event.title} artist={event.artist} city={event.city} startsAt={event.startsAt} seed={event.id} /></div>
           <HoldClock expiresAt={hold.expiresAt} />
           <h2 id="summary-heading">{event.title}</h2>
           <p className="checkout__when">

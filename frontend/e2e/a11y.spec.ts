@@ -20,7 +20,7 @@ test('every screen of the purchase passes an accessibility scan @mobile', async 
   const open = await createEvent({ waitingRoom: false, title: `Open ${Date.now()}`, poster: { style: 'CURTAIN', inkOne: '#0E4D3A', inkTwo: '#F08FA8', paperColor: '#F4CFD8' } })
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'On now' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'What’s on.' })).toBeVisible()
   await expectAccessible(page, 'the home page')
 
   await page.goto(`/events/${waiting.id}`)
@@ -28,7 +28,7 @@ test('every screen of the purchase passes an accessibility scan @mobile', async 
   await expectAccessible(page, 'an event with a dark poster (upcoming sale)')
 
   await page.goto(`/events/${waiting.id}/queue`)
-  await expect(page.getByRole('heading', { name: 'You are in the queue.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'You’re in line.' })).toBeVisible()
   await expectAccessible(page, 'the waiting room')
 
   await page.goto(`/events/${open.id}`)
@@ -53,7 +53,7 @@ test('sign in and register pass an accessibility scan', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
   await expectAccessible(page, 'sign in')
   await page.getByRole('button', { name: 'Sign in' }).click() // with the errors showing
-  await expect(page.getByText('Enter your email')).toBeVisible()
+  await expect(page.getByText('Enter your email', { exact: true })).toBeVisible()
   await expectAccessible(page, 'sign in with validation errors')
   await page.goto('/register')
   await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible()
@@ -71,7 +71,7 @@ test('the account recovery pages pass an accessibility scan', async ({ page }) =
   await expect(page.getByRole('heading', { name: 'Forgot your password?' })).toBeVisible()
   await expectAccessible(page, 'forgot password')
   await page.getByLabel('Email').fill('dana@example.org')
-  await page.getByRole('button', { name: 'Send the link' }).click()
+  await page.getByRole('button', { name: 'Send reset link' }).click()
   await expect(page.getByText('Check your email')).toBeVisible()
   await expectAccessible(page, 'forgot password, sent')
 

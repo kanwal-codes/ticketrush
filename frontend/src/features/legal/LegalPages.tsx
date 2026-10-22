@@ -14,9 +14,9 @@ function Legal({ title, summary, children }: { title: string; summary: string; c
       <p className="legal__updated label">Last updated {UPDATED}</p>
       <p className="legal__summary">{summary}</p>
       {children}
-      <p>
+      {title !== 'Contact' && <p>
         Questions about this page? See <Link to="/contact">Contact</Link>.
-      </p>
+      </p>}
     </article>
   )
 }

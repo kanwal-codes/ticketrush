@@ -1,46 +1,39 @@
-/* Shared pieces: buttons, the date chip, skeleton placeholders, form fields. Square corners, hairline rules. */
+/* Shared controls: semantic colors, readable type, restrained radii, and visible interaction states. */
 .btn {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   transition:
     color var(--dur-fast) var(--ease-in-out),
+    background-color var(--dur-fast) var(--ease-in-out),
     border-color var(--dur-fast) var(--ease-in-out),
-    transform var(--dur-fast) var(--ease-out);
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
   min-height: 48px;
-  padding: 0 var(--space-5);
-  border: 2px solid var(--ev);
-  background: var(--ev);
-  color: var(--on-ev);
-  font-weight: 700;
-  font-size: 1rem;
+  padding: 12px 22px;
+  border: 1px solid var(--action);
+  border-radius: var(--radius-control);
+  background: var(--action);
+  color: var(--on-action);
+  font-weight: var(--weight-heading);
+  box-shadow: none;
+  font-size: var(--text-small);
+  line-height: 1.4;
   text-decoration: none;
   text-align: center;
   cursor: pointer;
 }
 
-/* On hover a layer of paper sweeps in from the left, and the label takes the ink colour as it passes. */
-.btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--paper);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--dur-base) var(--ease-out);
-}
-
 .btn:hover:not([aria-disabled='true']):not(:disabled) {
-  color: var(--ev);
-}
-
-.btn:hover:not([aria-disabled='true']):not(:disabled)::before {
-  transform: scaleX(1);
+  background: var(--action-hover);
+  border-color: var(--action-hover);
+  color: var(--on-action);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
 }
 
 .btn:active:not([aria-disabled='true']):not(:disabled) {
@@ -50,15 +43,14 @@
 .btn--quiet {
   background: transparent;
   color: var(--ink);
-  border-color: var(--ink);
-}
-
-.btn--quiet::before {
-  background: var(--ink);
+  border-color: var(--border-control);
+  box-shadow: none;
 }
 
 .btn--quiet:hover:not([aria-disabled='true']):not(:disabled) {
-  color: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--surface-subtle);
 }
 
 /* For the one button that cannot be undone, so it never looks like its harmless neighbours. */
@@ -68,20 +60,17 @@
   border-color: var(--danger);
 }
 
-.btn--danger::before {
-  background: var(--danger);
-}
-
 .btn--danger:hover:not([aria-disabled='true']):not(:disabled) {
   color: var(--white);
+  background: var(--danger);
 }
 
 .btn[aria-disabled='true'],
 .btn:disabled {
-  background: transparent;
-  border-color: currentColor;
-  color: inherit;
-  opacity: 0.65;
+  border-color: var(--rule);
+  color: var(--muted);
+  background: var(--surface-subtle);
+  opacity: 1;
   cursor: not-allowed;
 }
 
@@ -91,19 +80,21 @@
   align-items: center;
   min-width: 48px;
   padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-chip);
+  background: rgba(255,255,255,.62);
   font-family: var(--font-mono);
   line-height: 1.1;
 }
 
 .chip__month {
-  font-size: 0.7rem;
+  font-size: var(--text-label);
   letter-spacing: 0.08em;
 }
 
 .chip__day {
-  font-size: 1.25rem;
-  font-weight: 500;
+  font-size: var(--text-item);
+  font-weight:var(--weight-label);
 }
 
 .skeleton {
@@ -118,7 +109,7 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer var(--dur-repeat) var(--ease-in-out) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -129,16 +120,13 @@
 
 .field {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .field label {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.field {
-  min-width: 0;
+  font-weight: var(--weight-heading);
+  font-size: var(--text-small);
 }
 
 .field input,
@@ -148,10 +136,18 @@
   min-width: 0;
   min-height: 48px;
   padding: 0 var(--space-3);
-  border: 1px solid var(--ink);
+  border: 1px solid var(--border-control);
   background: var(--white);
-  border-radius: 0;
+  border-radius: var(--radius-control);
+  font-size: var(--text-body);
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
 }
+
+.field input::placeholder,.field textarea::placeholder { color: var(--muted); opacity: 1; }
+.field input:focus,.field select:focus,.field textarea:focus { border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 18%, transparent); outline: none; }
+.field input:disabled,.field select:disabled,.field textarea:disabled { background: var(--surface-subtle); color: var(--muted); cursor: not-allowed; }
+.field input[type='checkbox'],.field input[type='radio'] { accent-color: var(--action); }
+.field__hint { color: var(--muted); font-size: var(--text-caption); line-height: 1.5; }
 
 .field input[aria-invalid='true'],
 .field select[aria-invalid='true'],
@@ -173,5 +169,5 @@
 
 .field__error {
   color: var(--danger);
-  font-size: 0.875rem;
+  font-size: var(--text-small);
 }

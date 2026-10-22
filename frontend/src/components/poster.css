@@ -13,14 +13,14 @@
 /* The four faces the canvas uses, all Archivo, varied by weight and width. */
 .poster__condensed {
   font-family: var(--font-ui);
-  font-weight: 900;
+  font-weight:900;
   font-variation-settings: 'wdth' 62;
   letter-spacing: -1px;
 }
 
 .poster__wide {
   font-family: var(--font-ui);
-  font-weight: 900;
+  font-weight:900;
   font-variation-settings: 'wdth' 125;
   letter-spacing: -1px;
 }

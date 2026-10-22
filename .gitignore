@@ -24,3 +24,7 @@ loadtest/results/guests.json
 loadtest/results/*.log
 loadtest/results/*-summary.json
 loadtest/results/*.done
+
+# Design concept art (about 10 MB) for the development-only design gallery. Kept on the author's machine, not in the repo.
+frontend/public/concept-*.png
+frontend/public/concert-*.png

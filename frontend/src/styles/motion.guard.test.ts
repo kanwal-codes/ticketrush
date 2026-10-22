@@ -45,7 +45,7 @@ function keyframeProperties(css: string): string[] {
 function transitionProperties(css: string): string[] {
   const out: string[] = []
   for (const m of css.matchAll(/(?<![\w-])transition(-property)?\s*:\s*([^;]+);/g)) {
-    const value = m[2]!.replace(/\([^)]*\)/g, '()').trim()
+    const value = m[2]!.replace(/\([^)]*\)/g, '()').replace(/\s*!important\s*$/, '').trim()
     if (value === 'none') continue
     for (const part of value.split(',')) out.push(m[1] ? part.trim() : part.trim().split(/\s+/)[0]!)
   }

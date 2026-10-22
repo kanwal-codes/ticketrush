@@ -31,6 +31,7 @@ describe('sign in', () => {
     })
     const { router } = renderRoute('/signin', { from: '/events/7' })
     await screen.findByRole('heading', { level: 1 })
+    expect(screen.queryByText('Good to have you back.')).not.toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('Email'), 'ana@example.org')
     await userEvent.type(screen.getByLabelText('Password'), 'correct-horse')
@@ -101,6 +102,7 @@ describe('register', () => {
     })
     const { router } = renderRoute('/register')
     await screen.findByRole('heading', { level: 1 })
+    expect(screen.queryByText('Your next great night starts here.')).not.toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('Your name'), 'Ana')
     await userEvent.type(screen.getByLabelText('Email'), 'ana@example.org')
     await userEvent.type(screen.getByLabelText('Password'), 'long-enough-pw')

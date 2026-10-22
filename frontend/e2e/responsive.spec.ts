@@ -34,7 +34,7 @@ test('no screen of the purchase scrolls sideways at phone, tablet or laptop widt
   for (const size of widths) {
     await page.setViewportSize({ width: size.width, height: size.height })
     const screens: [string, () => Promise<void>][] = [
-      ['home', async () => { await page.goto('/'); await expect(page.getByRole('heading', { name: 'On now' })).toBeVisible() }],
+      ['home', async () => { await page.goto('/'); await expect(page.getByRole('heading', { name: 'What’s on.' })).toBeVisible() }],
       ['event page', async () => { await page.goto(`/events/${event.id}`); await expect(page.getByRole('heading', { level: 1 })).toBeVisible() }],
       ['seat map', async () => { await page.goto(`/events/${event.id}/seats`); await expect(page.getByRole('button', { name: /Stalls row A seat 1,/ })).toBeVisible() }],
     ]
@@ -69,15 +69,15 @@ test('no screen of the purchase scrolls sideways at phone, tablet or laptop widt
  * organizer, the account badge — from doing the same thing if the row ever gets tight again.
  */
 test('a nav item never splits its own words across lines, at any width between phone and desktop', async ({ page }) => {
-  await signInAsOrganizer(page) // the widest case: "Events" and "Console" both in the row alongside the badge
-  await page.goto('/')
+  await signInAsOrganizer(page) // the widest case: "Discover" and "Console" both in the row alongside the badge
+  await page.goto('/account') // not the home page, where the Discover link is left out
   const trigger = page.getByRole('button', { name: /account menu/i })
   await expect(trigger).toBeVisible()
 
   for (const width of [561, 600, 650, 700, 750, 850, 1024]) {
     await page.setViewportSize({ width, height: 700 })
-    // "Events" is one word: it can never wrap, so its height is what a genuine single line looks like here.
-    const oneLine = (await page.getByRole('link', { name: 'Events' }).boundingBox())!.height
+    // "Discover" is one word: it can never wrap, so its height is what a genuine single line looks like here.
+    const oneLine = (await page.getByRole('link', { name: 'Discover' }).boundingBox())!.height
     const box = await page.getByRole('link', { name: 'Console' }).boundingBox()
     expect(box?.height, `"Console" at ${width}px wide (height ${box?.height}, one line is ${oneLine})`).toBeLessThanOrEqual(oneLine + 1)
   }
@@ -89,6 +89,8 @@ test('a nav item never splits its own words across lines, at any width between p
   const oneLine = (await panel.getByRole('link', { name: 'My tickets' }).boundingBox())!.height
   for (const label of ['Account', 'Sign out']) {
     const box = await panel.getByRole('link', { name: label, exact: true }).or(panel.getByRole('button', { name: label, exact: true })).boundingBox()
-    expect(box?.height, `"${label}" in the open panel (height ${box?.height}, one line is ${oneLine})`).toBeLessThanOrEqual(oneLine + 1)
+    // A wrapped label would be about twice as tall. Sign out also has a 1px top border and every height is fractional, so
+    // "within a pixel of a link" was too strict: it passed on one machine's fonts and failed on another's.
+    expect(box?.height, `"${label}" in the open panel (height ${box?.height}, one line is ${oneLine})`).toBeLessThan(oneLine * 1.25)
   }
 })

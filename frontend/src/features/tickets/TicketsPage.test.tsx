@@ -40,6 +40,10 @@ describe('TicketsPage', () => {
     const section = await screen.findByRole('region', { name: 'Afterlight Tour' })
     const stubs = within(section).getAllByRole('listitem')
     expect(stubs).toHaveLength(2)
+    for (const stub of stubs) {
+      expect(within(stub).getByRole('heading', { level: 2, name: 'Afterlight Tour' })).toBeInTheDocument()
+    }
+    expect(within(section).getAllByRole('heading', { name: 'Afterlight Tour' })).toHaveLength(2)
     expect(within(stubs[0]!).getByRole('heading', { name: 'Floor, row A, seat 1' })).toBeInTheDocument()
     expect(within(stubs[0]!).getByText(/Halden Hall, Montreal · Doors/)).toBeInTheDocument()
     expect(within(stubs[0]!).getByText('ABCD 1234 EFGH 5678 JKMN 9PQ1')).toBeInTheDocument()
@@ -73,7 +77,7 @@ describe('TicketsPage', () => {
     const heading = await screen.findByRole('heading', { name: 'You are going!' })
     expect(heading).toHaveFocus()
     expect(screen.getAllByText('TR-ABC123').length).toBeGreaterThan(0)
-    expect(screen.getByText(/\$206\.40 paid/)).toBeInTheDocument()
+    expect(screen.getByText(/Total paid: \$206\.40/)).toBeInTheDocument()
   })
 
   it('marks a ticket that has been used', async () => {
@@ -100,8 +104,8 @@ describe('TicketsPage', () => {
   it('says so, and offers a way forward, when there are no tickets', async () => {
     mockApi({ 'GET /api/tickets': () => json([]) })
     renderRoute('/tickets')
-    expect(await screen.findByText('No tickets yet.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'See what is on' })).toHaveAttribute('href', '/')
+    expect(await screen.findByText(/No tickets yet/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Find an event' })).toHaveAttribute('href', '/')
   })
 
   it('needs a signed-in guest', async () => {

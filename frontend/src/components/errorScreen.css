@@ -6,6 +6,11 @@
   gap: var(--space-4);
 }
 
+.error-screen h1 {
+  font-size: var(--text-page-compact);
+  font-weight: var(--weight-display);
+}
+
 .error-screen__stub {
   width: 160px;
   height: 96px;
@@ -17,7 +22,7 @@
 
 .error-screen__half {
   fill: var(--paper);
-  animation: stub-left var(--dur-slow) var(--ease-out) both;
+  animation: stub-left var(--dur-slow) var(--ease-out) backwards;
 }
 
 .error-screen__half--right {
@@ -56,7 +61,7 @@
 }
 
 .error-screen__details {
-  font-size: 0.875rem;
+  font-size: var(--text-small);
   color: var(--ink-muted, var(--ink));
 }
 

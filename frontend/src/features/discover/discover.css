@@ -1,121 +1,286 @@
-.hero {
+/* Discover: a lead event, then everything that is on. One stylesheet; browse controls and the header toolbar live here too. */
+.page.discover {
+  padding-top: clamp(16px, 3vw, 40px);
+}
+
+/* ---- Lead event ---- */
+.discover .hero {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
-  gap: var(--space-6);
-  align-items: end;
-  padding-bottom: var(--space-7);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: stretch;
+  gap: clamp(28px, 5vw, 72px);
+  min-height: clamp(400px, 58vh, 560px);
+  padding-bottom: clamp(32px, 4vw, 48px);
   border-bottom: 1px solid var(--rule);
 }
 
-.hero__poster {
-  aspect-ratio: 3 / 4;
-  border: 1px solid var(--rule);
+.hero__lead {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+}
+
+.hero__edition {
+  color: var(--action);
+  font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.discover .hero__lead h1,
+.discover__fallback h1 {
+  max-width: 11ch;
+  margin: var(--space-4) 0 var(--space-4);
+  font-size: var(--text-display);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+}
+
+.hero__description {
+  max-width: 34ch;
+  margin-bottom: var(--space-5);
+  color: var(--muted);
+  font-size: var(--text-item);
+  line-height: 1.5;
+}
+
+.hero__cta {
+  gap: var(--space-5);
+  min-height: 52px;
+}
+
+.hero__drop {
+  margin-top: var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-caption);
+  line-height: 1.5;
+}
+
+.hero__drop [role='timer'] {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ink);
+  font-weight: var(--weight-label);
+}
+
+.hero__feature {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 100%;
   overflow: hidden;
-}
-
-.hero__body {
-  display: grid;
-  gap: var(--space-3);
-  justify-items: start;
-}
-
-.hero__kicker {
-  color: var(--ev-text);
-  font-size: 0.875rem;
-}
-
-/* The date and time are what a guest came for; "Drops" is only the label. The mono font has regular and medium (no
-   bold), so medium is the real step up, and asking for 700 would only smear it. */
-.hero__kicker strong {
-  font-weight: 500;
-}
-
-.hero__title {
-  font-size: clamp(2.25rem, 6vw, 4.5rem);
-  font-weight: 900;
-  font-variation-settings: 'wdth' 100;
-  color: var(--ev-text);
-}
-
-/* The poster, the title and the button each open the event on their own. Nothing is laid over the banner, so the rest of
-   it (the artist, the date, the countdown) can be selected and read like any other text. */
-.hero__link {
-  color: inherit;
+  background: var(--surface-subtle);
+  color: #fff;
   text-decoration: none;
 }
 
-.hero__link:hover {
-  text-decoration: underline;
-  text-decoration-thickness: 3px;
-  text-underline-offset: 6px;
+.hero__poster {
+  position: absolute;
+  inset: 0;
 }
 
-.hero__posterlink {
+.hero__poster > svg {
   display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease-out);
 }
 
-/* Same border change as a card's poster; the lift itself is in motion.css. */
-.hero:has(.hero__posterlink:hover, .hero__link:hover, .btn:hover, .hero__link:focus-visible, .btn:focus-visible) .hero__poster {
-  border-color: var(--ink);
+/* The caption below carries the title, so the poster's own lettering is hidden to avoid saying it twice. */
+.hero__poster svg text {
+  display: none;
 }
 
-.hero__artist {
-  font-size: 1.25rem;
-  font-weight: 600;
+.hero__feature::after {
+  content: '';
+  position: absolute;
+  inset: 40% 0 0;
+  background: linear-gradient(transparent, rgb(24 26 30 / 0.78));
+  pointer-events: none;
 }
 
-.hero__meta {
-  color: var(--muted);
+.hero__feature:hover .hero__poster > svg {
+  transform: scale(1.03);
 }
 
-.hero__countdown {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin-block: var(--space-3);
+.hero__caption {
+  position: absolute;
+  z-index: 1;
+  left: clamp(20px, 3vw, 40px);
+  right: var(--space-5);
+  bottom: clamp(20px, 3vw, 36px);
+  display: grid;
+  gap: var(--space-1);
 }
 
-.hero__clock {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 500;
+.hero__caption-label,
+.hero__caption-meta {
+  font: var(--weight-label) var(--text-label) / 1.4 var(--font-mono);
+  letter-spacing: 0.05em;
 }
 
-.discover__list {
-  margin-top: var(--space-7);
+.hero__caption-label {
+  text-transform: uppercase;
+  opacity: 0.85;
 }
 
-/* "On now" and the search stay under the header while the grid scrolls, so a long list can be searched from anywhere. */
-.discover__head {
-  position: sticky;
-  top: var(--header-h, 61px);
-  z-index: 3;
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-  margin-bottom: var(--space-5);
-  padding-block: var(--space-3);
-  background: var(--paper);
+.hero__caption h2 {
+  max-width: 16ch;
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display);
+}
+
+.discover__fallback {
+  padding: var(--space-7) 0;
   border-bottom: 1px solid var(--rule);
 }
 
-.discover__search {
-  flex: 0 1 380px;
+.discover__fallback > p:last-child {
+  max-width: 34ch;
+  color: var(--muted);
+  font-size: var(--text-item);
 }
 
-.discover__search input {
-  min-height: 44px;
-  width: 100%;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--ink);
-  background: var(--white);
+/* ---- Listing ---- */
+.discover__list {
+  margin-top: clamp(32px, 5vw, 64px);
+}
+
+.discover__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.discover__head h2 {
+  font-size: var(--text-page-compact);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
+}
+
+.browse__count {
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+
+.browse__sort {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-control);
+}
+
+.browse__sort > span {
+  color: var(--muted);
+  font-size: var(--text-label);
+  padding-left: var(--space-2);
+}
+
+.browse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+  margin-bottom: var(--space-5);
+  border-block: 1px solid var(--rule);
+}
+
+.browse__categories {
+  display: flex;
+  min-width: 0;
+  gap: var(--space-5);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.browse__categories::-webkit-scrollbar {
+  display: none;
+}
+
+.browse__categories button {
+  flex: none;
+  min-height: 52px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
   border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-heading);
+  white-space: nowrap;
+  transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
 
-.discover__empty {
-  padding-block: var(--space-6);
+.browse__categories button:hover {
+  color: var(--ink);
+}
+
+.browse__categories button[aria-pressed='true'] {
+  border-bottom-color: var(--action);
+  color: var(--ink);
+}
+
+.browse__filters {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.browse__selects {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.browse__clear {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--action);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-heading);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.browse :is(select),
+.browse__sort select {
+  min-height: 44px;
+  padding-right: var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: var(--weight-label) var(--text-small) var(--font-ui);
+  cursor: pointer;
+}
+
+.browse__empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-6);
+  background: var(--surface-subtle);
+}
+
+.browse__empty h3 {
+  font-size: var(--text-section);
+}
+
+.browse__empty p {
   color: var(--muted);
 }
 
@@ -123,13 +288,14 @@
   margin-top: var(--space-6);
 }
 
+/* ---- Cards ---- */
 .grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-  gap: var(--space-6) var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: var(--space-7) var(--space-5);
 }
 
 .card__link {
@@ -138,47 +304,330 @@
 }
 
 .card__poster {
-  aspect-ratio: 3 / 4;
-  border: 1px solid var(--rule);
+  aspect-ratio: 4 / 5;
   overflow: hidden;
+  background: var(--surface-subtle);
 }
 
-.card__link:hover .card__poster,
-.card__link:focus-visible .card__poster {
-  border-color: var(--ink);
+.card__poster > * {
+  transition: transform var(--dur-slow) var(--ease-out);
 }
 
-.card__body .chip {
-  align-self: flex-start; /* keeps its own height when a long title makes the text column tall */
+.card__link:is(:hover, :focus-visible) .card__poster > * {
+  transform: scale(1.03);
 }
 
 .card__body {
-  display: flex;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.card__category {
+  margin-bottom: var(--space-2);
+  color: var(--muted);
+  font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
 }
 
 .card__title {
-  font-size: 1.05rem;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-item);
+  font-weight: var(--weight-heading);
+  line-height: 1.25;
+  text-wrap: pretty;
+  transition: color var(--dur-fast) ease;
+}
+
+.card__link:is(:hover, :focus-visible) .card__title {
+  color: var(--action);
+}
+
+.card__date {
+  display: block;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-label);
 }
 
 .card__venue {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--text-caption);
 }
 
-.card__price {
-  margin-top: var(--space-1);
-  font-size: 0.9rem;
+/* ---- The search and filters that live in the header ---- */
+.discovery-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-@media (max-width: 720px) {
-  .hero {
-    grid-template-columns: 1fr;
+.discovery-toolbar input {
+  flex: 1;
+  width: 100%;
+  max-width: 550px;
+  height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--surface-input);
+  font-size: var(--text-body);
+}
+
+.discovery-toolbar input:focus {
+  border-color: var(--focus);
+  background: var(--white);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 18%, transparent);
+}
+
+.discovery-toolbar input[hidden],
+.discovery-toolbar__filters[hidden] {
+  display: none;
+}
+
+.discovery-toolbar__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.discovery-toolbar select {
+  min-width: 0;
+  max-width: 150px;
+  height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  font: var(--weight-label) var(--text-small) var(--font-ui);
+  cursor: pointer;
+}
+
+/* Scrolling down turns the header into a filter bar; scrolling up brings the brand and search back. */
+.site-header--browsing .brand,
+.site-header--browsing .site-nav {
+  display: none;
+}
+
+.site-header--browsing .site-header__inner {
+  min-height: 64px;
+}
+
+/* Keep native selection and keyboard behavior; enhance the picker where supported. */
+@supports (appearance: base-select) {
+  /* Sticky controls are already visible; document focus padding would scroll their native picker. */
+  html:has(.discovery-toolbar select:is(:focus-within, :open)) {
+    scroll-padding-top: 0;
   }
 
-  /* Small enough that the button under the title is on the first screen of a phone. */
-  .hero__poster {
-    max-width: 200px;
+  :is(.discovery-toolbar, .browse, .browse__sort) select,
+  :is(.discovery-toolbar, .browse, .browse__sort) select::picker(select) {
+    appearance: base-select;
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: 0 var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease;
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) select:is(:hover, :open) {
+    background: var(--surface-subtle);
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) select:open {
+    border-color: var(--rule);
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) select::picker-icon {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid var(--muted);
+    border-bottom: 1.5px solid var(--muted);
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform var(--motion-fast) var(--motion-ease);
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) select:open::picker-icon {
+    transform: translateY(2px) rotate(225deg);
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) select::picker(select) {
+    min-inline-size: max(220px, anchor-size(self-inline));
+    max-inline-size: calc(100vw - 32px);
+    max-block-size: min(360px, 70dvh);
+    margin-block: var(--space-2);
+    padding: 6px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-panel);
+    background: var(--white);
+    color: var(--ink);
+    box-shadow: var(--shadow-lift);
+    font: 400 var(--text-small) var(--font-ui);
+    overscroll-behavior: contain;
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    min-height: 42px;
+    padding: 10px var(--space-3);
+    border-radius: var(--radius-control);
+    background: var(--white);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) option:checked {
+    background: var(--action-tint);
+    font-weight: var(--weight-heading);
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) option:is(:hover, :focus) {
+    background: var(--surface-input);
+    outline: none;
+  }
+
+  :is(.discovery-toolbar, .browse, .browse__sort) option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+    color: var(--action);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :is(.discovery-toolbar, .browse, .browse__sort) select:open::picker(select) {
+      animation: filter-menu-in var(--motion-fast) var(--motion-ease);
+    }
+  }
+}
+
+@keyframes filter-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 1100px) {
+  .discovery-toolbar select {
+    max-width: 112px;
+    padding-inline: var(--space-1);
+    font-size: var(--text-caption);
+  }
+}
+
+@media (max-width: 900px) {
+  .discover .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  }
+}
+
+/* ---- Phones ---- */
+@media (max-width: 720px) {
+  .page.discover {
+    padding-top: 0;
+  }
+
+  .discover .hero {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    min-height: 0;
+    padding-block: var(--space-5) var(--space-6);
+  }
+
+  .hero__lead {
+    padding-top: var(--space-2);
+  }
+
+  .discover .hero__lead h1 {
+    margin-block: var(--space-3);
+    font-size: clamp(2.25rem, 10vw, 2.75rem);
+  }
+
+  .hero__description {
+    margin-bottom: var(--space-4);
+    font-size: var(--text-body);
+  }
+
+  .hero__feature {
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  .discover__list {
+    margin-top: var(--space-6);
+  }
+
+  .discover__head {
+    align-items: flex-start;
+  }
+
+  .browse__sort > span {
+    display: none;
+  }
+
+  .browse {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    border-top: 0;
+  }
+
+  .browse__categories {
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    border-bottom: 1px solid var(--rule);
+    scroll-padding-inline: var(--gutter);
+  }
+
+  .browse__filters {
+    justify-content: space-between;
+    padding-block: var(--space-1);
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-3);
+  }
+
+  .card__body {
+    margin-top: var(--space-3);
+  }
+
+  /* Compact toolbar: the four filters scroll sideways rather than squeeze. */
+  .discovery-toolbar {
+    overflow-x: auto;
+    scrollbar-width: none;
+    justify-content: flex-start;
+  }
+
+  .discovery-toolbar__filters {
+    flex: none;
+    min-width: 100%;
+    justify-content: space-between;
+  }
+
+  .discovery-toolbar select {
+    flex: none;
+    max-width: 128px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__poster > svg,
+  .card__poster > * {
+    transition: none;
+  }
+
+  .hero__feature:hover .hero__poster > svg,
+  .card__link:is(:hover, :focus-visible) .card__poster > * {
+    transform: none;
   }
 }

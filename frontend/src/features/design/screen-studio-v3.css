@@ -1,0 +1,82 @@
+.ss-studio{--ink:#151b27;--navy:#111722;--blue:#3155cb;--muted:#586273;--line:#d9dee5;--silver:#f0f2f5;background:#cbd0d8}
+.ss-studio__bar{background:#171d28;box-shadow:none;border-bottom:1px solid #ffffff1e}
+.ss-studio__bar nav a.active{background:#d7deee;color:#17233e}
+.ss-studio__canvas{padding:24px}
+.ss-screen{background:#f4f5f6;box-shadow:0 20px 55px #28313d29}
+.ss-header{height:70px;background:#f8f9fa}
+.ss-header--dark{background:#111722}
+.ss-header__secure{display:none}
+.ss-brand{letter-spacing:-.075em;font-weight:800}
+.ss-brand i{color:#3155cb}
+.ss-avatar{background:#e2e7f0;color:#253e85}
+.ss-button{border-radius:2px;min-height:54px;background:#3155cb;border-color:#3155cb;transition:transform .35s cubic-bezier(.16,1,.3,1),background-color .2s;}
+.ss-button:hover{background:#253fa2;transform:translateY(-2px)}
+.ss-button:active{transform:translateY(0) scale(.98)}
+.ss-button:focus-visible,.ss-studio__bar a:focus-visible{outline:3px solid #829af3;outline-offset:3px}
+.ss-button--quiet{background:transparent;color:#202b42;border-color:#7e8ba1}
+.ss-eyebrow{color:#455168;letter-spacing:.12em}
+.ss-screen p{color:#515e70}
+.ss-discover__hero{grid-template-columns:45% 55%;min-height:660px}
+.ss-discover__copy{background:#f4f5f6;padding:80px clamp(36px,5vw,80px) 45px}
+.ss-discover__copy h1{font-size:clamp(4.2rem,6.2vw,6.7rem);line-height:.94;letter-spacing:-.082em;margin:38px 0 26px}
+.ss-discover__copy h1 em{color:#3155cb}
+.ss-discover__copy h1 em{margin-left:.08em;margin-right:.08em}
+.ss-discover__copy p{max-width:35ch;color:#4a5567;line-height:1.5;margin-bottom:34px}
+.ss-discover__edition{letter-spacing:.08em}
+.ss-discover__visual{overflow:hidden;background:#171e2b}
+.ss-editorial-art,.ss-mini-events__art{background-image:url('/concert-editorial-grid.png');background-size:200% 200%;background-repeat:no-repeat}
+.ss-editorial-art{position:absolute;inset:0;transition:transform 1.1s cubic-bezier(.16,1,.3,1);}
+.ss-editorial-art--festival{background-position:left top}
+.ss-editorial-art--jazz{background-position:right top}
+.ss-editorial-art--dance{background-position:left bottom}
+.ss-discover__visual:hover .ss-editorial-art{transform:scale(1.035)}
+.ss-discover__visual:after{content:'';position:absolute;inset:25% 0 0;background:linear-gradient(transparent,#0d1321b8);pointer-events:none}
+.ss-discover__feature{z-index:1;left:6%;right:6%;bottom:35px;border-top-color:#ffffff80}
+.ss-discover__feature strong{font-size:clamp(2.4rem,4.5vw,5rem);line-height:.94}
+.ss-trust{background:#1a2334;justify-content:space-between;padding:22px clamp(24px,5vw,72px);font:600 .72rem var(--font-ui);letter-spacing:0;color:#dce3ef}
+.ss-trust span+span{border-left:1px solid #ffffff3d;padding-left:6vw}
+.ss-discover__events{padding-top:70px;padding-bottom:92px}
+.ss-discover__events h2{font-size:clamp(2rem,3.5vw,3.8rem);margin:16px 0 36px}
+.ss-mini-events{border-top:0;gap:18px}
+.ss-mini-events article{border:0;margin:0;padding:0;gap:7px;align-content:start}
+.ss-mini-events__art{height:235px;margin-bottom:12px;transition:transform .5s cubic-bezier(.16,1,.3,1);}
+.ss-mini-events article:hover .ss-mini-events__art{transform:translateY(-4px)}
+.ss-mini-events article span,.ss-mini-events article b{color:#3155cb}
+.ss-mini-events article strong{font-size:1.45rem;letter-spacing:-.04em}
+.ss-mini-events article b{margin-top:6px}
+.ss-event{background:#111722}
+.ss-event__art{height:610px}
+.ss-event__art img{object-position:center 42%}
+.ss-event__artcopy strong{font-size:clamp(5rem,9vw,10rem)}
+.ss-event__below{grid-template-columns:1fr 360px;gap:50px;padding-top:55px}
+.ss-event__below aside{background:#f5f6f8;padding:34px}
+.ss-event__below aside>small{line-height:1.5}
+.ss-queue main{padding-top:82px}
+.ss-queue__card{box-shadow:none;border-color:#cfd5df}
+.ss-queue__track{height:3px}
+.ss-seats__map{background:#e9ecf0;border-color:#d1d7df}
+.ss-seats__rows span{border-radius:2px;background:#fff;color:#334968}
+.ss-seats__rows span.selected{box-shadow:0 0 0 4px #3155cb28}
+.ss-seats__summary{background:#1a2435}
+.ss-checkout__block{border:0;border-top:2px solid #1d2b47;background:#fff}
+.ss-checkout__receipt{gap:13px}
+.ss-checkout__receipt .total{padding-top:22px!important;border-top:2px solid #223250!important}
+.ss-ticket{box-shadow:0 20px 45px #13234114}
+.ss-ticket__info{background:#fbfbfc}
+.ss-ticket__qr div{background:#e6eaf0;color:#17253e}
+.ss-signin__left{background:#162033}
+.ss-account__stats>div,.ss-organizer__metrics>div{background:transparent;border:0;border-top:2px solid #21314d;padding-left:0}
+.ss-console-nav{background:#172032}
+.ss-organizer__chart i{background:#3155cb}
+.ss-scanner{background:#151e2c}
+.ss-states__grid article{border-top:3px solid #3155cb}
+@media (prefers-reduced-motion:no-preference){.ss-discover__copy>*{animation:ss-v3-enter .8s cubic-bezier(.16,1,.3,1) both}.ss-discover__copy>*:nth-child(2){animation-delay:.08s}.ss-discover__copy>*:nth-child(3){animation-delay:.16s}.ss-discover__copy>*:nth-child(4){animation-delay:.24s}.ss-discover__feature{animation:ss-v3-enter .9s .25s cubic-bezier(.16,1,.3,1) both}@keyframes ss-v3-enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}}
+@media(max-width:1050px){.ss-discover__hero{grid-template-columns:1fr}.ss-discover__copy{min-height:520px}.ss-event__below{grid-template-columns:1fr}.ss-mini-events__art{height:200px}}
+@media(max-width:700px){.ss-studio__canvas{padding:0}.ss-discover__copy{min-height:0;padding:58px 22px 44px}.ss-discover__copy h1{font-size:clamp(3.5rem,14vw,5.3rem);margin:28px 0 22px}.ss-discover__copy p{font-size:1rem}.ss-discover__edition{margin-top:48px}.ss-discover__visual{min-height:410px}.ss-discover__feature{left:22px;right:22px;bottom:22px}.ss-discover__feature strong{font-size:2.8rem}.ss-trust{display:grid;gap:0;padding:8px 22px;white-space:normal}.ss-trust span{padding:12px 0}.ss-trust span+span{border-left:0;border-top:1px solid #ffffff33;padding-left:0}.ss-discover__events{padding:54px 22px}.ss-mini-events{gap:30px}.ss-mini-events article{border:0;padding:0}.ss-mini-events__art{height:230px}.ss-event__below{padding-top:40px}.ss-event__art{height:540px}.ss-queue main{padding-top:45px}}
+
+/* Square canvas and photography; subtle radius for touch surfaces and the owned ticket. */
+.ss-studio{--ss-radius-control:7px;--ss-radius-seat:5px;--ss-radius-ticket:14px}
+.ss-button,.ss-checkout input,.ss-signin input,.ss-create input,.ss-create textarea,.ss-card-placeholder{border-radius:var(--ss-radius-control)}
+.ss-seats__rows span{border-radius:var(--ss-radius-seat)}
+.ss-ticket{border-radius:var(--ss-radius-ticket);overflow:hidden}
+.ss-ticket__qr div,.ss-scanner__result{border-radius:var(--ss-radius-control)}

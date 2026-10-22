@@ -1,20 +1,10 @@
 /*
  * Motion. A few rules keep it fast and keep it meaningful:
  *  - only transform and opacity move (plus paint-only colour changes); nothing animates layout, and a test checks;
- *  - 120 ms for feedback, 200 ms for a state change, 320 ms for a page, 500 ms at most for a moment worth savouring;
+ *  - 160 ms for feedback, 240 ms for a state change, 280 ms for a page, 420 ms for a longer entrance;
  *  - one family of easing: things arrive on expo-out, things that move go ease-in-out;
  *  - everything stops under prefers-reduced-motion, except instant cross-fades.
  */
-:root {
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --dur-fast: 120ms;
-  --dur-base: 200ms;
-  --dur-page: 320ms;
-  --dur-slow: 500ms;
-}
-
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -60,11 +50,11 @@
 @keyframes pop-in {
   0% {
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(0.94);
   }
   60% {
     opacity: 1;
-    transform: scale(1.12);
+    transform: scale(1.04);
   }
   100% {
     transform: scale(1);
@@ -118,7 +108,7 @@
 @keyframes ticket-in {
   from {
     opacity: 0;
-    transform: translateY(28px) rotate(-1.2deg);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -156,18 +146,18 @@
 
 /* Anything that enters a page: add .enter, and --i (0, 1, 2...) to stagger a row of them. */
 .enter {
-  animation: rise-in var(--dur-page) var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 45ms);
+  animation: rise-in var(--dur-page) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger-step));
 }
 
 .enter-fade {
-  animation: fade-in var(--dur-base) var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 45ms);
+  animation: fade-in var(--dur-base) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger-step));
 }
 
 /* The page itself rises in whenever a route changes. */
 main > * {
-  animation: rise-in var(--dur-page) var(--ease-out) both;
+  animation: rise-in var(--dur-page) var(--ease-out) backwards;
 }
 
 :focus-visible {
@@ -180,7 +170,7 @@ main > * {
  * both pages (it has a view-transition-name per event) glides from where it was to where it is now.
  */
 ::view-transition-old(root) {
-  animation: vt-out 160ms var(--ease-in-out) both;
+  animation: vt-out var(--dur-fast) var(--ease-in-out) both;
 }
 
 ::view-transition-new(root) {
@@ -248,7 +238,7 @@ main > * {
 
 .roll {
   display: inline-block;
-  animation: roll-in var(--dur-base) var(--ease-out) both;
+  animation: roll-in var(--dur-base) var(--ease-out) backwards;
 }
 
 /* Seats: lift on hover, pop when chosen. */
@@ -264,50 +254,23 @@ button.seat--available:hover {
 }
 
 button.seat--selected {
-  animation: pop-in var(--dur-base) var(--ease-spring) both;
+  animation: pop-in var(--dur-base) var(--ease-spring) backwards;
 }
 
 /* The hold clock arrives with a slide, and below a minute it breathes so it is hard to miss. */
 .site-nav .hold-timer {
-  animation: slide-down-in var(--dur-base) var(--ease-out) both;
+  animation: slide-down-in var(--dur-base) var(--ease-out) backwards;
 }
 
 .site-nav .hold-timer--urgent,
 .hold-clock--urgent .hold-clock__time {
-  animation: pulse-soft 1.4s var(--ease-in-out) infinite;
-}
-
-/* Cards lift with a hard offset shadow, square like everything else here. */
-.card__link .card__poster {
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
-}
-
-.card__link:hover .card__poster,
-.card__link:focus-visible .card__poster {
-  transform: translate(-3px, -3px);
-  box-shadow: 6px 6px 0 var(--ink);
-}
-
-/* The featured poster lifts exactly like a card's, whichever of its three ways in (poster, title, button) the pointer is on. */
-.hero__poster {
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
-}
-
-.hero:has(.hero__posterlink:hover, .hero__link:hover, .btn:hover, .hero__link:focus-visible, .btn:focus-visible) .hero__poster {
-  transform: translate(-3px, -3px);
-  box-shadow: 6px 6px 0 var(--ink);
+  animation: pulse-soft var(--dur-repeat) var(--ease-in-out) infinite;
 }
 
 /* Tickets are printed one after another. */
 .stubs > .stub {
-  animation: ticket-in var(--dur-slow) var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 90ms);
+  animation: ticket-in var(--dur-slow) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger-step));
 }
 
 /* A payment we are still waiting on: a ring that breathes. Calm, not alarming. */
@@ -318,7 +281,7 @@ button.seat--selected {
   margin-block: var(--space-4);
   border: 3px solid var(--ink);
   border-radius: 50%;
-  animation: breathe 2.4s var(--ease-in-out) infinite;
+  animation: breathe var(--dur-breathe) var(--ease-in-out) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

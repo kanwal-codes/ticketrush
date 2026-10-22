@@ -3,3 +3,6 @@ dist/
 e2e/
 test-results/
 playwright-report/
+# Development-only design gallery art: never part of the served site.
+public/concept-*.png
+public/concert-*.png

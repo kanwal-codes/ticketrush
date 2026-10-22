@@ -45,8 +45,7 @@ describe('EventPage', () => {
     expect(within(tiers[0]!).getByText('$137.60')).toBeInTheDocument()
     expect(within(tiers[0]!).getByText('120 left')).toBeInTheDocument()
     expect(within(tiers[1]!).getByText('Sold out')).toBeInTheDocument()
-    expect(screen.getByText(/final price, fees included/)).toBeInTheDocument()
-    expect(screen.getByText(/you have 10 minutes to pay/)).toBeInTheDocument()
+    expect(screen.getByText('Once you choose seats, we’ll hold them for 10 minutes while you pay.')).toBeInTheDocument()
   })
 
   it('sends guests to the waiting room when the sale is on', async () => {

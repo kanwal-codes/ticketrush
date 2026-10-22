@@ -11,7 +11,7 @@ describe('textInk', () => {
 
   it('falls back to the second ink, then to plain ink, when the first is too pale', () => {
     expect(textInk(poster('#5cf2b0', '#3f2bd9'))).toBe('#3f2bd9')
-    expect(textInk(poster('#5cf2b0', '#ffc20e'))).toBe('#121212')
+    expect(textInk(poster('#5cf2b0', '#ffc20e'))).toBe('#181a1e')
   })
 })
 

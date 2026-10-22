@@ -48,7 +48,7 @@ test('no screen shifts its layout while it loads', async ({ page }) => {
   const event = await createEvent({ waitingRoom: false, title: `Shift ${Date.now()}` })
 
   const screens: [string, string, () => Promise<unknown>][] = [
-    ['home', '/', () => expect(page.getByRole('heading', { name: 'On now' })).toBeVisible()],
+    ['home', '/', () => expect(page.getByRole('heading', { name: 'What’s on.' })).toBeVisible()],
     ['event page', `/events/${event.id}`, () => expect(page.getByRole('heading', { level: 1 })).toBeVisible()],
     ['seat map', `/events/${event.id}/seats`, () => expect(page.getByRole('button', { name: /Stalls row A seat 1,/ })).toBeVisible()],
   ]
@@ -106,7 +106,7 @@ test('without the View Transitions API pages still change, and still rise in', a
 
   await page.getByRole('link', { name: new RegExp(event.title) }).click()
   await expect(page.getByRole('heading', { level: 1, name: event.title })).toBeVisible()
-  expect(await page.locator('main > *').first().evaluate((el) => getComputedStyle(el).animationName)).toBe('rise-in')
+  expect(await page.locator('main > .page').first().evaluate((el) => getComputedStyle(el).animationName)).toBe('rise-in')
 })
 
 test.describe('reduced motion', () => {
@@ -115,7 +115,7 @@ test.describe('reduced motion', () => {
   test('nothing travels or loops when the guest asks for less motion', async ({ page }) => {
     const event = await createEvent({ waitingRoom: false, title: `Calm ${Date.now()}` })
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'On now' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'What’s on.' })).toBeVisible()
 
     const describe = (page: Page, only: 'looping' | 'running') =>
       page.evaluate((kind) => {
@@ -127,7 +127,7 @@ test.describe('reduced motion', () => {
           .map((a) => `${(a as CSSAnimation).animationName ?? 'animation'} on ${String((a.effect as KeyframeEffect | null)?.target?.className ?? '?')}${(a.effect as KeyframeEffect | null)?.pseudoElement ?? ''}`)
       }, only)
     expect(await describe(page, 'looping'), 'looping animations on the home page').toEqual([])
-    expect(await page.locator('main > *').first().evaluate((el) => getComputedStyle(el).animationName)).toBe('none')
+    expect(await page.locator('main > .page').first().evaluate((el) => getComputedStyle(el).animationName)).toBe('none')
 
     await page.goto(`/events/${event.id}`)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

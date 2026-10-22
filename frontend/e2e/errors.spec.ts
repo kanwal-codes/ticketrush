@@ -27,7 +27,7 @@ test('when the events cannot be loaded, the guest is told and can try again @mob
 
   failing = false
   await notice.getByRole('button', { name: 'Try again' }).click()
-  await expect(page.getByRole('heading', { name: 'On now' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'What’s on.' })).toBeVisible()
   await expect(page.getByRole('alert')).toHaveCount(0)
 })
 
@@ -36,7 +36,7 @@ test('an unknown page or event gets a designed screen with a way home', async ({
   await expect(page.getByRole('heading', { level: 1, name: 'We could not find that' })).toBeVisible()
   await expectAccessible(page, 'the not-found screen')
   await page.getByRole('link', { name: 'See what is on' }).click()
-  await expect(page.getByRole('heading', { name: 'On now' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'What’s on.' })).toBeVisible()
 
   await page.goto('/no/such/page')
   await expect(page.getByRole('heading', { level: 1, name: 'We could not find that page' })).toBeVisible()
@@ -59,7 +59,7 @@ test('a rate limit shows how long to wait and unlocks the button by itself', asy
 
 test('going offline says so, says nothing is lost, and announces the return', async ({ page, context }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'On now' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'What’s on.' })).toBeVisible()
 
   await context.setOffline(true)
   await expect(page.getByText('You are offline.')).toBeVisible()

@@ -5,15 +5,16 @@
 .account-menu__trigger {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   padding: 0;
   border: 1px solid var(--ink);
   background: var(--ink);
   color: var(--paper);
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight:var(--weight-heading);
+  font-size: var(--text-small);
   cursor: pointer;
 }
 
@@ -29,34 +30,53 @@
   right: 0;
   z-index: 6;
   display: grid;
-  min-width: 220px;
-  background: var(--paper);
-  border: 1px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
-  animation: account-menu-in var(--dur-fast) var(--ease-out) both;
+  width: min(300px, calc(100vw - 32px));
+  padding: 6px;
+  background: var(--white, #fff);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-lift);
+  transform-origin: top right;
+  animation: account-menu-in var(--dur-base) var(--ease-out) backwards;
 }
 
 @keyframes account-menu-in {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-6px) scale(.98);
   }
 }
 
 .account-menu__who {
   display: grid;
-  gap: 2px;
-  padding: var(--space-3) var(--space-4);
+  grid-template-columns: 40px minmax(0,1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px 18px;
+  margin-bottom: 6px;
   border-bottom: 1px solid var(--rule);
 }
 
-.account-menu__who strong {
-  font-weight: 700;
+.account-menu__avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-subtle);
+  color: var(--ink);
+  font-weight:var(--weight-heading);
 }
 
-.account-menu__who span {
+.account-menu__who p { display: grid; gap: 4px; min-width: 0; }
+
+.account-menu__who strong {
+  font-weight:var(--weight-heading);
+}
+
+.account-menu__who p > span {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--text-label);
   overflow-wrap: anywhere;
 }
 
@@ -64,7 +84,9 @@
 .account-menu__panel button {
   display: block;
   width: 100%;
-  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
   text-align: left;
   text-decoration: none;
   color: var(--ink);
@@ -78,11 +100,19 @@
 .account-menu__panel a:focus-visible,
 .account-menu__panel button:hover,
 .account-menu__panel button:focus-visible {
-  background: var(--rule);
+  background: var(--surface-subtle);
 }
 
-.account-menu__signout {
+.account-menu__panel .account-menu__signout {
   border-top: 1px solid var(--rule);
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.account-menu__panel .account-menu__signout:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 5%, white);
 }
 
 @media (prefers-reduced-motion: reduce) {

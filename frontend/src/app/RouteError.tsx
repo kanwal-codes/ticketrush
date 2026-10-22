@@ -1,9 +1,11 @@
 import { isRouteErrorResponse, useLocation, useRouteError } from 'react-router'
 import { ErrorScreen, type ErrorAction } from '../components/ErrorScreen'
 import { describeError } from '../lib/errorCopy'
+import { useTitle } from '../lib/useTitle'
 
 export function NotFound() {
   const { pathname } = useLocation()
+  useTitle('Page not found · TicketRush')
   return (
     <ErrorScreen eyebrow="404" title="We could not find that page" primary={{ label: 'See what is on', to: '/' }} details={{ status: 404, path: pathname }}>
       <p>The link may be old, or the event may have ended.</p>

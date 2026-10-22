@@ -25,7 +25,7 @@ export function useEvents(q: string) {
  * One event. While the sale has not started it is refetched often so the page flips to "on sale" by itself, and
  * every answer teaches the page how far this machine's clock is from the server's.
  */
-async function fetchEvent(id: number) {
+export async function fetchEvent(id: number) {
   const event = await unwrap(api.GET('/api/events/{id}', { params: { path: { id } } }))
   syncServerTime(event.serverTime)
   return event

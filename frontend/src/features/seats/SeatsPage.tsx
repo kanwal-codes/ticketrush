@@ -1,5 +1,4 @@
 import { RollingNumber } from '../../components/RollingNumber'
-import { BackBar } from '../../components/BackBar'
 import { Notice } from '../../components/Notice'
 import { useToast } from '../../components/Toast'
 import { describeError, type Tone } from '../../lib/errorCopy'
@@ -144,25 +143,25 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
 
   return (
     <div className="page seats" style={eventTheme(event.poster)}>
-      <BackBar to={`/events/${event.id}`}>{event.title}</BackBar>
-      <h1 className="seats__title">Choose your seats</h1>
+      <p className="seats__eyebrow">{event.title} / Seat selection</p>
+      <h1 className="seats__title">Choose your place.</h1>
       <p className="seats__where">
-        {event.title}, {event.venueName}
+        Choose up to {MAX_SEATS} seats at {event.venueName}. You can review the total before paying.
       </p>
 
       <div className="seats__layout">
         <div className="seats__mapwrap">
+          <p className="seats__hint">Swipe to see more seats.</p>
+          <SeatMap map={map} tiers={event.tiers} selected={chosen} mine={mine} onToggle={toggle} />
           <ul className="legend" aria-label="Key">
             <li><span className="seat seat--available" aria-hidden="true" /> Available</li>
+            <li><span className="seat seat--selected" aria-hidden="true" /> Selected</li>
             <li><span className="seat seat--taken" aria-hidden="true" /> Taken</li>
-            <li><span className="seat seat--selected" aria-hidden="true" /> Yours</li>
           </ul>
-          <p className="seats__hint">Swipe sideways to see every seat in a row.</p>
-          <SeatMap map={map} tiers={event.tiers} selected={chosen} mine={mine} onToggle={toggle} />
         </div>
 
         <aside className="panel" aria-labelledby="panel-heading">
-          <h2 id="panel-heading">Your tickets</h2>
+          <h2 id="panel-heading">Your selection</h2>
           {notice ? (
             <Notice tone={notice.tone} title={notice.title || (notice.tone === 'success' ? 'Done' : 'Note')} compact onDismiss={() => setNotice(null)}>
               {notice.text}
@@ -175,6 +174,7 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
             <p className="panel__empty">Choose up to {MAX_SEATS} seats on the map.</p>
           ) : (
             <>
+              <p className="panel__brief">{price.lines.map((l) => `${l.seat.section} ${seatLabel(l.seat)}`).join(' · ')}</p>
               <ul className="panel__lines">
                 {price.lines.map((l) => (
                   <li key={l.seat.id}>
@@ -185,7 +185,7 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
               </ul>
               <dl className="panel__totals">
                 <div><dt>Tickets</dt><dd className="num"><RollingNumber value={formatMoney(subtotal)} /></dd></div>
-                <div><dt>Fees</dt><dd className="num">{formatMoney(fees)}</dd></div>
+                <div><dt>Service fees</dt><dd className="num">{formatMoney(fees)}</dd></div>
                 <div className="panel__total"><dt>Total</dt><dd className="num"><RollingNumber value={formatMoney(total)} /></dd></div>
               </dl>
             </>
@@ -193,15 +193,14 @@ function SeatsBody({ event, map, hold }: { event: EventDetail; map: SeatMapData;
 
           <div className="panel__actions">
             <button type="button" className="btn panel__continue" disabled={effective.length === 0 || busy} onClick={() => void onContinue()}>
-              {busy ? 'One moment…' : isHeld ? 'Continue to payment' : effective.length > 0 ? `Hold ${effective.length === 1 ? 'this seat' : `these ${effective.length} seats`}` : 'Continue'}
+              {busy ? 'Holding your seats…' : isHeld ? 'Review and pay' : effective.length > 0 ? `Hold ${effective.length === 1 ? 'this seat' : `these ${effective.length} seats`}` : 'Continue'}
             </button>
             {hold && (
               <button type="button" className="btn btn--quiet panel__release" disabled={busy} onClick={() => void onRelease()}>
-                Release my seats
+                Release seats
               </button>
             )}
           </div>
-          <p className="panel__note">The prices on the map already include fees. Nothing is added after this step.</p>
         </aside>
       </div>
     </div>

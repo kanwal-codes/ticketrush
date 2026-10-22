@@ -81,8 +81,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   return (
     <div className="page auth">
+      <div className="auth__content">
       <h1>{isRegister ? 'Create your account' : 'Sign in'}</h1>
-      <p className="auth__lead">{isRegister ? 'You need an account to join a queue, hold seats and keep your tickets.' : 'Welcome back.'}</p>
+      <p className="auth__lead">{isRegister ? 'Save your tickets and manage your bookings.' : 'Enter your email and password.'}</p>
 
       <form onSubmit={(e) => void submit(e)} noValidate className="auth__form">
         {isRegister && <Field label="Your name" value={values.displayName} onChange={set('displayName')} error={errors.displayName} autoComplete="name" maxLength={80} />}
@@ -142,7 +143,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         )}
         {isRegister && (
           <p className="field__hint">
-            By creating an account you agree to the <Link to="/terms">Terms of use</Link> and the <Link to="/privacy">Privacy</Link> page.
+            By creating an account, you agree to the <Link to="/terms">Terms of use</Link> and acknowledge our <Link to="/privacy">Privacy policy</Link>.
           </p>
         )}
         <button type="submit" className="btn auth__submit" disabled={busy || waitSeconds > 0 || (checked && answer === null)}>
@@ -161,6 +162,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           </>
         )}
       </p>
+      </div>
     </div>
   )
 }

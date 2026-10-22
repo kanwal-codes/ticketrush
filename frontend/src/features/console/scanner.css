@@ -1,14 +1,23 @@
-.scanner {
-  max-width: 640px;
+/* Door scanner: a dark input surface, a big answer, and the last few scans. */
+.page.scanner {
+  max-width: 960px;
 }
 
 .scanner__form {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  padding: var(--space-6);
+  background: var(--surface-inverse);
+  color: var(--on-inverse);
 }
 
 .scanner__form label {
-  font-weight: 600;
+  color: var(--on-inverse);
+  font-weight: var(--weight-heading);
+}
+
+.scanner__form .field__hint {
+  color: var(--muted-inverse);
 }
 
 .scanner__row {
@@ -20,13 +29,42 @@
   flex: 1;
   min-width: 0;
   min-height: 56px;
-  padding: 0 var(--space-3);
-  border: 2px solid var(--ink);
-  border-radius: 0;
+  padding: 0 var(--space-4);
+  border: 2px solid transparent;
+  border-radius: var(--radius-control);
   background: var(--white);
-  font-size: 1.15rem;
+  color: var(--ink);
+  font-size: var(--text-item);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.scanner__input:focus {
+  border-color: var(--action);
+}
+
+.scanner__input::placeholder {
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.scanner__form .btn {
+  border-color: var(--white);
+  background: var(--white);
+  color: var(--ink);
+}
+
+.scanner__form .btn:hover:not(:disabled) {
+  border-color: var(--surface-input);
+  background: var(--surface-input);
+  color: var(--ink);
+}
+
+.scanner__form .btn:disabled {
+  opacity: 0.55;
 }
 
 .scanner__result-wrap {
@@ -36,9 +74,10 @@
 .scanner__result {
   display: grid;
   gap: var(--space-1);
-  padding: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-control);
   color: var(--white);
-  animation: pop-in var(--dur-base) var(--ease-spring) both;
+  animation: pop-in var(--dur-base) var(--ease-spring) backwards;
 }
 
 .scanner__result--ok {
@@ -46,7 +85,7 @@
 }
 
 .scanner__result--warn {
-  background: #7a4b00;
+  background: var(--warning);
 }
 
 .scanner__result--bad {
@@ -54,8 +93,9 @@
 }
 
 .scanner__headline {
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
 }
 
 .scanner__recent {
@@ -72,7 +112,7 @@
   align-items: center;
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--rule);
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 
 .scanner__code {
@@ -82,6 +122,7 @@
 .scanner__dot {
   width: 10px;
   height: 10px;
+  border-radius: 50%;
   background: var(--muted);
 }
 
@@ -90,11 +131,27 @@
 }
 
 .scanner__dot--warn {
-  background: #7a4b00;
+  background: var(--warning);
 }
 
 .scanner__dot--bad {
   background: var(--danger);
+}
+
+@media (max-width: 640px) {
+  .scanner__form {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .scanner__row {
+    flex-wrap: wrap;
+  }
+
+  .scanner__row .scanner__input,
+  .scanner__row .btn {
+    flex: 1 0 100%;
+    width: 100%;
+  }
 }
 
 @media (max-width: 520px) {

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { formatMinutes, serverNow } from '../../lib/time'
 import { clearActiveHold, useActiveHold } from './activeHold'
+import { releaseHold, seatKeys } from './api'
+import { describeError } from '../../lib/errorCopy'
 
 /** The same clock where the guest decides to pay: big, at the top of the order summary, saying what happens at zero. */
 export function HoldClock({ expiresAt }: { expiresAt: string }) {
@@ -24,6 +27,27 @@ export function HoldClock({ expiresAt }: { expiresAt: string }) {
 export function HoldTimer() {
   const hold = useActiveHold()
   const [now, setNow] = useState(serverNow)
+  const [releasing, setReleasing] = useState(false)
+  const [failure, setFailure] = useState('')
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  async function release() {
+    if (!hold || releasing) return
+    setReleasing(true)
+    setFailure('')
+    try {
+      await releaseHold(hold.holdId)
+      queryClient.setQueryData(seatKeys.hold(hold.eventId), null)
+      void queryClient.invalidateQueries({ queryKey: seatKeys.seats(hold.eventId) })
+      if (pathname === `/events/${hold.eventId}/checkout` || pathname === `/events/${hold.eventId}/seats`) {
+        void navigate(`/events/${hold.eventId}`, { replace: true, viewTransition: true })
+      }
+    } catch (error) {
+      setFailure(describeError(error).message)
+    } finally { setReleasing(false) }
+  }
 
   useEffect(() => {
     if (!hold) return
@@ -42,10 +66,15 @@ export function HoldTimer() {
   }, [hold])
 
   const remaining = hold ? Date.parse(hold.expiresAt) - now : 0
-  if (!hold || remaining <= 0) return null
+  // Checkout shows the same clock, large, beside the total; two clocks on one screen would only compete.
+  if (!hold || remaining <= 0 || pathname === `/events/${hold.eventId}/checkout`) return null
   return (
-    <Link to={`/events/${hold.eventId}/checkout`} className={`hold-timer${remaining < 60_000 ? ' hold-timer--urgent' : ''}`}>
-      <span className="label">Held for</span> <time className="num" role="timer" aria-label={`Seats held for ${formatMinutes(remaining)}`}>{formatMinutes(remaining)}</time>
-    </Link>
+    <div className="hold-control">
+      <Link to={`/events/${hold.eventId}/checkout`} className={`hold-timer${remaining < 60_000 ? ' hold-timer--urgent' : ''}`}>
+        <span className="label">Held for</span> <time className="num" role="timer" aria-label={`Seats held for ${formatMinutes(remaining)}`}>{formatMinutes(remaining)}</time>
+      </Link>
+      <button type="button" className="hold-control__release" aria-label="Release held seats" disabled={releasing} onClick={() => void release()}>{releasing ? 'Releasing…' : 'Release'}</button>
+      {failure && <p className="hold-control__error" role="alert">{failure}</p>}
+    </div>
   )
 }

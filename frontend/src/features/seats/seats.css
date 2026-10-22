@@ -1,59 +1,75 @@
-.seats__title {
-  margin-top: var(--space-2);
+/* Seat selection: the venue map on the left, a running summary on the right (a bar along the bottom on a phone). */
+
+/* The page fades in rather than rising: a transformed page would trap the phone's fixed summary bar inside it. */
+.page.seats {
+  animation-name: fade-in;
+}
+
+.seats__eyebrow {
+  margin-top: var(--space-4);
   color: var(--ev-text);
+  font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.page.seats .seats__title {
+  max-width: 14ch;
+  margin-top: var(--space-3);
+  font-size: var(--text-page);
+  font-weight: var(--weight-display);
 }
 
 .seats__where {
+  max-width: 55ch;
+  margin-top: var(--space-3);
   color: var(--muted);
-  margin-top: var(--space-2);
+  font-size: var(--text-item);
+  line-height: 1.5;
 }
 
 .seats__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: var(--space-6);
-  margin-top: var(--space-5);
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: clamp(24px, 4vw, 56px);
+  margin-top: var(--space-6);
   align-items: start;
 }
 
-.seats__mapwrap {
+/* Without min-width a grid item is as wide as its longest row, which would widen the whole page. Rows scroll inside. */
+.seats__layout > *,
+.seatmap__section {
   min-width: 0;
 }
 
-.legend {
-  display: flex;
-  gap: var(--space-5);
-  list-style: none;
-  margin: 0 0 var(--space-4);
-  padding: 0;
-  font-size: 0.85rem;
+.seats__mapwrap {
+  padding: clamp(16px, 3vw, 40px);
+  border: 1px solid var(--rule);
+  background: var(--white);
 }
 
-.legend li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.seats__hint {
+  display: none;
+  margin-bottom: var(--space-3);
+  color: var(--muted);
+  font-size: var(--text-small);
 }
 
+/* ---- Map ---- */
 .seatmap {
   display: grid;
   gap: var(--space-6);
-  min-width: 0;
-}
-
-/* Without this a grid item is as wide as its longest row, which would widen the whole page. Rows scroll inside. */
-.seatmap__section,
-.seats__layout > * {
-  min-width: 0;
 }
 
 .seatmap__stage {
-  text-align: center;
-  padding: var(--space-2);
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  display: grid;
+  place-items: center;
+  height: 48px;
+  border-top: 3px solid var(--action);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  background: var(--action-tint);
+  color: var(--ink);
+  font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
   letter-spacing: 0.3em;
   text-transform: uppercase;
 }
@@ -64,6 +80,10 @@
   align-items: baseline;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
+}
+
+.seatmap__header h3 {
+  font-size: var(--text-item);
 }
 
 .seatmap__rows {
@@ -81,77 +101,104 @@
 }
 
 .seatmap__rowlabel {
-  width: 24px;
-  flex: none;
-  color: var(--muted);
-  font-size: 0.75rem;
   position: sticky;
   left: 0;
-  background: var(--paper);
+  z-index: 1;
+  width: 24px;
+  flex: none;
+  background: var(--white);
+  color: var(--muted);
+  font-size: var(--text-label);
 }
 
 .seat {
-  flex: none;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid var(--ink);
-  border-radius: 0;
-  background: var(--white);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
   display: inline-grid;
   place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border-control);
+  border-radius: 5px;
+  background: var(--white);
+  font: var(--weight-label) var(--text-label) var(--font-mono);
+  touch-action: manipulation;
+  transition:
+    transform var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
 }
 
+/* The little swatches in the key. */
 span.seat {
   width: 18px;
   height: 18px;
 }
 
-.seat--available:hover {
-  background: var(--ev-paper);
-  color: var(--on-ev-paper);
+.seat--available:is(:hover, :focus-visible) {
+  border-color: var(--action);
+  background: var(--action-tint);
+  transform: translateY(-2px);
 }
 
 .seat--selected {
-  background: var(--ev);
-  border-color: var(--ev);
-  color: var(--on-ev);
-  font-weight: 700;
+  border-color: var(--action);
+  background: var(--action);
+  color: var(--on-action);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--action) 20%, transparent);
+  font-weight: var(--weight-heading);
 }
 
 .seat--taken {
   border-color: var(--rule);
+  background: repeating-linear-gradient(135deg, var(--surface-subtle) 0 3px, var(--rule) 3px 5px);
   color: var(--muted);
-  background: repeating-linear-gradient(135deg, var(--paper) 0 3px, var(--rule) 3px 5px);
   cursor: not-allowed;
 }
 
+.legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ---- Summary ---- */
 .panel {
   position: sticky;
   top: var(--sticky-top);
   display: grid;
   gap: var(--space-4);
   padding: var(--space-5);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--ev);
   background: var(--white);
-  border: 1px solid var(--ink);
 }
 
 .panel h2 {
-  font-size: 1.2rem;
+  font-size: var(--text-section);
 }
 
-.panel__message {
-  min-height: 1.5em;
-  color: var(--danger);
-  font-size: 0.9rem;
+.panel__brief {
+  display: none;
 }
 
 .panel__empty,
 .panel__note {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 
 .panel__lines {
@@ -178,13 +225,10 @@ span.seat {
 }
 
 .panel__total {
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.panel__continue,
-.panel__release {
-  width: 100%;
+  padding-block: var(--space-4);
+  font-size: var(--text-section);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
 }
 
 .panel__actions {
@@ -192,67 +236,111 @@ span.seat {
   gap: var(--space-3);
 }
 
+.panel__continue,
+.panel__release {
+  width: 100%;
+}
+
+@media (max-width: 1000px) {
+  .seats__layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
 @media (max-width: 880px) {
-  .seats {
+  body:has(.page.seats) {
+    --floating-bottom: 148px;
+  }
+
+  .page.seats {
     /* Room at the bottom so the summary bar never hides the last row. */
-    padding-bottom: 140px;
+    padding-bottom: 168px;
   }
 
   .seats__layout {
     grid-template-columns: 1fr;
+    margin-top: var(--space-5);
   }
 
-  /* On a phone the summary is a compact bar along the bottom: the total and the way forward, nothing else.
-     The chosen seats are ticked on the map, so the list would only cover it. */
+  .seats__hint {
+    display: block;
+  }
+
+  /* On a phone the summary is a bar along the bottom: which seats, the total, and the way forward. */
   .panel {
     position: fixed;
     inset: auto 0 0 0;
     z-index: 4;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--gutter);
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    padding: var(--space-3) var(--gutter) calc(var(--space-3) + env(safe-area-inset-bottom));
     border-width: 1px 0 0;
+    border-top-color: var(--ev);
+    box-shadow: 0 -8px 24px rgb(24 26 30 / 0.08);
+  }
+
+  .panel > * {
+    grid-column: 1 / -1;
   }
 
   .panel h2,
   .panel__lines,
-  .panel__empty,
   .panel__note,
   .panel__totals div:not(.panel__total) {
     display: none;
   }
 
-  .panel__message {
-    min-height: 0;
+  .panel__brief {
+    display: block;
+    grid-column: 1;
+    overflow: hidden;
+    font-size: var(--text-small);
+    font-weight: var(--weight-heading);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .panel__totals {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .panel__totals div {
-    border: 0;
     padding: 0;
+    border: 0;
+  }
+
+  .panel__total {
+    gap: var(--space-3);
+    font-size: var(--text-item);
   }
 
   .panel__actions {
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
   }
-}
 
-/* A wide row scrolls sideways inside the map on a phone. Say so, and shade the edge that still has seats beyond it. */
-.seats__hint {
-  display: none;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
-@media (max-width: 720px) {
-  .seats__hint {
-    display: block;
+  .seats__mapwrap {
+    padding: var(--space-4);
   }
 
+  /* A wide row scrolls sideways inside the map. Shade the edge that still has seats beyond it. */
   .seatmap__rows {
     background:
-      linear-gradient(to right, var(--paper) 30%, transparent) left center / 40px 100% no-repeat local,
-      linear-gradient(to left, var(--paper) 30%, transparent) right center / 40px 100% no-repeat local,
-      radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.2), transparent) left center / 12px 100% no-repeat scroll,
-      radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.2), transparent) right center / 12px 100% no-repeat scroll;
+      linear-gradient(to right, var(--white) 30%, transparent) left center / 40px 100% no-repeat local,
+      linear-gradient(to left, var(--white) 30%, transparent) right center / 40px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.16), transparent) left center / 12px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.16), transparent) right center / 12px 100% no-repeat scroll;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat {
+    transition: none;
+  }
+
+  .seat--available:is(:hover, :focus-visible) {
+    transform: none;
   }
 }
