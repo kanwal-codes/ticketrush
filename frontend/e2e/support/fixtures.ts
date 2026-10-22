@@ -1,8 +1,20 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test as base, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { createGuest, organizerToken } from './backend'
+import { createGuest, organizerToken, retireEvents } from './backend'
 
-export { expect, test }
+export { expect }
+
+/** Every test, whether or not it asks for it: when it is done, the events it made are cancelled so they leave the home page. */
+export const test = base.extend<{ retireEvents: void }>({
+  retireEvents: [
+    // oxlint-disable-next-line no-empty-pattern
+    async ({}, use) => {
+      await use()
+      await retireEvents()
+    },
+    { auto: true },
+  ],
+})
 
 /** Signs a ready-made guest in by giving the page its token, without going through the sign-up form. */
 export async function signInAsNewGuest(page: Page): Promise<{ id: number; token: string }> {

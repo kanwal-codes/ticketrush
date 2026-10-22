@@ -8,7 +8,7 @@
 // seat map, checkout and tickets).
 import { chromium, type Page } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
-import { buySeats, createEvent, createGuests, joinQueue, organizerToken, ticketCodesOf } from '../e2e/support/backend.ts'
+import { buySeats, createEvent, createGuests, joinQueue, organizerToken, retireEvents, ticketCodesOf } from '../e2e/support/backend.ts'
 
 const WEB = process.env.WEB_URL ?? 'http://localhost:5173'
 const OUT = new URL('../../docs/img/screens/', import.meta.url).pathname
@@ -193,3 +193,5 @@ await shoot('error-offline-phone', 390, 844, async (page) => {
 })
 
 await browser.close()
+// The events made for the pictures are cancelled, so they do not pile up on the developer's home page.
+await retireEvents()

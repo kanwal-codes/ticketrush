@@ -16,6 +16,20 @@ async function call<T>(method: string, path: string, body?: unknown, token?: str
 
 let organizer: Promise<string> | undefined
 
+/** The events this process has made, so they can be taken off the home page when the test is done. */
+const made: number[] = []
+
+/**
+ * Cancels the events made since the last call. A cancelled event is no longer listed, so a developer's home page is not
+ * buried under hundreds of "E2E Night" events after a few test runs. Failures are ignored: a test may have cancelled its own.
+ */
+export async function retireEvents(): Promise<void> {
+  const ids = made.splice(0)
+  if (ids.length === 0) return
+  const token = await organizerToken()
+  await Promise.allSettled(ids.map((id) => call('POST', `/api/events/${id}/cancel`, undefined, token)))
+}
+
 export function organizerToken(): Promise<string> {
   const password = process.env.ORGANIZER_PASSWORD ?? process.env.DEMO_ORGANIZER_PASSWORD
   if (!password) throw new Error('Set ORGANIZER_PASSWORD (the demo organizer password) to run the end-to-end tests')
@@ -82,6 +96,7 @@ export async function createEvent(options: NewEvent = {}): Promise<CreatedEvent>
     token,
   )
   await call('POST', `/api/events/${event.id}/publish`, undefined, token)
+  made.push(event.id)
   const map = await call<{ sections: { rows: { seats: { id: number }[] }[] }[] }>('GET', `/api/events/${event.id}/seats`)
   const seatIds = map.sections.flatMap((s) => s.rows.flatMap((r) => r.seats.map((seat) => seat.id)))
   return { id: event.id, title, seatIds }
