@@ -69,7 +69,11 @@ public class EventService {
 		this.clock = clock;
 	}
 
-	public record Poster(PosterStyle style, String inkOne, String inkTwo, String paperColor) {
+	/** The generated poster's style and colors, plus an optional designed image (a /posters/ path) shown instead. */
+	public record Poster(PosterStyle style, String inkOne, String inkTwo, String paperColor, String imageUrl) {
+		public Poster(PosterStyle style, String inkOne, String inkTwo, String paperColor) {
+			this(style, inkOne, inkTwo, paperColor, null);
+		}
 	}
 
 	public record PriceSpec(long sectionId, int priceCents) {
@@ -92,6 +96,7 @@ public class EventService {
 				cmd.description() == null ? "" : cmd.description().strip(), cmd.startsAt(), cmd.doorsAt(),
 				cmd.dropOpensAt(), cmd.onSaleAt(), poster.style(), poster.inkOne(), poster.inkTwo(),
 				poster.paperColor(), cmd.waitingRoom()));
+		event.setPosterImage(poster.imageUrl());
 		savePrices(event.getId(), cmd);
 		return new EventRef(event.getId(), event.getStatus());
 	}
@@ -112,6 +117,7 @@ public class EventService {
 				cmd.description() == null ? "" : cmd.description().strip(), cmd.startsAt(), cmd.doorsAt(),
 				cmd.dropOpensAt(), cmd.onSaleAt(), poster.style(), poster.inkOne(), poster.inkTwo(),
 				poster.paperColor(), cmd.waitingRoom());
+		event.setPosterImage(poster.imageUrl());
 		prices.deleteByEventId(eventId);
 		savePrices(eventId, cmd);
 		return ref(event);

@@ -69,7 +69,7 @@ public class OrganizerService {
 				.map(p -> new PriceView(p.getSectionId(), p.getPriceCents())).toList();
 		return new OrganizerEvent(e.getId(), e.getStatus(), e.getTitle(), e.getArtist(), e.getDescription(),
 				e.getVenue().getId(), e.getStartsAt(), e.getDoorsAt(), e.getDropOpensAt(), e.getOnSaleAt(),
-				new PosterView(e.getPosterStyle(), e.getInkOne(), e.getInkTwo(), e.getPaperColor()), priced,
+				new PosterView(e.getPosterStyle(), e.getInkOne(), e.getInkTwo(), e.getPaperColor(), e.getPosterImage()), priced,
 				e.isQueueEnabled());
 	}
 

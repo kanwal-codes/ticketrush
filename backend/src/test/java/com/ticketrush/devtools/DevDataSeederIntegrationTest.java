@@ -27,11 +27,12 @@ class DevDataSeederIntegrationTest extends AbstractIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.totalItems").value(9))
 				.andReturn().getResponse().getContentAsString();
-		int afterlight = JsonPath.<java.util.List<Integer>>read(list, "$.items[?(@.title=='Afterlight Tour')].id").get(0);
+		int afterlight = JsonPath.<java.util.List<Integer>>read(list, "$.items[?(@.title=='Afterglow World Tour')].id").get(0);
 
 		// 400 + 1000 + 600 seats, and the $96.00 Stalls ticket shows as $103.20 with the fee.
 		mvc.perform(get("/api/events/" + afterlight))
 				.andExpect(jsonPath("$.totalSeats").value(2000))
+				.andExpect(jsonPath("$.poster.imageUrl").value("/posters/afterglow-world-tour.webp"))
 				.andExpect(jsonPath("$.tiers[?(@.name=='Stalls')].allInCents", contains(10320)));
 
 		String login = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)

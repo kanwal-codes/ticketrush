@@ -23,6 +23,13 @@ describe('Poster', () => {
     expect(container.querySelector('svg')).toHaveAttribute('data-style', style)
   })
 
+  it('shows a designed poster image instead of drawing one when the event has it', () => {
+    const { container } = render(<Poster {...base} style="ORBIT" imageUrl="/posters/orbit.webp" />)
+    expect(container.querySelector('image')).toHaveAttribute('href', '/posters/orbit.webp')
+    expect(container.textContent).toBe('')
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  })
+
   it('is hidden from screen readers, because the page already says what the event is', () => {
     const { container } = render(<Poster {...base} style="ORBIT" />)
     expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')

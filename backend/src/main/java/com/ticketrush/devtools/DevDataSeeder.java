@@ -84,19 +84,35 @@ class DevDataSeeder implements ApplicationRunner {
 
 	/** What the event page says about each demo event, by title. Plain sentences about the show and the seating. */
 	private static final Map<String, String> ABOUT = Map.ofEntries(
-			Map.entry("Afterlight Tour", "Mira Okafor plays her new album Afterlight from start to finish, then an encore of older songs. Standing on the floor, reserved seats in the stalls and balcony."),
-			Map.entry("Tomas Aguilar: Live", "Tomas Aguilar performs a solo set on piano and voice at Théâtre Laurier. Every seat in the orchestra and balcony is reserved."),
-			Map.entry("The Winter's Tale", "Théâtre du Marais stages Shakespeare's late romance in a new production. One interval, with reserved seats in the orchestra and balcony."),
-			Map.entry("Northern Lights Orchestra", "The full orchestra plays an evening of film and concert music at Maison Cartier. Seats are reserved in the parterre and the gallery."),
-			Map.entry("Harbour FC vs Rivière United", "Harbour FC host Rivière United in the league derby at Stade Laurentien. The lower and upper stands are reserved seating."),
-			Map.entry("After Hours with Noor Haddad", "Noor Haddad plays a late, vinyl-only set in the small room at Studio Vitrine. Seats are limited, so a waiting room opens before the sale."),
-			Map.entry("Tidal Night One", "Koji Hayashi plays an electronic set with a full light show at Lakeshore Arena. A waiting room opens before the sale."),
-			Map.entry("Rooftop Sessions: Sable Quinn", "Sable Quinn plays an open-air evening set at the Vieux-Port Amphitheatre. Pit seats at the front, lawn seating behind."),
-			Map.entry("Lakeshore Lions vs Harbour FC", "The Lakeshore Lions take on Harbour FC at Lakeshore Arena. The lower and upper bowls are reserved seating."),
-			Map.entry("Brass and Bloom", "Fanfare Cartier, a brass band, plays marches, jazz and new arrangements at Salle Marquis. Parterre and balcony seats are reserved."),
-			Map.entry("Late Night Folk: Oona and the Marlows", "Oona and the Marlows play acoustic folk songs in the small room at Studio Vitrine. A short, quiet late show."),
-			Map.entry("Stand-up Cellar: Priya Nair", "Priya Nair headlines an evening of stand-up at Studio Vitrine, with two opening comics. Seating is on the floor and the mezzanine."),
-			Map.entry("Vivaldi by Candlelight", "Orchestre de la Rive plays Vivaldi's Four Seasons in an evening concert at the Vieux-Port Amphitheatre. Pit and lawn seating."));
+			Map.entry("Afterglow World Tour", "Solene plays her new album Afterglow from start to finish, then an encore of older songs. Standing on the floor, reserved seats in the stalls and balcony."),
+			Map.entry("The Understudy", "A new play in two acts about an understudy who finally gets the lead. One interval, with reserved seats in the orchestra and balcony."),
+			Map.entry("Swan Lake", "Ballet de la Rive dances Tchaikovsky's Swan Lake in four acts. Every seat in the orchestra and balcony is reserved."),
+			Map.entry("Ember & Tide", "A contemporary dance piece for one dancer and two lights, with a live score. Seats are reserved in the parterre and the gallery."),
+			Map.entry("Orbit", "Vesper plays an electronic show in the round, under a giant ring of light at Stade Laurentien. The lower and upper stands are reserved seating. A waiting room opens before the sale."),
+			Map.entry("Clay & Kiln", "A hands-on pottery night in the small room at Studio Vitrine: wheel throwing, hand building and glazing, with all clay and tools provided. Places are limited, so a waiting room opens before the sale."),
+			Map.entry("Halo", "Kai Arden plays an electronic set with a full light show under a glowing ring at Lakeshore Arena. A waiting room opens before the sale."),
+			Map.entry("Bloom", "A spring flower show at the Vieux-Port Amphitheatre, with gardens, floral design and a plant market. Pit seats at the front, lawn seating behind."),
+			Map.entry("Concours", "An evening showcase of classic cars, supercars, electric cars and one-off concepts at Lakeshore Arena. The lower and upper bowls are reserved seating."),
+			Map.entry("Blue Hour", "A live jazz evening with saxophone, piano, bass and drums at Salle Marquis. Parterre and balcony seats are reserved."),
+			Map.entry("Form & Light", "The opening night of a contemporary abstraction show, with painting, sculpture and light, in the small room at Studio Vitrine. Seating is on the floor and the mezzanine."),
+			Map.entry("Sorry, I'm Late", "Rudy Finch headlines an evening of stand-up at Studio Vitrine, with two opening comics. Seating is on the floor and the mezzanine."),
+			Map.entry("Blue Hour Under the Stars", "The jazz quartet takes Blue Hour outdoors at the Vieux-Port Amphitheatre. Pit seats at the front, lawn seating behind."));
+
+	/** The designed poster each demo event shows, by title. The files live in the web app's public/posters folder. */
+	private static final Map<String, String> POSTER_IMAGES = Map.ofEntries(
+			Map.entry("Afterglow World Tour", "/posters/afterglow-world-tour.webp"),
+			Map.entry("The Understudy", "/posters/the-understudy.webp"),
+			Map.entry("Swan Lake", "/posters/swan-lake.webp"),
+			Map.entry("Ember & Tide", "/posters/ember-and-tide.webp"),
+			Map.entry("Orbit", "/posters/orbit.webp"),
+			Map.entry("Clay & Kiln", "/posters/clay-and-kiln.webp"),
+			Map.entry("Halo", "/posters/halo.webp"),
+			Map.entry("Bloom", "/posters/bloom.webp"),
+			Map.entry("Concours", "/posters/concours.webp"),
+			Map.entry("Blue Hour", "/posters/blue-hour.webp"),
+			Map.entry("Form & Light", "/posters/form-and-light.webp"),
+			Map.entry("Sorry, I'm Late", "/posters/sorry-im-late.webp"),
+			Map.entry("Blue Hour Under the Stars", "/posters/blue-hour.webp"));
 
 	/** More events in more cities, in every state a guest can meet: a drop hours away, a live queue, open sales. */
 	private void seedMore(long organizer) {
@@ -110,24 +126,24 @@ class DevDataSeeder implements ApplicationRunner {
 				List.of(new SectionSpec("Parterre", 12, 30), new SectionSpec("Balcon", 4, 30)));
 
 		// A drop a few hours away, with a waiting room: the home page's countdown and the queue both have something to show.
-		publish(organizer, vitrine, "After Hours with Noor Haddad", "Noor Haddad", PosterStyle.VINYL, "#111111",
-				"#FF7A00", "#F1EBDD", Duration.ofHours(3), Duration.ofDays(20), true, 4500, 3000);
-		publish(organizer, lakeshore, "Tidal Night One", "Koji Hayashi", PosterStyle.AURORA, "#7DF9D0", "#2E5BFF",
-				"#0B1633", Duration.ofDays(2), Duration.ofDays(40), true, 9500, 6500);
+		publish(organizer, vitrine, "Clay & Kiln", "Atelier Terre", PosterStyle.VINYL, "#2A1710",
+				"#E3A74B", "#B34A2A", Duration.ofHours(3), Duration.ofDays(20), true, 4500, 3000);
+		publish(organizer, lakeshore, "Halo", "Kai Arden", PosterStyle.AURORA, "#FFAA3C", "#7FC8FF",
+				"#05081A", Duration.ofDays(2), Duration.ofDays(40), true, 9500, 6500);
 		// On sale now, with a queue that is already running.
-		publish(organizer, vieuxPort, "Rooftop Sessions: Sable Quinn", "Sable Quinn", PosterStyle.SUN, "#1A1A1A",
-				"#E8472B", "#F6C453", Duration.ofHours(-1), Duration.ofDays(9), true, 6200, 3900);
-		publish(organizer, lakeshore, "Lakeshore Lions vs Harbour FC", "Lakeshore Lions", PosterStyle.PITCH, "#0057B8",
-				"#121212", "#EEF2F7", Duration.ofDays(-4), Duration.ofDays(25), true, 7800, 4200);
+		publish(organizer, vieuxPort, "Bloom", "Jardin de la Rive", PosterStyle.SUN, "#1F4D3A",
+				"#E75A7C", "#FBEDE8", Duration.ofHours(-1), Duration.ofDays(9), true, 6200, 3900);
+		publish(organizer, lakeshore, "Concours", "Concours International", PosterStyle.PITCH, "#D9A441",
+				"#F1EBDC", "#0B3D2E", Duration.ofDays(-4), Duration.ofDays(25), true, 7800, 4200);
 		// On sale now, no queue.
-		publish(organizer, marquis, "Brass and Bloom", "Fanfare Cartier", PosterStyle.CURTAIN,
-				"#7A1F2B", "#F2A33A", "#F5E3D3", Duration.ofDays(-3), Duration.ofDays(14), false, 4800, 3400);
-		publish(organizer, vitrine, "Late Night Folk: Oona and the Marlows", "Oona and the Marlows", PosterStyle.SUN,
-				"#2B3A55", "#F26B5B", "#F3E9D2", Duration.ofDays(-1), Duration.ofDays(3), false, 2600, 2000);
-		publish(organizer, vitrine, "Stand-up Cellar: Priya Nair", "Priya Nair", PosterStyle.CURTAIN, "#111111",
-				"#FFB000", "#FFF4D6", Duration.ofDays(-10), Duration.ofDays(55), false, 2800, 2200);
-		publish(organizer, vieuxPort, "Vivaldi by Candlelight", "Orchestre de la Rive", PosterStyle.AURORA, "#F5D77A",
-				"#B3263E", "#1B0F1F", Duration.ofDays(-6), Duration.ofDays(33), false, 8400, 5200);
+		publish(organizer, marquis, "Blue Hour", "Blue Hour Quartet", PosterStyle.CURTAIN,
+				"#FF7A59", "#F7EBD3", "#0B1230", Duration.ofDays(-3), Duration.ofDays(14), false, 4800, 3400);
+		publish(organizer, vitrine, "Form & Light", "Galerie Prisme", PosterStyle.SUN,
+				"#E63B2E", "#1F3FD1", "#F2EFE8", Duration.ofDays(-1), Duration.ofDays(3), false, 2600, 2000);
+		publish(organizer, vitrine, "Sorry, I'm Late", "Rudy Finch", PosterStyle.CURTAIN, "#141210",
+				"#FF3D81", "#FFD23F", Duration.ofDays(-10), Duration.ofDays(55), false, 2800, 2200);
+		publish(organizer, vieuxPort, "Blue Hour Under the Stars", "Blue Hour Quartet", PosterStyle.AURORA, "#F2C14E",
+				"#FF7A59", "#0B1230", Duration.ofDays(-6), Duration.ofDays(33), false, 8400, 5200);
 	}
 
 	private void seedFirstFive(long organizer) {
@@ -141,16 +157,16 @@ class DevDataSeeder implements ApplicationRunner {
 				List.of(new SectionSpec("Lower", 20, 50), new SectionSpec("Upper", 10, 50)));
 
 		// Prices are face value in cents. Guests see face plus the 7.5% fee.
-		publish(organizer, halden, "Afterlight Tour", "Mira Okafor", PosterStyle.ORBIT, "#2B2FD9", "#FF5A36",
-				"#FFD9C4", Duration.ofHours(22), Duration.ofDays(38), true, 12800, 9600, 6400);
-		publish(organizer, laurier, "Tomas Aguilar: Live", "Tomas Aguilar", PosterStyle.SUN, "#121212", "#E5322D",
-				"#FFC20E", Duration.ofDays(-2), Duration.ofDays(16), false, 5800, 4200);
-		publish(organizer, laurier, "The Winter's Tale", "Théâtre du Marais", PosterStyle.CURTAIN, "#0E4D3A",
-				"#F08FA8", "#F4CFD8", Duration.ofDays(-5), Duration.ofDays(11), false, 7200, 4700);
-		publish(organizer, cartier, "Northern Lights Orchestra", "Northern Lights Orchestra", PosterStyle.AURORA,
-				"#5CF2B0", "#3F6BFF", "#101B3A", Duration.ofDays(3), Duration.ofDays(26), false, 7800, 5500);
-		publish(organizer, stade, "Harbour FC vs Rivière United", "Harbour FC", PosterStyle.PITCH, "#E4002B",
-				"#121212", "#F2F2EE", Duration.ofDays(-1), Duration.ofDays(10), true, 5200, 3800);
+		publish(organizer, halden, "Afterglow World Tour", "Solene", PosterStyle.ORBIT, "#FF4A1C", "#B9A8FF",
+				"#0E0B1F", Duration.ofHours(22), Duration.ofDays(38), true, 12800, 9600, 6400);
+		publish(organizer, laurier, "The Understudy", "Théâtre du Marais", PosterStyle.CURTAIN, "#8E1828",
+				"#E3B04B", "#150A0C", Duration.ofDays(-2), Duration.ofDays(16), false, 5800, 4200);
+		publish(organizer, laurier, "Swan Lake", "Ballet de la Rive", PosterStyle.SUN, "#232A55",
+				"#B76E79", "#F1DEDA", Duration.ofDays(-5), Duration.ofDays(11), false, 7200, 4700);
+		publish(organizer, cartier, "Ember & Tide", "Compagnie Marée", PosterStyle.AURORA,
+				"#FF6A4D", "#5AA9FF", "#06070F", Duration.ofDays(3), Duration.ofDays(26), false, 7800, 5500);
+		publish(organizer, stade, "Orbit", "Vesper", PosterStyle.ORBIT, "#8FB4FF",
+				"#EAF2FF", "#040918", Duration.ofDays(-1), Duration.ofDays(10), true, 5200, 3800);
 	}
 
 	private void publish(long organizer, VenueView venue, String title, String artist, PosterStyle style,
@@ -164,7 +180,7 @@ class DevDataSeeder implements ApplicationRunner {
 		}
 		EventRef event = events.create(organizer, new NewEvent(title, artist, ABOUT.get(title), venue.id(), starts,
 				starts.minus(1, ChronoUnit.HOURS), onSale.minus(10, ChronoUnit.MINUTES), onSale,
-				new Poster(style, inkOne, inkTwo, paper), prices, waitingRoom));
+				new Poster(style, inkOne, inkTwo, paper, POSTER_IMAGES.get(title)), prices, waitingRoom));
 		events.publish(organizer, event.id());
 	}
 

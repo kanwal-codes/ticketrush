@@ -67,6 +67,10 @@ public class Event {
 	@Column(name = "paper_color", nullable = false)
 	private String paperColor;
 
+	/** A designed poster served by the web app under /posters/, or null to show the generated one. */
+	@Column(name = "poster_image")
+	private String posterImage;
+
 	@Column(name = "queue_enabled", nullable = false)
 	private boolean queueEnabled;
 
@@ -168,6 +172,14 @@ public class Event {
 
 	public EventStatus getStatus() {
 		return status;
+	}
+
+	public String getPosterImage() {
+		return posterImage;
+	}
+
+	public void setPosterImage(String posterImage) {
+		this.posterImage = posterImage;
 	}
 
 	public PosterStyle getPosterStyle() {
