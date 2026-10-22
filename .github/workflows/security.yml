@@ -95,7 +95,7 @@ jobs:
           mkdir -p zap && chmod 777 zap && cp .zap/rules.tsv zap/rules.tsv
           docker run --rm --network scan -v "$PWD/zap":/zap/wrk:rw ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py -t http://web:8080 -c rules.tsv -r report.html -m 2
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: zap-report
