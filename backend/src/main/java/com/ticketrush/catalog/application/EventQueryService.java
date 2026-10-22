@@ -14,6 +14,7 @@ import com.ticketrush.catalog.domain.SeatStore.SectionAvailability;
 import com.ticketrush.catalog.domain.SeatStore.SeatView;
 import com.ticketrush.catalog.domain.VenueSection;
 import com.ticketrush.catalog.domain.VenueSectionRepository;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -55,7 +56,8 @@ public class EventQueryService {
 		this.clock = clock;
 	}
 
-	public record PosterView(PosterStyle style, String inkOne, String inkTwo, String paperColor) {
+	public record PosterView(PosterStyle style, String inkOne, String inkTwo, String paperColor,
+			@Schema(nullable = true) String imageUrl) {
 	}
 
 	public record EventSummary(long id, String title, String artist, Instant startsAt, String venueName, String city,
@@ -179,7 +181,7 @@ public class EventQueryService {
 	}
 
 	private static PosterView poster(Event e) {
-		return new PosterView(e.getPosterStyle(), e.getInkOne(), e.getInkTwo(), e.getPaperColor());
+		return new PosterView(e.getPosterStyle(), e.getInkOne(), e.getInkTwo(), e.getPaperColor(), e.getPosterImage());
 	}
 
 }

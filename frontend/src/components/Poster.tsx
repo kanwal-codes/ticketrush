@@ -14,6 +14,8 @@ export interface PosterProps {
   artist: string
   city: string
   startsAt: string
+  /** A designed poster served by the app (a /posters/ path). When set it is shown instead of the drawn one. */
+  imageUrl?: string | null
   /** Gives the paper grain a different pattern per event. */
   seed?: number
 }
@@ -27,6 +29,15 @@ const MAX_WIDTH = W - 2 * MARGIN
 export function Poster(props: PosterProps) {
   const id = useId().replace(/:/g, '')
   const { style, paperColor } = props
+  if (props.imageUrl) {
+    // Same box and slice rule as the drawn poster, so every place that shows a poster lays out the same.
+    return (
+      <svg className="poster" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false" data-style={style} data-image="">
+        <rect width={W} height={H} fill={paperColor} />
+        <image href={props.imageUrl} width={W} height={H} preserveAspectRatio="xMidYMid slice" />
+      </svg>
+    )
+  }
   return (
     <svg
       className="poster"

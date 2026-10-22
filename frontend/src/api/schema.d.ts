@@ -832,6 +832,7 @@ export interface components {
             inkOne: string;
             inkTwo: string;
             paperColor: string;
+            imageUrl?: string | null;
         };
         PriceView: {
             /** Format: int64 */
