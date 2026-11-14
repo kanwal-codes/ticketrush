@@ -1,15 +1,17 @@
-/* TicketRush foundations: one paper, one ink, one action color, editorial structure with restrained control radii.
+/* TicketRush foundations: one paper, one ink, one action color. Shape rule: pills for buttons and chips, 12px for fields,
+   20px for panels and tickets, 28px for posters and banners. Nothing else.
    Each event brings its own two inks and paper, set as --ev, --ev-accent and --ev-paper on its page. Those colors
    belong to artwork and small identity marks (rules, the confirmation tick); every button and selection uses --action. */
 @font-face { font-family:'Bricolage Grotesque Variable'; src:url('@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2') format('woff2'); font-weight:200 800; font-display:swap; }
 :root {
-  --paper: #fafafa;
-  --ink: #181a1e;
+  --paper: #f4f5f8;
+  --ink: #131622;
+  --ink-deep: #0d1020;
   --muted: #62666e;
-  --rule: #dedfe2;
+  --rule: #dcdee6;
   --white: #ffffff;
   --surface: var(--white);
-  --surface-subtle: #f0f1f3;
+  --surface-subtle: #eceef3;
   --surface-input: #eceef0;
   --surface-inverse: #181e29;
   --on-inverse: #f7f8fa;
@@ -29,11 +31,13 @@
   --on-action: #ffffff;
   --accent: var(--action);
   --on-accent: var(--on-action);
-  --shadow-soft: 0 8px 24px rgb(24 26 30 / .06);
-  --shadow-lift: 0 16px 40px rgb(24 26 30 / .1);
-  --radius-control: 6px;
-  --radius-panel: 12px;
-  --radius-ticket: 14px;
+  --shadow-soft: 0 6px 20px rgb(19 30 80 / .08);
+  --shadow-lift: 0 22px 50px rgb(19 30 80 / .2);
+  --radius-control: 12px;
+  --radius-panel: 20px;
+  --radius-ticket: 20px;
+  --radius-card: 28px;
+  --radius-pill: 999px;
   --radius-chip: var(--radius-control);
 
   /* Neutral until an event supplies its own readable artwork colors. */
@@ -51,8 +55,9 @@
 
   /* Roles, not page-specific sizes: display → page → section → item → body → metadata. */
   --text-display: clamp(2.5rem, 4.5vw, 4.5rem);
+  --text-hero: clamp(2.5rem, 5.8vw, 5.25rem);
   --text-page: clamp(2rem, 3.5vw, 3.5rem);
-  --text-page-compact: clamp(1.75rem, 2.5vw, 2.5rem);
+  --text-page-compact: clamp(2rem, 4vw, 3.25rem);
   --text-section: clamp(1.375rem, 2vw, 1.75rem);
   --text-item: 1.125rem;
   --text-body: 1rem;

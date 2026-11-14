@@ -20,9 +20,16 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  border-bottom: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--paper) 94%, transparent);
-  backdrop-filter: blur(16px);
+  border-bottom: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-header {
+    background: var(--paper);
+    backdrop-filter: none;
+  }
 }
 
 /* Purchase pages: the header scrolls away and the journey bar below it is what stays. */
@@ -43,9 +50,14 @@
 .brand {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.65rem;
-  letter-spacing: -0.05em;
+  font-size: 1.85rem;
+  letter-spacing: -0.055em;
   text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.brand:active {
+  transform: scale(0.96);
 }
 
 .brand i {
@@ -78,27 +90,33 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  border-bottom: 2px solid transparent;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
   color: var(--muted);
   font-weight: var(--weight-label);
   text-decoration: none;
   white-space: nowrap;
-  transition: color var(--dur-fast) var(--ease-in-out), border-color var(--dur-fast) var(--ease-in-out);
+  transition: color var(--dur-fast) var(--ease-in-out), background-color var(--dur-fast) var(--ease-in-out), transform var(--dur-fast) var(--ease-out);
 }
 
 .site-nav > a:hover {
+  background: var(--surface-subtle);
   color: var(--ink);
+}
+
+.site-nav > a:active {
+  transform: scale(0.96);
 }
 
 .site-nav > a[aria-current='page'] {
-  border-bottom-color: var(--action);
-  color: var(--ink);
+  background: var(--action-tint);
+  color: var(--action-hover);
 }
 
 .site-nav > .site-nav__signup {
-  padding: 0 18px;
+  padding: 0 22px;
   border: 0;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-pill);
   background: var(--action);
   color: var(--on-action);
   font-weight: var(--weight-heading);
@@ -118,7 +136,7 @@
   position: relative;
   display: inline-flex;
   align-items: stretch;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-pill);
   background: var(--ink);
   color: var(--paper);
 }
@@ -147,7 +165,7 @@
   padding: 0 var(--space-3);
   border: 0;
   border-left: 1px solid rgb(255 255 255 / 0.25);
-  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
   background: transparent;
   color: inherit;
   font-size: var(--text-label);
@@ -260,7 +278,7 @@ main:has(.journey-chrome) {
 /* ---- Footer ---- */
 .site-footer {
   border-top: 1px solid var(--rule);
-  padding: var(--space-6) 0;
+  padding: var(--space-7) 0;
   background: var(--surface-subtle);
 }
 
@@ -283,6 +301,7 @@ main:has(.journey-chrome) {
   display: inline-flex;
   align-items: baseline;
   min-height: 44px;
+  font-size: clamp(2.5rem, 6vw, 4rem);
 }
 
 .site-footer__identity p {

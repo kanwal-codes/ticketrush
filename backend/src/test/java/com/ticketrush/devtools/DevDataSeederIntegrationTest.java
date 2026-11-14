@@ -20,12 +20,16 @@ class DevDataSeederIntegrationTest extends AbstractIntegrationTest {
 
 	@Test
 	void seedsThePublishedDemoEventsAndTheDemoOrganizerCanSignIn() throws Exception {
-		// Thirteen in all: nine in Montreal, two in Toronto, two in Quebec City.
-		mvc.perform(get("/api/events")).andExpect(jsonPath("$.totalItems").value(13));
-		mvc.perform(get("/api/events").param("city", "Toronto")).andExpect(jsonPath("$.totalItems").value(2));
-		String list = mvc.perform(get("/api/events").param("city", "Montreal"))
+		// Thirteen hand-made events, plus one for every line of demo-events.json.
+		int sampled;
+		try (var in = getClass().getResourceAsStream("/demo-events.json")) {
+			sampled = JsonPath.<java.util.List<Object>>read(in, "$").size();
+		}
+		mvc.perform(get("/api/events")).andExpect(jsonPath("$.totalItems").value(13 + sampled));
+		mvc.perform(get("/api/events").param("city", "Toronto")).andExpect(jsonPath("$.totalItems").value(org.hamcrest.Matchers.greaterThanOrEqualTo(2)));
+		String list = mvc.perform(get("/api/events").param("city", "Montreal").param("size", "50"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.totalItems").value(9))
+				.andExpect(jsonPath("$.totalItems").value(org.hamcrest.Matchers.greaterThanOrEqualTo(9)))
 				.andReturn().getResponse().getContentAsString();
 		int afterlight = JsonPath.<java.util.List<Integer>>read(list, "$.items[?(@.title=='Afterglow World Tour')].id").get(0);
 

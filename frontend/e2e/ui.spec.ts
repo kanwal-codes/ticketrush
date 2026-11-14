@@ -14,7 +14,10 @@ test('the featured image and the button on the home page each open the event, an
     const element = where === 'image' ? banner.locator('.hero__feature') : banner.locator('a.hero__cta')
     await element.scrollIntoViewIfNeeded()
     const box = (await element.boundingBox())!
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+    // The banner is one picture with the words laid over its lower left, so the image is clicked near its top left
+    // (on a phone that is the featured-event caption, which is part of the same link).
+    const [x, y] = where === 'image' ? [box.x + box.width * 0.08, box.y + box.height * 0.1] : [box.x + box.width / 2, box.y + box.height / 2]
+    await page.mouse.click(x, y)
     await expect(page, `clicking the banner's ${where}`).toHaveURL(/\/events\/\d+$/)
   }
 

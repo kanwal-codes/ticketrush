@@ -1,4 +1,5 @@
-/* Seat selection: the venue map on the left, a running summary on the right (a bar along the bottom on a phone). */
+/* Seat selection: the venue map on the left, a running summary on the right (a bar along the bottom on a phone).
+   Seats are soft squares, the map and the summary are big rounded cards, and the event's own colour is a bar on the card's top edge. */
 
 /* The page fades in rather than rising: a transformed page would trap the phone's fixed summary bar inside it. */
 .page.seats {
@@ -16,8 +17,9 @@
 .page.seats .seats__title {
   max-width: 14ch;
   margin-top: var(--space-3);
-  font-size: var(--text-page);
+  font-size: var(--text-hero);
   font-weight: var(--weight-display);
+  line-height: 1;
 }
 
 .seats__where {
@@ -43,9 +45,10 @@
 }
 
 .seats__mapwrap {
-  padding: clamp(16px, 3vw, 40px);
-  border: 1px solid var(--rule);
+  padding: clamp(16px, 3vw, 48px);
+  border-radius: var(--radius-card);
   background: var(--white);
+  box-shadow: var(--shadow-soft);
 }
 
 .seats__hint {
@@ -64,10 +67,10 @@
 .seatmap__stage {
   display: grid;
   place-items: center;
-  height: 48px;
-  border-top: 3px solid var(--action);
+  height: 64px;
+  border-top: 4px solid var(--action);
   border-radius: 0 0 50% 50% / 0 0 100% 100%;
-  background: var(--action-tint);
+  background: linear-gradient(var(--action-tint), var(--white));
   color: var(--ink);
   font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
   letter-spacing: 0.3em;
@@ -83,19 +86,21 @@
 }
 
 .seatmap__header h3 {
-  font-size: var(--text-item);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
 }
 
 .seatmap__rows {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   overflow-x: auto;
-  padding-bottom: var(--space-2);
+  padding-block: 4px var(--space-2);
 }
 
 .seatmap__row {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   width: max-content;
 }
@@ -118,9 +123,9 @@
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 1px solid var(--border-control);
-  border-radius: 5px;
-  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--surface-subtle);
   font: var(--weight-label) var(--text-label) var(--font-mono);
   touch-action: manipulation;
   transition:
@@ -132,21 +137,27 @@
 
 /* The little swatches in the key. */
 span.seat {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  border-radius: 7px;
 }
 
 .seat--available:is(:hover, :focus-visible) {
   border-color: var(--action);
   background: var(--action-tint);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--action) 25%, transparent);
+  transform: translateY(-3px) scale(1.06);
+}
+
+.seat--available:active {
+  transform: scale(0.92);
 }
 
 .seat--selected {
   border-color: var(--action);
   background: var(--action);
   color: var(--on-action);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--action) 20%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--action) 22%, transparent);
   font-weight: var(--weight-heading);
 }
 
@@ -180,15 +191,20 @@ span.seat {
   position: sticky;
   top: var(--sticky-top);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
-  padding: var(--space-5);
-  border: 1px solid var(--rule);
-  border-top: 3px solid var(--ev);
-  background: var(--white);
+  padding: clamp(24px, 3vw, 32px);
+  padding-top: calc(clamp(24px, 3vw, 32px) + 6px);
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: linear-gradient(var(--ev) 0 0) top / 100% 6px no-repeat, var(--white);
+  box-shadow: var(--shadow-lift);
 }
 
 .panel h2 {
   font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
 }
 
 .panel__brief {
@@ -226,8 +242,9 @@ span.seat {
 
 .panel__total {
   padding-block: var(--space-4);
-  font-size: var(--text-section);
-  font-weight: var(--weight-heading);
+  font-size: var(--text-metric);
+  font-weight: var(--weight-display);
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
@@ -239,6 +256,11 @@ span.seat {
 .panel__continue,
 .panel__release {
   width: 100%;
+}
+
+.panel__continue {
+  min-height: 60px;
+  font-size: var(--text-body);
 }
 
 @media (max-width: 1000px) {
@@ -275,9 +297,10 @@ span.seat {
     align-items: center;
     gap: var(--space-2) var(--space-4);
     padding: var(--space-3) var(--gutter) calc(var(--space-3) + env(safe-area-inset-bottom));
-    border-width: 1px 0 0;
-    border-top-color: var(--ev);
-    box-shadow: 0 -8px 24px rgb(24 26 30 / 0.08);
+    padding-top: calc(var(--space-3) + 3px);
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(var(--ev) 0 0) top / 100% 3px no-repeat, var(--white);
+    box-shadow: 0 -12px 32px rgb(19 30 80 / 0.16);
   }
 
   .panel > * {
@@ -313,7 +336,8 @@ span.seat {
 
   .panel__total {
     gap: var(--space-3);
-    font-size: var(--text-item);
+    padding: 0;
+    font-size: var(--text-section);
   }
 
   .panel__actions {

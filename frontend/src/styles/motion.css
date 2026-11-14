@@ -16,6 +16,28 @@
   }
 }
 
+/* The lead picture settles from slightly zoomed, once, as the page opens. */
+@keyframes hero-settle {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* A card scrolling into view: rises, grows to full size, fades up. */
+@keyframes card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(36px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
