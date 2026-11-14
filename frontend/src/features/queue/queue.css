@@ -10,7 +10,9 @@
 .queue__art {
   aspect-ratio: 3 / 4;
   overflow: hidden;
+  border-radius: var(--radius-card);
   background: var(--ev-paper);
+  box-shadow: var(--shadow-lift);
 }
 
 .queue__body {
@@ -35,8 +37,9 @@
 }
 
 .queue__body h1 {
-  font-size: var(--text-page);
+  font-size: var(--text-display);
   font-weight: var(--weight-display);
+  line-height: 1;
 }
 
 .queue__lead {

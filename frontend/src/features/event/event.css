@@ -15,7 +15,9 @@
 .event__poster {
   aspect-ratio: 3 / 4;
   overflow: hidden;
+  border-radius: var(--radius-card);
   background: var(--ev-paper);
+  box-shadow: var(--shadow-lift);
 }
 
 .event__poster > svg {
@@ -43,6 +45,7 @@
 .event__title {
   font-size: var(--text-display);
   font-weight: var(--weight-display);
+  line-height: 1;
   text-wrap: balance;
 }
 
@@ -73,10 +76,10 @@
   display: grid;
   gap: var(--space-3);
   justify-items: start;
-  padding: var(--space-5);
-  border: 1px solid var(--rule);
-  border-top: 3px solid var(--ev);
+  padding: clamp(24px, 3vw, 36px);
+  border-radius: var(--radius-card);
   background: var(--white);
+  box-shadow: var(--shadow-lift);
 }
 
 .sale__headline {
@@ -116,7 +119,8 @@
 
 .sale .btn {
   width: 100%;
-  min-height: 52px;
+  min-height: 60px;
+  font-size: var(--text-body);
 }
 
 /* ---- Tiers ---- */
@@ -165,6 +169,8 @@
   .event__poster {
     grid-row: 1 / span 2;
     align-self: start;
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-soft);
   }
 
   .event__main {
