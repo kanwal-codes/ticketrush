@@ -26,6 +26,15 @@
   padding: clamp(24px, 5vw, 64px);
 }
 
+/* The words are not links, but the space around them is the picture: it still opens the featured event. */
+.hero__lead {
+  pointer-events: none;
+}
+
+.hero__lead > * {
+  pointer-events: auto;
+}
+
 .hero__edition {
   color: rgb(255 255 255 / 0.78);
   font: var(--weight-label) var(--text-label) / 1 var(--font-mono);
