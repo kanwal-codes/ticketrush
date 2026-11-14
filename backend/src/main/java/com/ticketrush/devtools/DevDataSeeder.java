@@ -20,19 +20,24 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Demo data for local development: one organizer, eight venues in three cities and thirteen published events (the
  * first five match the posters in the design; the rest cover every sale state). Runs only with the "dev" or "demo" profile (the live demo uses "demo"), only if an organizer password
  * is configured, and only once (it skips when the organizer already owns venues). Payments are the mock provider's,
- * so this is demo data, not a shop.
+ * so this is demo data, not a shop. A fourth batch, from demo-events.json, adds a few dozen more events of every kind in five cities.
  */
 @Component
 @Profile({ "dev", "demo" })
@@ -76,6 +81,10 @@ class DevDataSeeder implements ApplicationRunner {
 		// Added later than the first five, so a database that already has those still gets them (once).
 		if (owned.stream().noneMatch(v -> v.name().equals(MARKER_VENUE))) {
 			seedMore(organizer);
+		}
+		List<Sample> samples = samples();
+		if (!samples.isEmpty() && owned.stream().noneMatch(v -> v.name().equals(samples.get(0).venueName()))) {
+			seedSamples(organizer, samples);
 		}
 		log.info("Demo data ready. Sign in as {} with the password from DEMO_ORGANIZER_PASSWORD", organizerEmail);
 	}
@@ -171,6 +180,13 @@ class DevDataSeeder implements ApplicationRunner {
 
 	private void publish(long organizer, VenueView venue, String title, String artist, PosterStyle style,
 			String inkOne, String inkTwo, String paper, Duration onSaleIn, Duration startsIn, boolean waitingRoom, int... sectionPrices) {
+		publish(organizer, venue, title, artist, ABOUT.get(title), POSTER_IMAGES.get(title), style, inkOne, inkTwo, paper,
+				onSaleIn, startsIn, waitingRoom, sectionPrices);
+	}
+
+	private void publish(long organizer, VenueView venue, String title, String artist, String about, String image,
+			PosterStyle style, String inkOne, String inkTwo, String paper, Duration onSaleIn, Duration startsIn,
+			boolean waitingRoom, int... sectionPrices) {
 		Instant now = clock.instant().truncatedTo(ChronoUnit.MINUTES);
 		Instant onSale = now.plus(onSaleIn);
 		Instant starts = now.plus(startsIn).truncatedTo(ChronoUnit.HOURS);
@@ -178,10 +194,51 @@ class DevDataSeeder implements ApplicationRunner {
 		for (int i = 0; i < venue.sections().size(); i++) {
 			prices.add(new PriceSpec(venue.sections().get(i).id(), sectionPrices[i]));
 		}
-		EventRef event = events.create(organizer, new NewEvent(title, artist, ABOUT.get(title), venue.id(), starts,
+		EventRef event = events.create(organizer, new NewEvent(title, artist, about, venue.id(), starts,
 				starts.minus(1, ChronoUnit.HOURS), onSale.minus(10, ChronoUnit.MINUTES), onSale,
-				new Poster(style, inkOne, inkTwo, paper, POSTER_IMAGES.get(title)), prices, waitingRoom));
+				new Poster(style, inkOne, inkTwo, paper, image), prices, waitingRoom));
 		events.publish(organizer, event.id());
+	}
+
+	/** One line of demo-events.json. Dates are "days from the day the data was made", kept so the spread stays realistic. */
+	record Sample(String title, int inDays, String time, String venueName, String city, String category, String image) {
+	}
+
+	/** Face value in cents for the floor and the balcony, by kind of event. */
+	private static final Map<String, int[]> SAMPLE_PRICES = Map.of("Music", new int[] { 7500, 4800 },
+			"Sports", new int[] { 9500, 5500 }, "Arts & Theatre", new int[] { 8500, 5200 }, "Film", new int[] { 2200, 1600 },
+			"Family", new int[] { 4500, 3000 });
+
+	private List<Sample> samples() {
+		try (InputStream in = DevDataSeeder.class.getResourceAsStream("/demo-events.json")) {
+			return in == null ? List.of() : List.of(JsonMapper.builder().build().readValue(in, Sample[].class));
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("demo-events.json cannot be read", e);
+		}
+	}
+
+	/**
+	 * Events of every kind in several cities, each with its own venue and seat map and a picture saved in the web app.
+	 * Starting a few days out, most are on sale; some open soon, and some of those have a waiting room.
+	 */
+	private void seedSamples(long organizer, List<Sample> samples) {
+		Map<String, VenueView> made = new LinkedHashMap<>();
+		PosterStyle[] styles = PosterStyle.values();
+		Instant today = clock.instant().truncatedTo(ChronoUnit.DAYS);
+		for (int i = 0; i < samples.size(); i++) {
+			Sample e = samples.get(i);
+			VenueView venue = made.computeIfAbsent(e.venueName() + "|" + e.city(), k -> venues.create(organizer, e.venueName(),
+					e.city(), List.of(new SectionSpec("Floor", 8, 20), new SectionSpec("Balcony", 4, 20))));
+			Instant starts = today.plus(e.inDays() + 3, ChronoUnit.DAYS).plus(java.time.Duration.between(LocalTime.MIDNIGHT, LocalTime.parse(e.time())));
+			boolean soon = i % 9 == 4;
+			Duration onSaleIn = soon ? Duration.ofHours(6 + 5 * (i % 4)) : Duration.ofDays(-2);
+			int[] prices = SAMPLE_PRICES.getOrDefault(e.category(), SAMPLE_PRICES.get("Family"));
+			publish(organizer, venue, e.title(), e.venueName(),
+					e.title() + " at " + e.venueName() + ", " + e.city() + ". Every seat is reserved: choose yours on the floor or in the balcony.",
+					e.image(), styles[i % styles.length], "#222222", "#FFFFFF", "#111111", onSaleIn,
+					Duration.between(clock.instant(), starts), soon ? i % 2 == 0 : i % 6 == 0, prices);
+		}
 	}
 
 }

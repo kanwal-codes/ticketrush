@@ -42,7 +42,6 @@ services:
       REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
       DEMO_ORGANIZER_PASSWORD: ${DEMO_ORGANIZER_PASSWORD:?set DEMO_ORGANIZER_PASSWORD in .env}
-      TICKETMASTER_CONSUMER_KEY: ${TICKETMASTER_CONSUMER_KEY:-}
       # Settings the load tests rely on. Everything else is the application default.
       TICKETRUSH_QUEUE_ADMIT_PER_SECOND: ${LOAD_ADMIT_PER_SECOND:-50}
       TICKETRUSH_QUEUE_MAX_ADMITTED: ${LOAD_MAX_ADMITTED:-300}

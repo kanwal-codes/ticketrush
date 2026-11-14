@@ -8,7 +8,6 @@ import { Notice } from '../../components/Notice'
 import { describeError } from '../../lib/errorCopy'
 import { EventCard, EventCardSkeleton } from './EventCard'
 import { Hero } from './Hero'
-import { PartnerEvents } from './PartnerEvents'
 import { pickFeatured } from './pickFeatured'
 import { browseEvents, categories } from './browse'
 import './discover.css'
@@ -189,7 +188,6 @@ export function Discover() {
         {isFetchNextPageError && <Notice tone="warning" title="Some events could not load" actions={<button type="button" className="btn btn--quiet" onClick={() => void fetchNextPage()}>Try again</button>}>Your results may be incomplete.</Notice>}
         {hasNextPage && !collecting && !isFetchNextPageError && <p className="discover__more"><button type="button" className="btn btn--quiet" onClick={() => void fetchNextPage()} disabled={isFetchingNextPage}>{isFetchingNextPage ? 'Loading…' : 'Show more'}</button></p>}
       </section>
-      <PartnerEvents q={q} city={city} />
     </div>
   )
 }
