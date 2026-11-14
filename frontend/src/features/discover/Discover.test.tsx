@@ -193,4 +193,36 @@ describe('Discover', () => {
   })
 })
 
+describe('Discover: events from Ticketmaster', () => {
+  const partner = { id: 'tm1', source: 'Ticketmaster', title: 'Habs vs Bruins', startsAt: '2027-01-06T00:00:00Z', venueName: 'Bell Centre', city: 'Montreal', category: 'Sports', imageUrl: 'https://img.test/a.jpg', url: 'https://www.ticketmaster.ca/e/1' }
+
+  it('lists them after our own events, linking out to Ticketmaster in a new tab', async () => {
+    const { calls } = mockApi({
+      'GET /api/events': () => json(page([make(1, 'Jazz Live', 'ON_SALE')])),
+      'GET /api/partner-events': () => json([partner]),
+    })
+    renderRoute('/?city=Montreal&q=habs')
+    const section = await screen.findByRole('region', { name: 'Also on Ticketmaster.' })
+    const link = within(section).getByRole('link', { name: /Habs vs Bruins/ })
+    expect(link).toHaveAttribute('href', partner.url)
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    expect(within(section).getByText('Bell Centre, Montreal')).toBeInTheDocument()
+    const asked = new URL(calls.find(c => c.url.includes('/api/partner-events'))!.url)
+    expect(asked.searchParams.get('city')).toBe('Montreal')
+    expect(asked.searchParams.get('q')).toBe('habs')
+  })
+
+  it('shows nothing when there are none or Ticketmaster cannot be reached', async () => {
+    mockApi({
+      'GET /api/events': () => json(page([make(1, 'Jazz Live', 'ON_SALE')])),
+      'GET /api/partner-events': () => json({ title: 'Boom' }, 500),
+    })
+    renderRoute('/')
+    await screen.findByRole('region', { name: 'Jazz Live' })
+    await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2))
+    expect(screen.queryByRole('region', { name: 'Also on Ticketmaster.' })).not.toBeInTheDocument()
+  })
+})
+
 vi.setConfig({ testTimeout: 10_000 })

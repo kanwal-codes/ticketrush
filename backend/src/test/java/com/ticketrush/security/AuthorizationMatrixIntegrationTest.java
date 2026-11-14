@@ -33,7 +33,8 @@ class AuthorizationMatrixIntegrationTest extends AbstractIntegrationTest {
 	private static final Set<String> OPEN = Set.of(
 			"POST /api/auth/register", "POST /api/auth/login", "POST /api/auth/forgot-password",
 			"POST /api/auth/reset-password", "POST /api/auth/verify-email",
-			"GET /api/events", "GET /api/events/{id}", "GET /api/events/{id}/seats");
+			"GET /api/events", "GET /api/events/{id}", "GET /api/events/{id}/seats",
+			"GET /api/partner-events");
 
 	/** Any signed-in guest. What they may do to a particular order or hold is checked in the service, and tested there. */
 	private static final Set<String> GUEST = Set.of(

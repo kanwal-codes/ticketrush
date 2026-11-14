@@ -43,3 +43,13 @@ export function useEvent(id: number) {
 export function useEventsById(ids: number[]) {
   return useQueries({ queries: ids.map((id) => ({ queryKey: keys.event(id), queryFn: () => fetchEvent(id), staleTime: 60_000 })) })
 }
+
+/** Upcoming events from Ticketmaster, shown beside our own. Nice to have: the page copes with an empty answer. */
+export function usePartnerEvents(q: string, city: string) {
+  return useQuery({
+    queryKey: ['partner-events', q, city] as const,
+    queryFn: () => unwrap(api.GET('/api/partner-events', { params: { query: { q: q || undefined, city: city || undefined, size: 12 } } })),
+    staleTime: 5 * 60_000,
+    retry: false,
+  })
+}

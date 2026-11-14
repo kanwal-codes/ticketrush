@@ -320,6 +320,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/partner-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/organizer/venues": {
         parameters: {
             query?: never;
@@ -775,6 +791,18 @@ export interface components {
             number: number;
             /** @enum {string} */
             status: "ISSUED" | "USED" | "VOID";
+        };
+        PartnerEvent: {
+            id: string;
+            source: string;
+            title: string;
+            /** Format: date-time */
+            startsAt: string;
+            venueName: string;
+            city: string;
+            category: string;
+            imageUrl: string;
+            url: string;
         };
         EventRow: {
             /** Format: int64 */
@@ -1592,6 +1620,30 @@ export interface operations {
                 };
                 content: {
                     "image/svg+xml": string;
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: {
+                city?: string;
+                q?: string;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerEvent"][];
                 };
             };
         };
